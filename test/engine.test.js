@@ -42,3 +42,40 @@ test('validateManifest rejects a default that violates the field constraints', (
   const fields = [{ id: 'n', label: 'N', type: 'number', min: 0, max: 10, default: 99 }];
   assert.throws(() => validateManifest('demo', { name: 'x', fields }), /default/);
 });
+
+const path = require('node:path');
+const fs = require('node:fs');
+const os = require('node:os');
+const { loadTemplates } = require('../engine');
+
+const FIXTURES = path.join(__dirname, 'fixtures', 'templates');
+
+test('loadTemplates loads valid template directories', () => {
+  const map = loadTemplates(FIXTURES);
+  assert.ok(map.has('minimal'));
+  const t = map.get('minimal');
+  assert.equal(t.manifest.name, 'Minimal');
+  assert.match(t.html, /\{\{title\}\}/);
+  assert.equal(t.dir, path.join(FIXTURES, 'minimal'));
+});
+
+test('loadTemplates throws on a template missing index.html', () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'tpl-'));
+  fs.mkdirSync(path.join(tmp, 'broken'));
+  fs.writeFileSync(path.join(tmp, 'broken', 'template.json'),
+    JSON.stringify({ name: 'B', fields: [{ id: 'a', label: 'A', type: 'text' }] }));
+  assert.throws(() => loadTemplates(tmp), /index\.html/);
+});
+
+test('loadTemplates throws on malformed JSON', () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'tpl-'));
+  fs.mkdirSync(path.join(tmp, 'bad'));
+  fs.writeFileSync(path.join(tmp, 'bad', 'template.json'), '{ not json');
+  fs.writeFileSync(path.join(tmp, 'bad', 'index.html'), '<html></html>');
+  assert.throws(() => loadTemplates(tmp), /bad/);
+});
+
+test('loadTemplates throws when the directory has no templates', () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'tpl-'));
+  assert.throws(() => loadTemplates(tmp), /no templates/);
+});

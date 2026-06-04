@@ -1,0 +1,9 @@
+{
+  "name": "Minimal",
+  "description": "Fixture template",
+  "nameField": "title",
+  "fields": [
+    { "id": "title", "label": "Title", "type": "text", "required": true, "max": 50, "default": "Hello" },
+    { "id": "count", "label": "Count", "type": "number", "int": true, "min": 0, "default": 3 }
+  ]
+}

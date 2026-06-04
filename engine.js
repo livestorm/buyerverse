@@ -101,4 +101,54 @@ function validateManifest(id, raw) {
   };
 }
 
-module.exports = { validateManifest, validSlug, escapeHtml, checkValue, TEMPLATES_DIR };
+/**
+ * Scan a templates directory. Returns Map<id, {manifest, html, dir}>.
+ * Throws on any malformed template — callers fail fast at boot.
+ */
+function loadTemplates(dir = TEMPLATES_DIR) {
+  const map = new Map();
+  let entries = [];
+  try { entries = fs.readdirSync(dir, { withFileTypes: true }); } catch (e) { /* fallthrough to empty */ }
+  for (const ent of entries) {
+    if (!ent.isDirectory()) continue;
+    const id = ent.name;
+    const tdir = path.join(dir, id);
+    const manifestPath = path.join(tdir, 'template.json');
+    const htmlPath = path.join(tdir, 'index.html');
+    if (!fs.existsSync(manifestPath)) continue; // not a template dir
+    let raw;
+    try { raw = JSON.parse(fs.readFileSync(manifestPath, 'utf8')); }
+    catch (e) { fail(`${id}/template.json: invalid JSON — ${e.message}`); }
+    if (!fs.existsSync(htmlPath)) fail(`${id}: missing index.html`);
+    map.set(id, {
+      manifest: validateManifest(id, raw),
+      html: fs.readFileSync(htmlPath, 'utf8'),
+      dir: tdir
+    });
+  }
+  if (map.size === 0) fail(`no templates found in ${dir}`);
+  return map;
+}
+
+let registryCache = null;
+
+/** Cached registry of ./templates — re-scanned per call outside production. */
+function registry() {
+  if (!registryCache || process.env.NODE_ENV !== 'production') {
+    registryCache = loadTemplates();
+  }
+  return registryCache;
+}
+
+function getTemplate(id) {
+  return registry().get(id) || null;
+}
+
+function listTemplates() {
+  return Array.from(registry().values()).map(t => t.manifest);
+}
+
+module.exports = {
+  validateManifest, loadTemplates, getTemplate, listTemplates,
+  validSlug, escapeHtml, checkValue, TEMPLATES_DIR
+};
