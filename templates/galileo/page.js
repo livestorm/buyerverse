@@ -49,7 +49,13 @@
   function en(n) { return nfEN.format(n); }
   function eur(n) { return '€' + nfEN.format(n) + ' <em>/ yr</em>'; }
 
-  var P = CFG.prospect;
+  // P is interpolated into innerHTML-assigned dictionary strings — escape it.
+  function escText(s) {
+    var d = document.createElement('div');
+    d.textContent = s == null ? '' : String(s);
+    return d.innerHTML;
+  }
+  var P = escText(CFG.prospect);
   var PR = CFG.pricing;
 
   /* ---------- EN dictionary (FR is the inline source of truth) ---------- */
@@ -396,6 +402,10 @@
     countEls.forEach(function (el) { counted.add(el); });
     renderCounts(true);
   }
+
+  // The server substitutes raw values; format them per locale right away
+  // so pre-reveal text matches the old server-formatted rendering.
+  renderCounts(true);
 
   /* ---------- Header state ---------- */
   var header = document.querySelector('.site-header');
