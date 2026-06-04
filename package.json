@@ -4,7 +4,8 @@
   "private": true,
   "description": "Galileo × Livestorm — 2026 renewal proposal microsite",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "test": "node --test test/"
   },
   "dependencies": {
     "pg": "^8.16.0"
