@@ -35,7 +35,7 @@ chart, use cases, testimonial — still carries the Galileo template content.
 ## Development
 
 ```sh
-ADMIN_TOKEN=dev yarn start   # in-memory store, http://localhost:3000
+ADMIN_TOKEN=dev pnpm start   # in-memory store, http://localhost:3000
 ```
 
 FR copy lives inline in `template.html` (the source of truth); the EN
