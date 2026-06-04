@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Buyerverse — Page builder</title>
+  <meta name="robots" content="noindex">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+  <style>
+    .builder-main { padding: 48px 0 96px; }
+    .builder-head { display: flex; align-items: baseline; gap: 16px; flex-wrap: wrap; margin-bottom: 36px; }
+    .builder-head h1 { font-size: clamp(1.8rem, 3.4vw, 2.4rem); margin: 0; }
+    .builder-head .kicker { margin: 0; }
+    .builder-grid { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, .75fr); gap: 28px; align-items: start; }
+    .panel { margin-bottom: 24px; }
+    .panel h2 { font-size: 1.05rem; margin-bottom: 18px; display: flex; align-items: center; gap: 10px; }
+    .panel h2 .step { display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 8px; background: var(--blue-mist); color: var(--blue-deep); font-size: .85rem; font-weight: 800; }
+    .field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+    .field label { font-size: .82rem; font-weight: 700; color: var(--ink-soft); }
+    .field input {
+      font: inherit; font-size: .95rem; color: var(--ink);
+      padding: 10px 14px; border: 1px solid var(--line); border-radius: 10px; background: #fbfcfe;
+      transition: border-color .15s, box-shadow .15s;
+    }
+    .field input:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 3px rgba(37, 99, 235, .15); }
+    .field .hint { font-size: .76rem; color: var(--muted); }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 16px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0 16px; }
+    .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0 16px; }
+    .matrix { width: 100%; border-collapse: collapse; font-size: .85rem; margin-top: 6px; }
+    .matrix th, .matrix td { border: 1px solid var(--line); padding: 7px 10px; text-align: right; }
+    .matrix th { background: var(--blue-pale); font-weight: 700; text-align: left; }
+    .matrix td { font-family: var(--font-display); font-weight: 600; }
+    .actions { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+    .actions .btn { border: 0; }
+    .status { font-size: .9rem; font-weight: 600; }
+    .status.ok { color: var(--mint-deep); }
+    .status.err { color: var(--red); }
+    .status a { color: var(--blue); }
+    .pages-list { display: flex; flex-direction: column; gap: 12px; }
+    .page-row {
+      display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+      border: 1px solid var(--line); border-radius: 12px; padding: 12px 16px; background: #fbfcfe;
+    }
+    .page-row .slug { font-family: var(--font-display); font-weight: 700; }
+    .page-row .meta { color: var(--muted); font-size: .8rem; flex: 1; }
+    .page-row .ops { display: flex; gap: 8px; }
+    .mini-btn {
+      font: inherit; font-size: .78rem; font-weight: 700; cursor: pointer;
+      padding: 5px 12px; border-radius: 999px; border: 1px solid var(--line); background: #fff; color: var(--ink-soft);
+      text-decoration: none; transition: all .15s;
+    }
+    .mini-btn:hover { border-color: var(--blue); color: var(--blue); }
+    .mini-btn.danger:hover { border-color: var(--red); color: var(--red); }
+    .token-row { display: flex; gap: 10px; align-items: end; }
+    .token-row .field { flex: 1; margin-bottom: 0; }
+    .empty { color: var(--muted); font-size: .9rem; }
+    @media (max-width: 900px) { .builder-grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="/" aria-label="Buyerverse">
+        <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span class="brand-name">Livestorm</span>
+        <span class="brand-x">·</span>
+        <span class="brand-partner">Buyerverse</span>
+      </a>
+    </div>
+  </header>
+
+  <main class="builder-main">
+    <div class="container">
+      <div class="builder-head">
+        <div>
+          <p class="kicker">Page builder</p>
+          <h1>Generate a proposal page</h1>
+        </div>
+      </div>
+
+      <div class="builder-grid">
+        <div>
+          <section class="card panel">
+            <h2><span class="step">1</span> Prospect</h2>
+            <div class="grid-2">
+              <div class="field">
+                <label for="f-prospect">Prospect name</label>
+                <input id="f-prospect" type="text" maxlength="80" placeholder="Acme Corp" required>
+              </div>
+              <div class="field">
+                <label for="f-slug">Slug</label>
+                <input id="f-slug" type="text" maxlength="64" pattern="[a-z0-9][a-z0-9-]*" placeholder="acme-corp" required>
+                <span class="hint">Page will live at <code>/page/&lt;slug&gt;</code></span>
+              </div>
+            </div>
+          </section>
+
+          <section class="card panel">
+            <h2><span class="step">2</span> Account manager</h2>
+            <div class="grid-2">
+              <div class="field">
+                <label for="f-am-name">Name</label>
+                <input id="f-am-name" type="text" maxlength="80" required>
+              </div>
+              <div class="field">
+                <label for="f-am-email">Email</label>
+                <input id="f-am-email" type="email" maxlength="120" required>
+              </div>
+            </div>
+          </section>
+
+          <section class="card panel">
+            <h2><span class="step">3</span> 2025 key figures</h2>
+            <div class="grid-4">
+              <div class="field"><label for="f-schools">Schools</label><input id="f-schools" type="number" min="0" required></div>
+              <div class="field"><label for="f-users">Users</label><input id="f-users" type="number" min="0" required></div>
+              <div class="field"><label for="f-sessions">Sessions</label><input id="f-sessions" type="number" min="0" required></div>
+              <div class="field"><label for="f-registrants">Registrants</label><input id="f-registrants" type="number" min="0" required></div>
+            </div>
+            <div class="grid-3">
+              <div class="field"><label for="f-attendees">Attendees</label><input id="f-attendees" type="number" min="0" required></div>
+              <div class="field"><label for="f-rate">Attendance rate (%)</label><input id="f-rate" type="number" min="0" max="100" required></div>
+              <div class="field"><label for="f-nps">NPS (0–10)</label><input id="f-nps" type="number" min="0" max="10" step="0.1" required></div>
+            </div>
+          </section>
+
+          <section class="card panel">
+            <h2><span class="step">4</span> Pricing</h2>
+            <div class="grid-4">
+              <div class="field"><label for="f-current">Current contract (€ / yr)</label><input id="f-current" type="number" min="0" required></div>
+              <div class="field"><label for="f-vol1">Volume A</label><input id="f-vol1" type="number" min="0" required></div>
+              <div class="field"><label for="f-vol2">Volume B</label><input id="f-vol2" type="number" min="0" required></div>
+              <div class="field"><label for="f-vol3">Volume C</label><input id="f-vol3" type="number" min="0" required></div>
+            </div>
+            <div class="grid-3">
+              <div class="field"><label for="f-init1">Initial price A (€)</label><input id="f-init1" type="number" min="0" required></div>
+              <div class="field"><label for="f-init2">Initial price B (€)</label><input id="f-init2" type="number" min="0" required></div>
+              <div class="field"><label for="f-init3">Initial price C (€)</label><input id="f-init3" type="number" min="0" required></div>
+            </div>
+            <div class="grid-3">
+              <div class="field"><label for="f-d1">Discount 1 yr (%)</label><input id="f-d1" type="number" min="0" max="99" required></div>
+              <div class="field"><label for="f-d2">Discount 2 yrs (%)</label><input id="f-d2" type="number" min="0" max="99" required></div>
+              <div class="field"><label for="f-d3">Discount 3 yrs (%)</label><input id="f-d3" type="number" min="0" max="99" required></div>
+            </div>
+            <table class="matrix" id="matrix" aria-label="Computed price matrix"></table>
+          </section>
+
+          <section class="card panel">
+            <h2><span class="step">5</span> Publish</h2>
+            <div class="token-row">
+              <div class="field">
+                <label for="f-token">Admin token</label>
+                <input id="f-token" type="password" autocomplete="off" placeholder="ADMIN_TOKEN">
+              </div>
+              <button class="btn btn-primary btn-lg" id="submit" type="button">Create page</button>
+            </div>
+            <p class="status" id="status" role="status"></p>
+          </section>
+        </div>
+
+        <aside class="card panel">
+          <h2>Existing pages</h2>
+          <div class="pages-list" id="pages"><p class="empty">Enter the admin token, then refresh.</p></div>
+          <p style="margin-top:16px"><button class="mini-btn" id="refresh" type="button">↻ Refresh list</button></p>
+        </aside>
+      </div>
+    </div>
+  </main>
+
+  <script>
+  (function () {
+    'use strict';
+
+    var GALILEO = {
+      prospect: 'Galileo',
+      am: { name: 'Tiphaine Lemerle', email: 'tiphaine.lemerle@livestorm.co' },
+      kpis: { schools: 34, users: 589, sessions: 1210, registrants: 39351, attendees: 22263, rate: 57, nps: 7.7 },
+      pricing: { currentAnnual: 120000, volumes: [25000, 40000, 60000], discounts: [20, 30, 40], initial: [120000, 143000, 163000] }
+    };
+
+    var $ = function (id) { return document.getElementById(id); };
+    var nf = new Intl.NumberFormat('en-US');
+
+    function fill(cfg, slug) {
+      $('f-prospect').value = cfg.prospect;
+      $('f-slug').value = slug || slugify(cfg.prospect);
+      $('f-am-name').value = cfg.am.name;
+      $('f-am-email').value = cfg.am.email;
+      $('f-schools').value = cfg.kpis.schools;
+      $('f-users').value = cfg.kpis.users;
+      $('f-sessions').value = cfg.kpis.sessions;
+      $('f-registrants').value = cfg.kpis.registrants;
+      $('f-attendees').value = cfg.kpis.attendees;
+      $('f-rate').value = cfg.kpis.rate;
+      $('f-nps').value = cfg.kpis.nps;
+      $('f-current').value = cfg.pricing.currentAnnual;
+      $('f-vol1').value = cfg.pricing.volumes[0];
+      $('f-vol2').value = cfg.pricing.volumes[1];
+      $('f-vol3').value = cfg.pricing.volumes[2];
+      $('f-init1').value = cfg.pricing.initial[0];
+      $('f-init2').value = cfg.pricing.initial[1];
+      $('f-init3').value = cfg.pricing.initial[2];
+      $('f-d1').value = cfg.pricing.discounts[0];
+      $('f-d2').value = cfg.pricing.discounts[1];
+      $('f-d3').value = cfg.pricing.discounts[2];
+      renderMatrix();
+    }
+
+    function slugify(s) {
+      return s.toLowerCase()
+        .normalize('NFD').replace(/[̀-ͯ]/g, '')
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '')
+        .slice(0, 64);
+    }
+
+    function readConfig() {
+      return {
+        prospect: $('f-prospect').value.trim(),
+        am: { name: $('f-am-name').value.trim(), email: $('f-am-email').value.trim() },
+        kpis: {
+          schools: +$('f-schools').value, users: +$('f-users').value,
+          sessions: +$('f-sessions').value, registrants: +$('f-registrants').value,
+          attendees: +$('f-attendees').value, rate: +$('f-rate').value, nps: +$('f-nps').value
+        },
+        pricing: {
+          currentAnnual: +$('f-current').value,
+          volumes: [+$('f-vol1').value, +$('f-vol2').value, +$('f-vol3').value],
+          discounts: [+$('f-d1').value, +$('f-d2').value, +$('f-d3').value],
+          initial: [+$('f-init1').value, +$('f-init2').value, +$('f-init3').value]
+        }
+      };
+    }
+
+    function renderMatrix() {
+      var c = readConfig().pricing;
+      var head = '<tr><th>Proposal</th>' + c.volumes.map(function (v) { return '<th style="text-align:right">' + nf.format(v || 0) + ' att.</th>'; }).join('') + '</tr>';
+      var rows = '<tr><th>Initial</th>' + c.initial.map(function (p) { return '<td>€' + nf.format(p || 0) + '</td>'; }).join('') + '</tr>';
+      c.discounts.forEach(function (d, i) {
+        rows += '<tr><th>-' + (d || 0) + '% · ' + (i + 1) + ' yr</th>' +
+          c.initial.map(function (p) { return '<td>€' + nf.format(Math.round((p || 0) * (1 - (d || 0) / 100))) + '</td>'; }).join('') + '</tr>';
+      });
+      $('matrix').innerHTML = head + rows;
+    }
+
+    function token() { return $('f-token').value.trim(); }
+
+    function api(method, path, body) {
+      return fetch(path, {
+        method: method,
+        headers: Object.assign(
+          { 'Authorization': 'Bearer ' + token() },
+          body ? { 'Content-Type': 'application/json' } : {}
+        ),
+        body: body ? JSON.stringify(body) : undefined
+      }).then(function (res) {
+        return res.json().catch(function () { return {}; }).then(function (data) {
+          if (!res.ok) throw new Error(data.error || ('HTTP ' + res.status));
+          return data;
+        });
+      });
+    }
+
+    function setStatus(msg, ok) {
+      var el = $('status');
+      el.className = 'status ' + (ok ? 'ok' : 'err');
+      el.innerHTML = msg;
+    }
+
+    function loadPages() {
+      if (!token()) { $('pages').innerHTML = '<p class="empty">Enter the admin token, then refresh.</p>'; return; }
+      api('GET', '/api/pages').then(function (data) {
+        if (!data.pages.length) { $('pages').innerHTML = '<p class="empty">No pages yet.</p>'; return; }
+        $('pages').innerHTML = '';
+        data.pages.forEach(function (p) {
+          var row = document.createElement('div');
+          row.className = 'page-row';
+          var date = p.updated_at ? new Date(p.updated_at).toLocaleString() : '';
+          row.innerHTML =
+            '<span class="slug">/page/' + p.slug + '</span>' +
+            '<span class="meta">' + escapeText(p.config.prospect) + (date ? ' · ' + date : '') + '</span>' +
+            '<span class="ops">' +
+              '<a class="mini-btn" href="/page/' + p.slug + '" target="_blank" rel="noopener">View</a>' +
+              '<button class="mini-btn" data-edit="' + p.slug + '" type="button">Edit</button>' +
+              '<button class="mini-btn danger" data-del="' + p.slug + '" type="button">Delete</button>' +
+            '</span>';
+          row.querySelector('[data-edit]').addEventListener('click', function () {
+            fill(p.config, p.slug);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          });
+          row.querySelector('[data-del]').addEventListener('click', function () {
+            if (!confirm('Delete /page/' + p.slug + '?')) return;
+            api('DELETE', '/api/pages/' + p.slug)
+              .then(loadPages)
+              .catch(function (e) { setStatus(e.message, false); });
+          });
+          $('pages').appendChild(row);
+        });
+      }).catch(function (e) {
+        $('pages').innerHTML = '<p class="empty">' + escapeText(e.message) + '</p>';
+      });
+    }
+
+    function escapeText(s) {
+      var d = document.createElement('div');
+      d.textContent = String(s == null ? '' : s);
+      return d.innerHTML;
+    }
+
+    $('f-prospect').addEventListener('input', function () {
+      $('f-slug').value = slugify($('f-prospect').value);
+    });
+    ['f-current', 'f-vol1', 'f-vol2', 'f-vol3', 'f-init1', 'f-init2', 'f-init3', 'f-d1', 'f-d2', 'f-d3']
+      .forEach(function (id) { $(id).addEventListener('input', renderMatrix); });
+
+    $('f-token').value = localStorage.getItem('buyerverse-token') || '';
+    $('f-token').addEventListener('change', function () {
+      localStorage.setItem('buyerverse-token', token());
+      loadPages();
+    });
+
+    $('submit').addEventListener('click', function () {
+      var slug = $('f-slug').value.trim();
+      if (!token()) return setStatus('Admin token required.', false);
+      if (!/^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$/.test(slug)) return setStatus('Invalid slug (lowercase letters, digits, hyphens).', false);
+      setStatus('Publishing…', true);
+      api('POST', '/api/pages', { slug: slug, config: readConfig() })
+        .then(function (data) {
+          setStatus('Published → <a href="' + data.url + '" target="_blank" rel="noopener">' + data.url + '</a>', true);
+          loadPages();
+        })
+        .catch(function (e) { setStatus(e.message, false); });
+    });
+
+    $('refresh').addEventListener('click', loadPages);
+
+    fill(GALILEO, 'galileo');
+    if (token()) loadPages();
+  })();
+  </script>
+</body>
+</html>

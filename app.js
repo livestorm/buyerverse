@@ -6,6 +6,29 @@
 (function () {
   'use strict';
 
+  /* ---------- Page config (injected by the server; Galileo fallback
+     mirrors defaults.js for direct template viewing) ---------- */
+  var CFG = window.PAGE_CONFIG || {
+    prospect: 'Galileo',
+    am: { name: 'Tiphaine Lemerle', email: 'tiphaine.lemerle@livestorm.co', initials: 'TL' },
+    kpis: { schools: 34, users: 589, sessions: 1210, registrants: 39351, attendees: 22263, rate: 57, nps: 7.7 },
+    pricing: {
+      currentAnnual: 120000,
+      volumes: [25000, 40000, 60000],
+      discounts: [20, 30, 40],
+      initial: [120000, 143000, 163000],
+      rows: [[96000, 114400, 130400], [84000, 100100, 114100], [72000, 85800, 97800]]
+    }
+  };
+
+  var nfEN = new Intl.NumberFormat('en-US');
+  var nfEN1 = new Intl.NumberFormat('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+  function en(n) { return nfEN.format(n); }
+  function eur(n) { return '€' + nfEN.format(n) + ' <em>/ yr</em>'; }
+
+  var P = CFG.prospect;
+  var PR = CFG.pricing;
+
   /* ---------- EN dictionary (FR is the inline source of truth) ---------- */
   var EN = {
     'nav.partnership': 'Partnership',
@@ -14,14 +37,14 @@
     'nav.offer': '2026 Offer',
     'nav.cta': 'Book a slot',
 
-    'hero.eyebrow': 'Galileo × Livestorm · 2026 Renewal',
+    'hero.eyebrow': P + ' × Livestorm · 2026 Renewal',
     'hero.title': 'Six years of <span class="grad">growth together</span>.<br>Ready for what’s next?',
-    'hero.sub': 'Europe’s leading webinar platform helps Galileo schools attract, convert and engage students — from registration to replay, all in one place.',
+    'hero.sub': 'Europe’s leading webinar platform helps ' + P + ' schools attract, convert and engage students — from registration to replay, all in one place.',
     'hero.cta1': 'Book a slot',
     'hero.cta2': 'Explore the 2026 offer',
-    'hero.chip1': '<strong>22,263</strong> attendees in 2025',
-    'hero.chip2': '<strong>34</strong> schools supported',
-    'hero.chip3': 'NPS <strong>7.7</strong>',
+    'hero.chip1': '<strong>' + en(CFG.kpis.attendees) + '</strong> attendees in 2025',
+    'hero.chip2': '<strong>' + en(CFG.kpis.schools) + '</strong> schools supported',
+    'hero.chip3': 'NPS <strong>' + nfEN1.format(CFG.kpis.nps) + '</strong>',
 
     'trust.g2': '<strong>4.4/5</strong> · 1,000+ G2 reviews',
     'trust.iso': 'ISO 27001 &amp; Cybervadis',
@@ -55,7 +78,7 @@
     'res.kicker': '2025 — Key figures',
     'res.title': 'Results that speak for themselves',
     'res.k1': 'Schools',
-    'res.k2': 'Galileo users',
+    'res.k2': P + ' users',
     'res.k3': 'Sessions',
     'res.k4': 'Registrants',
     'res.k5': 'Attendees',
@@ -129,7 +152,7 @@
     'pil.p2f4': 'CTAs',
     'pil.p2f5': 'Breakout rooms&nbsp;*',
     'pil.p2ai': 'A Livestorm event doesn’t stop when you switch off the camera: AI turns it into high-impact content for all your channels.',
-    'pil.p2note': '* Feature being deprecated, but kept fully operational for Galileo.',
+    'pil.p2note': '* Feature being deprecated, but kept fully operational for ' + P + '.',
     'pil.p3t': 'An integrated solution',
     'pil.p3d': 'Collect your audience’s key data and <span class="hl">send it instantly to your Sales &amp; Marketing tools</span> to optimise conversions even further.',
     'pil.p4t': 'Trusted advisors',
@@ -145,7 +168,7 @@
     'offer.interlude': '2026 Renewal',
     'offer.kicker': 'Before / After',
     'offer.title': 'A new offer, built for your growth',
-    'offer.beforeTag': 'Current contract — €120K / year',
+    'offer.beforeTag': 'Current contract — €' + en(Math.round(PR.currentAnnual / 1000)) + 'K / year',
     'offer.b1': '<strong>Registrant-based</strong> pricing (annual pack, counted monthly)',
     'offer.b2': 'Team members attending events are <strong>counted as registrants</strong>',
     'offer.b3': '<strong>34 schools on contract</strong> — extra fees to add new schools',
@@ -166,29 +189,32 @@
     'offer.u10': 'GDPR compliant &amp; ISO 27001',
     'offer.tableCaption': '2026 commercial proposals',
     'offer.tableTitle': 'Commercial proposals',
-    'offer.col1': '25,000 attendees',
-    'offer.col2': '40,000 attendees',
-    'offer.col3': '60,000 attendees',
+    'offer.col1': en(PR.volumes[0]) + ' attendees',
+    'offer.col2': en(PR.volumes[1]) + ' attendees',
+    'offer.col3': en(PR.volumes[2]) + ' attendees',
     'offer.rowInit': 'Initial offer',
     'offer.rowRev': 'New revised offer',
     'offer.row1y': '✓ Contractual commitment → 1 year',
     'offer.row2y': '✓ Contractual commitment → 2 years',
     'offer.row3y': '✓ Contractual commitment → 3 years',
+    'offer.pill1': '-' + en(PR.discounts[0]) + '%',
+    'offer.pill2': '-' + en(PR.discounts[1]) + '%',
+    'offer.pill3': '-' + en(PR.discounts[2]) + '%',
     'offer.best': 'Best value',
-    'offer.p11': '€120,000 <em>/ yr</em>',
-    'offer.p12': '€143,000 <em>/ yr</em>',
-    'offer.p13': '€163,000 <em>/ yr</em>',
-    'offer.p21': '€96,000 <em>/ yr</em>',
-    'offer.p22': '€114,400 <em>/ yr</em>',
-    'offer.p23': '€130,400 <em>/ yr</em>',
-    'offer.p31': '€84,000 <em>/ yr</em>',
-    'offer.p32': '€100,100 <em>/ yr</em>',
-    'offer.p33': '€114,100 <em>/ yr</em>',
-    'offer.p41': '€72,000 <em>/ yr</em>',
-    'offer.p42': '€85,800 <em>/ yr</em>',
-    'offer.p43': '€97,800 <em>/ yr</em>',
+    'offer.p11': eur(PR.initial[0]),
+    'offer.p12': eur(PR.initial[1]),
+    'offer.p13': eur(PR.initial[2]),
+    'offer.p21': eur(PR.rows[0][0]),
+    'offer.p22': eur(PR.rows[0][1]),
+    'offer.p23': eur(PR.rows[0][2]),
+    'offer.p31': eur(PR.rows[1][0]),
+    'offer.p32': eur(PR.rows[1][1]),
+    'offer.p33': eur(PR.rows[1][2]),
+    'offer.p41': eur(PR.rows[2][0]),
+    'offer.p42': eur(PR.rows[2][1]),
+    'offer.p43': eur(PR.rows[2][2]),
     'offer.ovTitle': 'What if you over-consume?',
-    'offer.ovLede': 'If Galileo uses up most of its credits during the year, two options are available:',
+    'offer.ovLede': 'If ' + P + ' uses up most of its credits during the year, two options are available:',
     'offer.ov1': '<strong>Early renewal</strong> — based on a new, higher annual volume.',
     'offer.ov2': '<strong>Top-up credits</strong> — using the price grid opposite.',
     'offer.ovNote1': 'The smartest scenario is still to start with the offer best matched to your growing needs — avoiding over-billing and administrative overhead.',
@@ -226,7 +252,7 @@
     'cta.kicker': 'Your account manager',
     'cta.btn': 'Book a slot in my calendar',
 
-    'footer.note': 'Confidential proposal prepared for Galileo Global Education — 2026'
+    'footer.note': 'Confidential proposal prepared for ' + P + ' — 2026'
   };
 
   /* ---------- i18n engine ---------- */

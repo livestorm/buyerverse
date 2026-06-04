@@ -3,23 +3,23 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Galileo × Livestorm — Renouvellement 2026</title>
-  <meta name="description" content="Proposition de renouvellement du partenariat Livestorm × Galileo Global Education — 2026.">
+  <title>{{PROSPECT}} × Livestorm — Renouvellement 2026</title>
+  <meta name="description" content="Proposition de renouvellement du partenariat Livestorm × {{PROSPECT}} — 2026.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
 
   <!-- ============ HEADER ============ -->
   <header class="site-header" id="top">
     <div class="container header-inner">
-      <a class="brand" href="#top" aria-label="Livestorm × Galileo">
+      <a class="brand" href="#top" aria-label="Livestorm × {{PROSPECT}}">
         <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
         <span class="brand-name">Livestorm</span>
         <span class="brand-x">×</span>
-        <span class="brand-partner">Galileo</span>
+        <span class="brand-partner">{{PROSPECT}}</span>
       </a>
       <nav class="site-nav" aria-label="Navigation principale">
         <a href="#partenariat" data-i18n="nav.partnership">Partenariat</a>
@@ -49,17 +49,17 @@
       <div class="container hero-inner">
         <div class="hero-copy">
           <span class="onair reveal" style="--d:.05s"><span class="onair-dot"></span> On air</span>
-          <p class="eyebrow reveal" style="--d:.12s" data-i18n="hero.eyebrow">Galileo × Livestorm · Renouvellement 2026</p>
+          <p class="eyebrow reveal" style="--d:.12s" data-i18n="hero.eyebrow">{{PROSPECT}} × Livestorm · Renouvellement 2026</p>
           <h1 class="reveal" style="--d:.2s" data-i18n="hero.title">Six ans de <span class="grad">croissance commune</span>.<br>Prêts pour la suite&nbsp;?</h1>
-          <p class="hero-sub reveal" style="--d:.3s" data-i18n="hero.sub">Le leader européen du webinaire aide les écoles Galileo à attirer, convertir et engager leurs étudiants — de l’inscription au replay, en un seul endroit.</p>
+          <p class="hero-sub reveal" style="--d:.3s" data-i18n="hero.sub">Le leader européen du webinaire aide les écoles {{PROSPECT}} à attirer, convertir et engager leurs étudiants — de l’inscription au replay, en un seul endroit.</p>
           <div class="hero-ctas reveal" style="--d:.4s">
             <a class="btn btn-primary btn-lg" href="#contact" data-i18n="hero.cta1">Réserver un créneau</a>
             <a class="btn btn-ghost btn-lg" href="#offre" data-i18n="hero.cta2">Découvrir l’offre 2026</a>
           </div>
           <ul class="hero-chips reveal" style="--d:.5s">
-            <li data-i18n="hero.chip1"><strong>22 263</strong> participants en 2025</li>
-            <li data-i18n="hero.chip2"><strong>34</strong> écoles accompagnées</li>
-            <li data-i18n="hero.chip3">NPS <strong>7,7</strong></li>
+            <li data-i18n="hero.chip1"><strong>{{ATTENDEES_FR}}</strong> participants en 2025</li>
+            <li data-i18n="hero.chip2"><strong>{{SCHOOLS_FR}}</strong> écoles accompagnées</li>
+            <li data-i18n="hero.chip3">NPS <strong>{{NPS_FR}}</strong></li>
           </ul>
         </div>
         <div class="hero-scene reveal" style="--d:.35s" aria-hidden="true">
@@ -161,12 +161,12 @@
         </div>
 
         <div class="kpi-grid">
-          <div class="kpi card reveal" style="--d:.02s"><span class="kpi-value" data-count="34">34</span><span class="kpi-label" data-i18n="res.k1">Écoles</span></div>
-          <div class="kpi card reveal" style="--d:.08s"><span class="kpi-value" data-count="589">589</span><span class="kpi-label" data-i18n="res.k2">Utilisateurs Galileo</span></div>
-          <div class="kpi card reveal" style="--d:.14s"><span class="kpi-value" data-count="1210">1 210</span><span class="kpi-label" data-i18n="res.k3">Sessions</span></div>
-          <div class="kpi card reveal" style="--d:.2s"><span class="kpi-value" data-count="39351">39 351</span><span class="kpi-label" data-i18n="res.k4">Inscrits</span></div>
-          <div class="kpi card reveal" style="--d:.26s"><span class="kpi-value" data-count="22263">22 263</span><span class="kpi-label" data-i18n="res.k5">Participants</span></div>
-          <div class="kpi card reveal" style="--d:.32s"><span class="kpi-value" data-count="57" data-suffix-fr=" %" data-suffix-en="%">57 %</span><span class="kpi-label" data-i18n="res.k6">Taux de participation</span></div>
+          <div class="kpi card reveal" style="--d:.02s"><span class="kpi-value" data-count="{{SCHOOLS_RAW}}">{{SCHOOLS_FR}}</span><span class="kpi-label" data-i18n="res.k1">Écoles</span></div>
+          <div class="kpi card reveal" style="--d:.08s"><span class="kpi-value" data-count="{{USERS_RAW}}">{{USERS_FR}}</span><span class="kpi-label" data-i18n="res.k2">Utilisateurs {{PROSPECT}}</span></div>
+          <div class="kpi card reveal" style="--d:.14s"><span class="kpi-value" data-count="{{SESSIONS_RAW}}">{{SESSIONS_FR}}</span><span class="kpi-label" data-i18n="res.k3">Sessions</span></div>
+          <div class="kpi card reveal" style="--d:.2s"><span class="kpi-value" data-count="{{REGISTRANTS_RAW}}">{{REGISTRANTS_FR}}</span><span class="kpi-label" data-i18n="res.k4">Inscrits</span></div>
+          <div class="kpi card reveal" style="--d:.26s"><span class="kpi-value" data-count="{{ATTENDEES_RAW}}">{{ATTENDEES_FR}}</span><span class="kpi-label" data-i18n="res.k5">Participants</span></div>
+          <div class="kpi card reveal" style="--d:.32s"><span class="kpi-value" data-count="{{RATE_RAW}}" data-suffix-fr=" %" data-suffix-en="%">{{RATE_FR}}</span><span class="kpi-label" data-i18n="res.k6">Taux de participation</span></div>
         </div>
 
         <div class="res-grid">
@@ -186,7 +186,7 @@
 
           <aside class="nps-card card reveal" style="--d:.1s">
             <p class="kicker" data-i18n="res.npsKicker">Des retours de plus en plus positifs</p>
-            <div class="nps-score"><span class="nps-label">NPS</span> <span class="nps-arrow">→</span> <span class="nps-value" data-count="7.7" data-decimals="1">7,7</span></div>
+            <div class="nps-score"><span class="nps-label">NPS</span> <span class="nps-arrow">→</span> <span class="nps-value" data-count="{{NPS_RAW}}" data-decimals="1">{{NPS_FR}}</span></div>
             <p class="nps-note" data-i18n="res.npsNote">(moyenne sur 57 utilisateurs)</p>
             <ul class="nps-chips">
               <li data-i18n="res.f1">Robustesse de l’outil</li>
@@ -337,7 +337,7 @@
               <li data-i18n="pil.p2f5">Breakout rooms&nbsp;*</li>
             </ul>
             <p class="ai-note" data-i18n="pil.p2ai">Un événement Livestorm ne s’arrête pas quand vous éteignez la caméra&nbsp;: l’IA le transforme en contenus percutants pour tous vos canaux.</p>
-            <p class="footnote" data-i18n="pil.p2note">* Fonctionnalité en cours de dépréciation, mais maintenue opérationnelle pour Galileo.</p>
+            <p class="footnote" data-i18n="pil.p2note">* Fonctionnalité en cours de dépréciation, mais maintenue opérationnelle pour {{PROSPECT}}.</p>
           </article>
 
           <article class="pillar card reveal" style="--d:.16s">
@@ -399,7 +399,7 @@
 
         <div class="ba-grid">
           <article class="ba-card card reveal">
-            <span class="tag tag-dark" data-i18n="offer.beforeTag">Contrat actuel — 120 K€ / an</span>
+            <span class="tag tag-dark" data-i18n="offer.beforeTag">Contrat actuel — {{CURRENT_K_FR}} / an</span>
             <ul class="ba-list">
               <li data-i18n="offer.b1">Un pricing <strong>aux inscrits</strong> (pack annuel, comptage au mois)</li>
               <li data-i18n="offer.b2">Les membres d’équipe qui assistent aux événements sont <strong>comptés comme des inscrits</strong></li>
@@ -437,35 +437,35 @@
             <thead>
               <tr>
                 <th scope="col" class="pt-corner" data-i18n="offer.tableTitle">Propositions commerciales</th>
-                <th scope="col" data-i18n="offer.col1">25 000 participants</th>
-                <th scope="col" data-i18n="offer.col2">40 000 participants</th>
-                <th scope="col" data-i18n="offer.col3">60 000 participants</th>
+                <th scope="col" data-i18n="offer.col1">{{VOL1_FR}} participants</th>
+                <th scope="col" data-i18n="offer.col2">{{VOL2_FR}} participants</th>
+                <th scope="col" data-i18n="offer.col3">{{VOL3_FR}} participants</th>
               </tr>
             </thead>
             <tbody>
               <tr class="row-initial">
                 <th scope="row"><span data-i18n="offer.rowInit">Offre initiale</span></th>
-                <td data-i18n="offer.p11">120 000 € <em>/ an</em></td>
-                <td data-i18n="offer.p12">143 000 € <em>/ an</em></td>
-                <td data-i18n="offer.p13">163 000 € <em>/ an</em></td>
+                <td data-i18n="offer.p11">{{P_INIT1_FR}} <em>/ an</em></td>
+                <td data-i18n="offer.p12">{{P_INIT2_FR}} <em>/ an</em></td>
+                <td data-i18n="offer.p13">{{P_INIT3_FR}} <em>/ an</em></td>
               </tr>
               <tr>
-                <th scope="row"><span data-i18n="offer.rowRev">Nouvelle offre révisée</span> <span class="pill">-20 %</span><small data-i18n="offer.row1y">✓ Engagement contractuel → 1 an</small></th>
-                <td data-i18n="offer.p21">96 000 € <em>/ an</em></td>
-                <td data-i18n="offer.p22">114 400 € <em>/ an</em></td>
-                <td data-i18n="offer.p23">130 400 € <em>/ an</em></td>
+                <th scope="row"><span data-i18n="offer.rowRev">Nouvelle offre révisée</span> <span class="pill" data-i18n="offer.pill1">-{{D1}} %</span><small data-i18n="offer.row1y">✓ Engagement contractuel → 1 an</small></th>
+                <td data-i18n="offer.p21">{{P_R1C1_FR}} <em>/ an</em></td>
+                <td data-i18n="offer.p22">{{P_R1C2_FR}} <em>/ an</em></td>
+                <td data-i18n="offer.p23">{{P_R1C3_FR}} <em>/ an</em></td>
               </tr>
               <tr>
-                <th scope="row"><span data-i18n="offer.rowRev">Nouvelle offre révisée</span> <span class="pill">-30 %</span><small data-i18n="offer.row2y">✓ Engagement contractuel → 2 ans</small></th>
-                <td data-i18n="offer.p31">84 000 € <em>/ an</em></td>
-                <td data-i18n="offer.p32">100 100 € <em>/ an</em></td>
-                <td data-i18n="offer.p33">114 100 € <em>/ an</em></td>
+                <th scope="row"><span data-i18n="offer.rowRev">Nouvelle offre révisée</span> <span class="pill" data-i18n="offer.pill2">-{{D2}} %</span><small data-i18n="offer.row2y">✓ Engagement contractuel → 2 ans</small></th>
+                <td data-i18n="offer.p31">{{P_R2C1_FR}} <em>/ an</em></td>
+                <td data-i18n="offer.p32">{{P_R2C2_FR}} <em>/ an</em></td>
+                <td data-i18n="offer.p33">{{P_R2C3_FR}} <em>/ an</em></td>
               </tr>
               <tr class="row-best">
-                <th scope="row"><span data-i18n="offer.rowRev">Nouvelle offre révisée</span> <span class="pill pill-best">-40 %</span><small data-i18n="offer.row3y">✓ Engagement contractuel → 3 ans</small><span class="best-tag" data-i18n="offer.best">Meilleure valeur</span></th>
-                <td data-i18n="offer.p41">72 000 € <em>/ an</em></td>
-                <td data-i18n="offer.p42">85 800 € <em>/ an</em></td>
-                <td data-i18n="offer.p43">97 800 € <em>/ an</em></td>
+                <th scope="row"><span data-i18n="offer.rowRev">Nouvelle offre révisée</span> <span class="pill pill-best" data-i18n="offer.pill3">-{{D3}} %</span><small data-i18n="offer.row3y">✓ Engagement contractuel → 3 ans</small><span class="best-tag" data-i18n="offer.best">Meilleure valeur</span></th>
+                <td data-i18n="offer.p41">{{P_R3C1_FR}} <em>/ an</em></td>
+                <td data-i18n="offer.p42">{{P_R3C2_FR}} <em>/ an</em></td>
+                <td data-i18n="offer.p43">{{P_R3C3_FR}} <em>/ an</em></td>
               </tr>
             </tbody>
           </table>
@@ -474,7 +474,7 @@
         <div class="overage-grid">
           <div class="overage-copy reveal">
             <h3 class="h3-like" data-i18n="offer.ovTitle">Et en cas de surconsommation&nbsp;?</h3>
-            <p data-i18n="offer.ovLede">Si Galileo consomme la majorité de ses crédits en cours d’année, deux options&nbsp;:</p>
+            <p data-i18n="offer.ovLede">Si {{PROSPECT}} consomme la majorité de ses crédits en cours d’année, deux options&nbsp;:</p>
             <ul class="ba-list">
               <li data-i18n="offer.ov1"><strong>Renouvellement anticipé</strong> — sur la base d’une nouvelle volumétrie annuelle supérieure.</li>
               <li data-i18n="offer.ov2"><strong>Rachat de crédits supplémentaires</strong> — selon la grille ci-contre.</li>
@@ -554,13 +554,13 @@
       <div class="container">
         <h2 class="cta-thanks reveal" data-i18n="cta.thanks">Merci pour votre attention 🙏</h2>
         <div class="am-card card reveal" style="--d:.1s">
-          <span class="avatar avatar-lg" aria-hidden="true">TL</span>
+          <span class="avatar avatar-lg" aria-hidden="true">{{AM_INITIALS}}</span>
           <div class="am-info">
             <p class="kicker" data-i18n="cta.kicker">Votre account manager</p>
-            <p class="am-name">Tiphaine Lemerle</p>
-            <a class="am-email" href="mailto:tiphaine.lemerle@livestorm.co">tiphaine.lemerle@livestorm.co</a>
+            <p class="am-name">{{AM_NAME}}</p>
+            <a class="am-email" href="mailto:{{AM_EMAIL}}">{{AM_EMAIL}}</a>
           </div>
-          <a class="btn btn-primary btn-lg" href="mailto:tiphaine.lemerle@livestorm.co?subject=Renouvellement%20Livestorm%202026" data-i18n="cta.btn">Réservez un créneau dans mon agenda</a>
+          <a class="btn btn-primary btn-lg" href="mailto:{{AM_EMAIL}}?subject=Renouvellement%20Livestorm%202026" data-i18n="cta.btn">Réservez un créneau dans mon agenda</a>
         </div>
       </div>
     </section>
@@ -573,10 +573,11 @@
         <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
         <span class="brand-name">Livestorm</span>
       </a>
-      <p data-i18n="footer.note">Proposition confidentielle préparée pour Galileo Global Education — 2026</p>
+      <p data-i18n="footer.note">Proposition confidentielle préparée pour {{PROSPECT}} — 2026</p>
     </div>
   </footer>
 
-  <script src="app.js"></script>
+  <script>window.PAGE_CONFIG = {{PAGE_CONFIG_JSON}};</script>
+  <script src="/app.js"></script>
 </body>
 </html>
