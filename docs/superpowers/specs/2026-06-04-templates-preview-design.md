@@ -110,7 +110,7 @@ is deleted.
 | Route | Auth | Behavior |
 |---|---|---|
 | `GET /api/templates` | — | List manifests `[{id, name, description, nameField, fields}]`. |
-| `POST /api/preview` | Bearer | `{template, values}` → lenient-validate, return rendered HTML. Nothing stored. Unknown template → 400 JSON. |
+| `POST /api/preview` | Bearer | `{template, values}` → lenient-validate, return JSON `{html, errors}`. Nothing stored. Unknown template → 400 JSON. |
 | `GET /templates/<id>/<file>` | — | Template assets. Extension whitelist: `css js png jpg svg webp woff2 ico`. Path-traversal blocked. `template.json` and `index.html` are not served. |
 | `POST /api/pages` | Bearer | Now `{slug, template, values}`; strict validation; 400 if template unknown or values invalid. |
 | `GET /page/<slug>` | — | Render via the page's stored template; template since deleted from repo → 404 page. |
