@@ -101,6 +101,49 @@ function validateManifest(id, raw) {
   };
 }
 
+/** Fallback when a field has no usable value and no default. */
+function emptyValue(field) {
+  if (field.type !== 'number') return '';
+  return typeof field.min === 'number' ? field.min : 0;
+}
+
+/**
+ * Validate a raw values payload against a manifest.
+ * Strict (publish): returns {values} or {error} on the first problem.
+ * Lenient (preview): always returns {values, errors} — bad/missing values
+ * fall back to the field default (then emptyValue) so a preview always renders.
+ */
+function validateValues(manifest, raw, { lenient = false } = {}) {
+  if (!raw || typeof raw !== 'object') {
+    if (!lenient) return { error: 'values: must be an object' };
+    raw = {};
+  }
+  const values = {};
+  const errors = [];
+  for (const field of manifest.fields) {
+    const fallback = field.default !== undefined ? field.default : emptyValue(field);
+    const v = raw[field.id];
+    const missing = v === undefined || v === null || v === '';
+    if (missing) {
+      if (field.required) {
+        if (!lenient) return { error: `${field.id}: required` };
+        errors.push(`${field.id}: required`);
+      }
+      values[field.id] = fallback;
+      continue;
+    }
+    const r = checkValue(field, v);
+    if (r.error) {
+      if (!lenient) return { error: r.error };
+      errors.push(r.error);
+      values[field.id] = fallback;
+    } else {
+      values[field.id] = r.value;
+    }
+  }
+  return lenient ? { values, errors } : { values };
+}
+
 /**
  * Scan a templates directory. Returns Map<id, {manifest, html, dir}>.
  * Throws on any malformed template — callers fail fast at boot.
@@ -150,5 +193,5 @@ function listTemplates() {
 
 module.exports = {
   validateManifest, loadTemplates, getTemplate, listTemplates,
-  validSlug, escapeHtml, checkValue, TEMPLATES_DIR
+  validateValues, validSlug, escapeHtml, checkValue, TEMPLATES_DIR
 };

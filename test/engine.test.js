@@ -79,3 +79,51 @@ test('loadTemplates throws when the directory has no templates', () => {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'tpl-'));
   assert.throws(() => loadTemplates(tmp), /no templates/);
 });
+
+const { validateValues } = require('../engine');
+
+const MANIFEST = validateManifest('demo', {
+  name: 'Demo',
+  fields: [
+    { id: 'title', label: 'Title', type: 'text', required: true, max: 10, default: 'Hi' },
+    { id: 'mail', label: 'Mail', type: 'email', required: true },
+    { id: 'count', label: 'Count', type: 'number', int: true, min: 0, max: 100, default: 5 },
+    { id: 'note', label: 'Note', type: 'textarea' }
+  ]
+});
+
+test('strict: valid input is normalized (trim, number coercion, int rounding)', () => {
+  const { values, error } = validateValues(MANIFEST, { title: ' Yo ', mail: 'a@b.co', count: '7.6', note: '' });
+  assert.equal(error, undefined);
+  assert.deepEqual(values, { title: 'Yo', mail: 'a@b.co', count: 8, note: '' });
+});
+
+test('strict: missing required field is an error naming the field', () => {
+  const { error } = validateValues(MANIFEST, { mail: 'a@b.co', count: 1 });
+  assert.match(error, /^title:/);
+});
+
+test('strict: constraint violations are errors', () => {
+  assert.match(validateValues(MANIFEST, { title: 'this is way too long', mail: 'a@b.co', count: 1 }).error, /max 10/);
+  assert.match(validateValues(MANIFEST, { title: 'x', mail: 'nope', count: 1 }).error, /invalid email/);
+  assert.match(validateValues(MANIFEST, { title: 'x', mail: 'a@b.co', count: 101 }).error, /maximum/);
+});
+
+test('strict: optional missing field falls back to default, then empty', () => {
+  const { values } = validateValues(MANIFEST, { title: 'x', mail: 'a@b.co', note: 'n' });
+  assert.equal(values.count, 5);   // default
+  const m2 = validateManifest('d2', { name: 'D', fields: [{ id: 'n', label: 'N', type: 'number', min: 2 }] });
+  assert.equal(validateValues(m2, {}).values.n, 2);  // no default -> min
+});
+
+test('lenient: never blocks — bad/missing values fall back, errors collected', () => {
+  const { values, errors } = validateValues(MANIFEST, { title: '', mail: 'nope', count: 'NaN' }, { lenient: true });
+  assert.deepEqual(values, { title: 'Hi', mail: '', count: 5, note: '' });
+  assert.equal(errors.length, 3);
+  assert.match(errors[0], /title/);
+});
+
+test('rejects non-object payloads', () => {
+  assert.match(validateValues(MANIFEST, null).error, /object/);
+  assert.match(validateValues(MANIFEST, 'hi').error, /object/);
+});
