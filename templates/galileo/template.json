@@ -1,0 +1,27 @@
+{
+  "name": "Renewal proposal — education",
+  "description": "Bilingual FR/EN renewal microsite (original Galileo layout)",
+  "nameField": "prospect",
+  "fields": [
+    { "id": "prospect", "label": "Prospect name", "type": "text", "required": true, "max": 80, "group": "Prospect", "default": "Galileo" },
+    { "id": "am_name", "label": "Name", "type": "text", "required": true, "max": 80, "group": "Account manager", "default": "Tiphaine Lemerle" },
+    { "id": "am_email", "label": "Email", "type": "email", "required": true, "group": "Account manager", "default": "tiphaine.lemerle@livestorm.co" },
+    { "id": "kpi_schools", "label": "Schools", "type": "number", "int": true, "min": 0, "group": "2025 key figures", "default": 34 },
+    { "id": "kpi_users", "label": "Users", "type": "number", "int": true, "min": 0, "group": "2025 key figures", "default": 589 },
+    { "id": "kpi_sessions", "label": "Sessions", "type": "number", "int": true, "min": 0, "group": "2025 key figures", "default": 1210 },
+    { "id": "kpi_registrants", "label": "Registrants", "type": "number", "int": true, "min": 0, "group": "2025 key figures", "default": 39351 },
+    { "id": "kpi_attendees", "label": "Attendees", "type": "number", "int": true, "min": 0, "group": "2025 key figures", "default": 22263 },
+    { "id": "kpi_rate", "label": "Attendance rate (%)", "type": "number", "min": 0, "max": 100, "group": "2025 key figures", "default": 57 },
+    { "id": "kpi_nps", "label": "NPS (0–10)", "type": "number", "min": 0, "max": 10, "step": 0.1, "group": "2025 key figures", "default": 7.7 },
+    { "id": "price_current", "label": "Current contract (€ / yr)", "type": "number", "int": true, "min": 0, "group": "Pricing", "default": 120000 },
+    { "id": "vol_1", "label": "Volume A (attendees)", "type": "number", "int": true, "min": 0, "group": "Pricing", "default": 25000 },
+    { "id": "vol_2", "label": "Volume B (attendees)", "type": "number", "int": true, "min": 0, "group": "Pricing", "default": 40000 },
+    { "id": "vol_3", "label": "Volume C (attendees)", "type": "number", "int": true, "min": 0, "group": "Pricing", "default": 60000 },
+    { "id": "price_1", "label": "Initial price A (€)", "type": "number", "int": true, "min": 0, "group": "Pricing", "default": 120000 },
+    { "id": "price_2", "label": "Initial price B (€)", "type": "number", "int": true, "min": 0, "group": "Pricing", "default": 143000 },
+    { "id": "price_3", "label": "Initial price C (€)", "type": "number", "int": true, "min": 0, "group": "Pricing", "default": 163000 },
+    { "id": "discount_1", "label": "Discount 1 yr (%)", "type": "number", "int": true, "min": 0, "max": 99, "group": "Pricing", "default": 20 },
+    { "id": "discount_2", "label": "Discount 2 yrs (%)", "type": "number", "int": true, "min": 0, "max": 99, "group": "Pricing", "default": 30 },
+    { "id": "discount_3", "label": "Discount 3 yrs (%)", "type": "number", "int": true, "min": 0, "max": 99, "group": "Pricing", "default": 40 }
+  ]
+}

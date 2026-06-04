@@ -6,18 +6,41 @@
 (function () {
   'use strict';
 
-  /* ---------- Page config (injected by the server; Galileo fallback
-     mirrors defaults.js for direct template viewing) ---------- */
-  var CFG = window.PAGE_CONFIG || {
-    prospect: 'Galileo',
-    am: { name: 'Tiphaine Lemerle', email: 'tiphaine.lemerle@livestorm.co', initials: 'TL' },
-    kpis: { schools: 34, users: 589, sessions: 1210, registrants: 39351, attendees: 22263, rate: 57, nps: 7.7 },
+  /* ---------- Page config adapter ----------
+     The server injects { template, values: <flat field values> }.
+     Rebuild the structured CFG the dictionaries below consume; derived
+     values (price rows, initials) are computed here, not on the server. */
+  var FALLBACK = {
+    prospect: 'Galileo', am_name: 'Tiphaine Lemerle', am_email: 'tiphaine.lemerle@livestorm.co',
+    kpi_schools: 34, kpi_users: 589, kpi_sessions: 1210, kpi_registrants: 39351,
+    kpi_attendees: 22263, kpi_rate: 57, kpi_nps: 7.7,
+    price_current: 120000, vol_1: 25000, vol_2: 40000, vol_3: 60000,
+    price_1: 120000, price_2: 143000, price_3: 163000,
+    discount_1: 20, discount_2: 30, discount_3: 40
+  };
+  var V = (window.PAGE_CONFIG && window.PAGE_CONFIG.values) || FALLBACK;
+
+  function initials(name) {
+    var parts = String(name).trim().split(/\s+/).slice(0, 2);
+    return parts.map(function (w) { return w[0] ? w[0].toUpperCase() : ''; }).join('') || '?';
+  }
+
+  var discounts = [V.discount_1, V.discount_2, V.discount_3];
+  var initial = [V.price_1, V.price_2, V.price_3];
+  var CFG = {
+    prospect: V.prospect,
+    am: { name: V.am_name, email: V.am_email, initials: initials(V.am_name) },
+    kpis: { schools: V.kpi_schools, users: V.kpi_users, sessions: V.kpi_sessions,
+            registrants: V.kpi_registrants, attendees: V.kpi_attendees,
+            rate: V.kpi_rate, nps: V.kpi_nps },
     pricing: {
-      currentAnnual: 120000,
-      volumes: [25000, 40000, 60000],
-      discounts: [20, 30, 40],
-      initial: [120000, 143000, 163000],
-      rows: [[96000, 114400, 130400], [84000, 100100, 114100], [72000, 85800, 97800]]
+      currentAnnual: V.price_current,
+      volumes: [V.vol_1, V.vol_2, V.vol_3],
+      discounts: discounts,
+      initial: initial,
+      rows: discounts.map(function (d) {
+        return initial.map(function (p) { return Math.round(p * (1 - d / 100)); });
+      })
     }
   };
 
@@ -254,6 +277,36 @@
 
     'footer.note': 'Confidential proposal prepared for ' + P + ' — 2026'
   };
+
+  /* ---------- FR value dictionary ----------
+     The server substitutes raw values into the FR copy; these keys
+     restore French number formatting. Applied once at load, BEFORE the
+     i18n engine snapshots frSource, so FR/EN switching keeps working. */
+  var nfFR = new Intl.NumberFormat('fr-FR');
+  var nfFR1 = new Intl.NumberFormat('fr-FR', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+  function fr(n) { return nfFR.format(n); }
+  function frEur(n) { return fr(n) + ' € <em>/ an</em>'; }
+
+  var FR_VALUES = {
+    'hero.chip1': '<strong>' + fr(CFG.kpis.attendees) + '</strong> participants en 2025',
+    'hero.chip2': '<strong>' + fr(CFG.kpis.schools) + '</strong> écoles accompagnées',
+    'hero.chip3': 'NPS <strong>' + nfFR1.format(CFG.kpis.nps) + '</strong>',
+    'offer.beforeTag': 'Contrat actuel — ' + fr(Math.round(PR.currentAnnual / 1000)) + ' K€ / an',
+    'offer.col1': fr(PR.volumes[0]) + ' participants',
+    'offer.col2': fr(PR.volumes[1]) + ' participants',
+    'offer.col3': fr(PR.volumes[2]) + ' participants',
+    'offer.p11': frEur(PR.initial[0]), 'offer.p12': frEur(PR.initial[1]), 'offer.p13': frEur(PR.initial[2]),
+    'offer.p21': frEur(PR.rows[0][0]), 'offer.p22': frEur(PR.rows[0][1]), 'offer.p23': frEur(PR.rows[0][2]),
+    'offer.p31': frEur(PR.rows[1][0]), 'offer.p32': frEur(PR.rows[1][1]), 'offer.p33': frEur(PR.rows[1][2]),
+    'offer.p41': frEur(PR.rows[2][0]), 'offer.p42': frEur(PR.rows[2][1]), 'offer.p43': frEur(PR.rows[2][2])
+  };
+  document.querySelectorAll('[data-i18n]').forEach(function (el) {
+    var key = el.getAttribute('data-i18n');
+    if (FR_VALUES[key] !== undefined) el.innerHTML = FR_VALUES[key];
+  });
+
+  var amInitialsEl = document.querySelector('[data-am-initials]');
+  if (amInitialsEl) amInitialsEl.textContent = CFG.am.initials;
 
   /* ---------- i18n engine ---------- */
   var nodes = document.querySelectorAll('[data-i18n]');
