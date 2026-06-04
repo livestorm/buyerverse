@@ -191,7 +191,22 @@ function listTemplates() {
   return Array.from(registry().values()).map(t => t.manifest);
 }
 
+/**
+ * Render a template object (from getTemplate/loadTemplates) with validated
+ * values. {{field_id}} -> escaped value; {{PAGE_CONFIG_JSON}} -> config JSON.
+ * Unknown tokens are left as-is so template-authoring mistakes stay visible.
+ */
+function renderTemplate(template, values) {
+  const tokens = { PAGE_CONFIG_JSON: JSON.stringify({ template: template.manifest.id, values }).replace(/</g, '\\u003c') };
+  for (const field of template.manifest.fields) {
+    tokens[field.id] = escapeHtml(values[field.id]);
+  }
+  return template.html.replace(/\{\{([A-Za-z_]\w*)\}\}/g, (m, key) =>
+    Object.prototype.hasOwnProperty.call(tokens, key) ? String(tokens[key]) : m
+  );
+}
+
 module.exports = {
   validateManifest, loadTemplates, getTemplate, listTemplates,
-  validateValues, validSlug, escapeHtml, checkValue, TEMPLATES_DIR
+  validateValues, renderTemplate, validSlug, escapeHtml, checkValue, TEMPLATES_DIR
 };

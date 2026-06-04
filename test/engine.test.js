@@ -127,3 +127,21 @@ test('rejects non-object payloads', () => {
   assert.match(validateValues(MANIFEST, null).error, /object/);
   assert.match(validateValues(MANIFEST, 'hi').error, /object/);
 });
+
+const { renderTemplate } = require('../engine');
+
+test('renderTemplate substitutes escaped values and injects PAGE_CONFIG', () => {
+  const t = loadTemplates(FIXTURES).get('minimal');
+  const html = renderTemplate(t, { title: 'A <b>title</b>', count: 4 });
+  assert.match(html, /<h1>A &lt;b&gt;title&lt;\/b&gt;<\/h1>/);
+  assert.match(html, /<p>4 items<\/p>/);
+  assert.match(html, /window\.PAGE_CONFIG = \{"template":"minimal","values":/);
+  assert.doesNotMatch(html, /PAGE_CONFIG_JSON/);
+});
+
+test('renderTemplate leaves unknown tokens untouched and escapes JSON </script>', () => {
+  const t = loadTemplates(FIXTURES).get('minimal');
+  const html = renderTemplate(t, { title: '</script><script>alert(1)</script>', count: 0 });
+  assert.match(html, /\{\{unknown_token\}\}/);          // author error stays visible
+  assert.doesNotMatch(html, /<\/script><script>alert/); // JSON is <-escaped
+});
