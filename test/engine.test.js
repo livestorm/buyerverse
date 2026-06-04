@@ -145,3 +145,12 @@ test('renderTemplate leaves unknown tokens untouched and escapes JSON </script>'
   assert.match(html, /\{\{unknown_token\}\}/);          // author error stays visible
   assert.doesNotMatch(html, /<\/script><script>alert/); // JSON is <-escaped
 });
+
+test('renderTemplate escapes quotes for attribute contexts and blanks missing fields', () => {
+  const t = loadTemplates(FIXTURES).get('minimal');
+  const html = renderTemplate(t, { title: 'a" onmouseover="alert(1)' });
+  assert.match(html, /a&quot; onmouseover=&quot;alert\(1\)/);
+  assert.doesNotMatch(html, /" onmouseover="/);
+  assert.match(html, /<p> items<\/p>/);          // missing `count` renders empty, not "undefined"
+  assert.doesNotMatch(html, /undefined/);
+});

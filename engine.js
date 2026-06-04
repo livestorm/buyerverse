@@ -197,9 +197,9 @@ function listTemplates() {
  * Unknown tokens are left as-is so template-authoring mistakes stay visible.
  */
 function renderTemplate(template, values) {
-  const tokens = { PAGE_CONFIG_JSON: JSON.stringify({ template: template.manifest.id, values }).replace(/</g, '\\u003c') };
+  const tokens = { PAGE_CONFIG_JSON: JSON.stringify({ template: template.manifest.id, values }).replace(/</g, '\\u003c').replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029') };
   for (const field of template.manifest.fields) {
-    tokens[field.id] = escapeHtml(values[field.id]);
+    tokens[field.id] = escapeHtml(values[field.id] == null ? '' : values[field.id]);
   }
   return template.html.replace(/\{\{([A-Za-z_]\w*)\}\}/g, (m, key) =>
     Object.prototype.hasOwnProperty.call(tokens, key) ? String(tokens[key]) : m
