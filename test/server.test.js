@@ -117,3 +117,31 @@ test('template assets are served; traversal and manifest access are blocked', as
   assert.equal((await fetch(`${base}/templates/galileo/..%2Fserver.js`)).status, 404);
   assert.equal((await fetch(`${base}/templates/nope/styles.css`)).status, 404);
 });
+
+test('oversized request bodies get a clean 413, not a connection reset', async () => {
+  const res = await fetch(`${base}/api/pages`, {
+    method: 'POST', headers: JSON_HEADERS,
+    body: JSON.stringify({ slug: 'big', template: 'galileo', values: { prospect: 'x'.repeat(150 * 1024) } })
+  });
+  assert.equal(res.status, 413);
+  assert.match((await res.json()).error, /too large/);
+});
+
+test('malformed percent-encoding in the path is a 404, not a 500', async () => {
+  // fetch normalises/rejects raw %zz, so drive it with node:http directly
+  const http = require('node:http');
+  const status = await new Promise((resolve, reject) => {
+    const req = http.request({ host: '127.0.0.1', port: new URL(base).port, path: '/page/%zz' }, res => {
+      res.resume();
+      resolve(res.statusCode);
+    });
+    req.on('error', reject);
+    req.end();
+  });
+  assert.equal(status, 404);
+});
+
+test('rendered pages are cacheable for five minutes', async () => {
+  const res = await fetch(`${base}/page/galileo`);
+  assert.equal(res.headers.get('cache-control'), 'public, max-age=300');
+});

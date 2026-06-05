@@ -88,7 +88,15 @@ function readBody(req) {
     let size = 0;
     req.on('data', c => {
       size += c.length;
-      if (size > BODY_LIMIT) { reject(Object.assign(new Error('payload too large'), { status: 413 })); req.destroy(); return; }
+      if (size > BODY_LIMIT) {
+        reject(Object.assign(new Error('payload too large'), { status: 413 }));
+        // Stop buffering but keep the socket alive: discard the rest of the
+        // body so the 413 response can actually reach the client.
+        req.removeAllListeners('data');
+        req.removeAllListeners('end');
+        req.resume();
+        return;
+      }
       chunks.push(c);
     });
     req.on('end', () => {
@@ -126,8 +134,13 @@ function legacyToGalileo(c) {
 async function convertLegacyPages() {
   for (const row of await store.list()) {
     if (!row.config.template && row.config.prospect) {
-      await store.upsert(row.slug, legacyToGalileo(row.config));
-      console.log(`converted legacy page /page/${row.slug} to template galileo`);
+      try {
+        await store.upsert(row.slug, legacyToGalileo(row.config));
+        console.log(`converted legacy page /page/${row.slug} to template galileo`);
+      } catch (e) {
+        // A partial legacy row must not take the whole service down.
+        console.error(`skipping legacy page /page/${row.slug}: ${e.message}`);
+      }
     }
   }
 }
@@ -136,7 +149,9 @@ async function convertLegacyPages() {
 
 async function handle(req, res) {
   const url = new URL(req.url, 'http://localhost');
-  const pathname = decodeURIComponent(url.pathname);
+  let pathname;
+  try { pathname = decodeURIComponent(url.pathname); }
+  catch (e) { return sendHTML(res, 404, NOT_FOUND_PAGE, false); } // malformed escape — client error, not ours
 
   // Builder UI
   if (req.method === 'GET' && (pathname === '/' || pathname === '/index.html')) {
