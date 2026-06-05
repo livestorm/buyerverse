@@ -108,7 +108,7 @@
         </div>
         <div class="field">
           <label for="f-slug">Slug</label>
-          <input id="f-slug" type="text" maxlength="64" pattern="[a-z0-9][a-z0-9-]*" placeholder="acme-corp" required>
+          <input id="f-slug" type="text" maxlength="64" pattern="[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?" placeholder="acme-corp" required>
           <span class="hint">Page will live at <code>/page/&lt;slug&gt;</code></span>
         </div>
       </div>
@@ -140,7 +140,7 @@
           <div class="preview-bar">
             <p class="status" id="preview-status"></p>
           </div>
-          <div class="preview-empty" id="preview-empty">Enter the admin token below to activate the live preview.</div>
+          <div class="preview-empty" id="preview-empty">Enter your admin token to activate the live preview.</div>
           <iframe class="preview-frame" id="preview" title="Page preview" hidden></iframe>
         </aside>
       </div>
@@ -156,6 +156,7 @@
     var current = null;          // selected manifest
     var slugTouched = false;     // stop auto-slug once the user edits it
     var previewTimer = null;
+    var previewSeq = 0;     // stamps preview requests so late responses can't paint stale HTML
 
     function token() { return $('f-token').value.trim(); }
 
@@ -284,19 +285,28 @@
         $('preview-empty').hidden = false;
         return;
       }
+      var seq = ++previewSeq;
       api('POST', '/api/preview', { template: current.id, values: readValues() })
         .then(function (data) {
+          if (seq !== previewSeq) return; // superseded by a newer request
+          var html = data && data.html;
+          var errs = (data && data.errors) || [];
+          if (html == null) {
+            setStatus($('preview-status'), 'Preview failed: empty response', false);
+            return;
+          }
           $('preview-empty').hidden = true;
           $('preview').hidden = false;
-          $('preview').srcdoc = data.html;
-          if (data.errors.length) {
-            setStatus($('preview-status'), data.errors.length + ' field' + (data.errors.length > 1 ? 's' : '') +
-              ' using fallback: ' + escapeText(data.errors.join(' · ')), false);
+          $('preview').srcdoc = html;
+          if (errs.length) {
+            setStatus($('preview-status'), errs.length + ' field' + (errs.length > 1 ? 's' : '') +
+              ' using fallback: ' + escapeText(errs.join(' · ')), false);
           } else {
             setStatus($('preview-status'), 'Preview up to date', true);
           }
         })
         .catch(function (e) {
+          if (seq !== previewSeq) return;
           setStatus($('preview-status'), 'Preview failed: ' + escapeText(e.message), false);
         });
     }
@@ -316,7 +326,11 @@
             opt.textContent = t.name;
             sel.appendChild(opt);
           });
-          if (templates.length) buildForm(templates[0]);
+          if (templates.length) {
+            buildForm(templates[0]);
+          } else {
+            $('tpl-desc').textContent = 'No templates available.';
+          }
         });
     }
 
@@ -402,6 +416,8 @@
 
     loadTemplateList().then(function () {
       if (token()) loadPages();
+    }).catch(function () {
+      $('tpl-desc').textContent = 'Couldn\'t load templates — is the server up? Refresh to retry.';
     });
   })();
   </script>
