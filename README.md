@@ -7,10 +7,13 @@ from a template and serve them at `/page/<slug>`.
 
 | Route                      | Auth         | Description                      |
 | -------------------------- | ------------ | -------------------------------- |
-| `GET /`                    | —            | Builder UI                       |
+| `GET /`                    | —            | Builder UI (picker, schema-driven form, live preview) |
 | `GET /page/<slug>`         | —            | Rendered proposal page (FR/EN)   |
+| `GET /templates/<id>/<f>`  | —            | Template assets                  |
+| `GET /api/templates`       | —            | List template manifests          |
+| `POST /api/preview`        | Bearer token | Render `{template, values}` without storing — returns `{html, errors}` |
 | `GET /api/pages`           | Bearer token | List pages                       |
-| `POST /api/pages`          | Bearer token | Create/update `{ slug, config }` |
+| `POST /api/pages`          | Bearer token | Create/update `{ slug, template, values }` |
 | `DELETE /api/pages/<slug>` | Bearer token | Delete a page                    |
 
 ## Configuration
@@ -24,20 +27,30 @@ from a template and serve them at `/page/<slug>`.
 A `galileo` page is seeded on first boot, so the original proposal lives at
 `/page/galileo`.
 
-## Customizable fields (v1)
+## Templates
 
-Prospect name, account manager (name/email), 2025 KPIs (schools, users,
-sessions, registrants, attendees, attendance rate, NPS) and the pricing
-table (current contract, 3 volumes, 3 discount tiers, 3 initial prices —
-revised prices are computed). Everything else — growth chart, top-schools
-chart, use cases, testimonial — still carries the Galileo template content.
+Templates live in `templates/<id>/` — self-contained directories with:
+
+- `template.json` — name, description, `nameField`, and the field schema
+  (types: `text`, `email`, `textarea`, `number`) that drives the builder
+  form and server validation
+- `index.html` — the page; `{{field_id}}` tokens are server-substituted,
+  `{{PAGE_CONFIG_JSON}}` injects `window.PAGE_CONFIG = {template, values}`
+- any other assets (CSS/JS/images, flat — no subdirectories), served at
+  `/templates/<id>/<file>`
+
+Derived values (computed prices, locale formatting, FR/EN i18n) are the
+template's own JS's job, fed by `PAGE_CONFIG`. A malformed manifest fails
+the boot — and therefore the deploy. Stored pages reference their template
+by id: `{ "template": "galileo", "values": { ... } }`.
 
 ## Development
 
 ```sh
 ADMIN_TOKEN=dev pnpm start   # in-memory store, http://localhost:3000
+pnpm test                    # engine + server suite (node:test)
 ```
 
-FR copy lives inline in `template.html` (the source of truth); the EN
-translation dictionary lives in `app.js` and reads dynamic values from the
-server-injected `window.PAGE_CONFIG`.
+FR copy lives inline in `templates/galileo/index.html` (the source of
+truth); the EN dictionary and FR number formatting live in
+`templates/galileo/page.js`, fed by the server-injected `window.PAGE_CONFIG`.
