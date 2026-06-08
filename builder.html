@@ -17,6 +17,7 @@
     /* left icon rail: global navigation + account */
     .railnav { flex: 0 0 60px; width: 60px; height: 100vh; background: #fff; border-right: 1px solid var(--line); display: flex; flex-direction: column; align-items: center; padding: 12px 0; gap: 4px; }
     .rail-brand { display: flex; align-items: center; justify-content: center; margin-bottom: 12px; }
+    .brand-mark.brand-b { color: #fff; font-family: var(--font-display); font-weight: 800; font-size: 1.05rem; line-height: 1; }
     .rail-btn { width: 42px; height: 42px; display: inline-flex; align-items: center; justify-content: center; border: 0; background: transparent; color: var(--ink-soft); border-radius: 11px; cursor: pointer; text-decoration: none; transition: background .15s, color .15s; }
     .rail-btn:hover { background: var(--blue-pale); color: var(--blue); }
     .rail-btn svg { width: 20px; height: 20px; }
@@ -37,6 +38,8 @@
     .tpl-btn .lbl { font-size: .66rem; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); font-weight: 800; }
     .icon-btn { border: 1px solid var(--line); background: #fbfcfe; color: var(--ink-soft); }
     .icon-btn:hover { border-color: var(--blue); color: var(--blue); }
+    .icon-btn.primary-action { background: var(--blue); border-color: var(--blue); color: #fff; }
+    .icon-btn.primary-action:hover { background: var(--blue-deep); border-color: var(--blue-deep); color: #fff; }
     .slug-wrap { display: flex; align-items: center; border: 1px solid var(--line); border-radius: 9px; background: #fbfcfe; overflow: hidden; height: 38px; }
     .slug-wrap .prefix { font-size: .8rem; color: var(--muted); padding: 0 2px 0 12px; }
     .slug-input { border: 0; font: inherit; font-size: .88rem; color: var(--ink); padding: 0 12px 0 2px; width: 140px; background: transparent; }
@@ -193,7 +196,7 @@
 <body class="app">
   <nav class="railnav" aria-label="Sections">
     <a class="rail-brand" href="/" aria-label="Buyerverse" title="Buyerverse">
-      <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
+      <span class="brand-mark brand-b" aria-hidden="true">B</span>
     </a>
     <button class="rail-btn" id="new-proposal" type="button" title="New proposal" aria-label="New proposal">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
@@ -393,6 +396,14 @@
       $('slug-wrap').classList.toggle('locked', editing);
       $('slug-lock').hidden = !editing;
       $('form-head-title').textContent = editing ? 'Edit proposal' : 'Build a proposal';
+      // Workflow: a brand-new proposal must be saved as a draft before it can be
+      // published. Published proposals get Update / Unpublish instead.
+      var pub = currentStatus === 'published';
+      var unsaved = currentStatus === null;
+      $('submit').hidden = unsaved;                          // no direct publish before the first save
+      $('submit').textContent = pub ? 'Update' : 'Publish';
+      $('save-draft').textContent = pub ? 'Unpublish' : 'Save draft';
+      $('save-draft').classList.toggle('primary-action', unsaved); // Save draft is the CTA until saved
       renderStatus();
     }
     function escapeText(s) { var d = document.createElement('div'); d.textContent = String(s == null ? '' : s); return d.innerHTML; }
@@ -722,7 +733,7 @@
     function topOverlay() { return [$('pages-drawer'), $('gallery'), $('share'), $('analytics')].filter(function (o) { return !o.hidden; }).pop(); }
 
     document.addEventListener('keydown', function (e) {
-      if ((e.metaKey || e.ctrlKey) && (e.key === 's' || e.key === 'S')) { e.preventDefault(); $('submit').click(); return; }
+      if ((e.metaKey || e.ctrlKey) && (e.key === 's' || e.key === 'S')) { e.preventDefault(); (currentStatus === 'published' ? $('submit') : $('save-draft')).click(); return; }
       var ov = topOverlay();
       if (e.key === 'Escape' && ov) { closeOverlay(ov); return; }
       if (e.key === 'Tab' && ov) {
@@ -926,17 +937,23 @@
       var slug = $('f-slug').value.trim();
       if (!current) return;
       if (!SLUG_RE.test(slug)) { return toast('Add a slug (lowercase letters, digits, hyphens) to save', 'err'); }
+      if (status === 'published' && currentStatus === null) { return toast('Save as a draft first, then publish.', 'err'); }
       // Only warn about clobbering when creating a NEW proposal onto an existing slug.
       if (status === 'published' && knownSlugs[slug] && slug !== editingSlug &&
           !confirm('A proposal already exists at /page/' + slug + '. Overwrite it?')) return;
       if (status === 'draft' && currentStatus === 'published' &&
           !confirm('This will unpublish the live proposal and save it as a draft. Continue?')) return;
+      var wasPublished = currentStatus === 'published';
       api('POST', '/api/pages', { slug: slug, template: current.id, values: readValues(), status: status })
         .then(function (data) {
           knownSlugs[slug] = true; editingSlug = slug; currentStatus = data.status; dirty = false;
           clearDraft(); applyEditState(); updateSlugWarn();
-          if (status === 'published') { toast('Published', 'ok'); openShare(data.url); }
-          else { toast(currentStatus === 'draft' ? 'Draft saved' : 'Saved', 'ok'); }
+          if (status === 'published') {
+            if (wasPublished) { toast('Updated → <a href="' + data.url + '" target="_blank" rel="noopener">' + data.url + '</a>', 'ok'); }
+            else { toast('Published', 'ok'); openShare(data.url); }  // share the link on first publish
+          } else {
+            toast(wasPublished ? 'Unpublished — saved as draft' : 'Draft saved', 'ok');
+          }
         })
         .catch(function (e) { toast(escapeText(e.message), 'err'); });
     }
