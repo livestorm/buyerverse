@@ -146,6 +146,23 @@
     .share-qr { display: block; margin: 0 auto 16px; border-radius: 10px; }
     .share-actions { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
 
+    /* ---------- analytics modal ---------- */
+    .stat-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 12px; margin: 18px 0 8px; }
+    .stat-card { border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; background: #fbfcfe; }
+    .stat-card .v { font-family: var(--font-display); font-weight: 800; font-size: 1.55rem; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .stat-card .l { font-size: .72rem; font-weight: 800; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); margin-top: 4px; }
+    .an-h { font-size: .95rem; margin: 22px 0 10px; }
+    .an-table { display: flex; flex-direction: column; gap: 6px; }
+    .an-row { display: flex; align-items: center; gap: 10px; font-size: .85rem; padding: 8px 12px; border: 1px solid var(--line); border-radius: 9px; background: #fbfcfe; }
+    .an-row .nm { flex: 1 1 auto; font-weight: 700; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .an-row .st { color: var(--muted); font-size: .78rem; white-space: nowrap; }
+    .an-empty { color: var(--muted); font-size: .88rem; }
+    .src-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; font-size: .84rem; }
+    .src-row .nm { width: 130px; flex: 0 0 auto; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .src-row .bar { flex: 1 1 auto; height: 10px; background: var(--blue-pale); border-radius: 6px; overflow: hidden; }
+    .src-row .bar i { display: block; height: 100%; background: var(--blue); }
+    .src-row .ct { width: 46px; flex: 0 0 auto; text-align: right; color: var(--muted); }
+
     @media (max-width: 980px) {
       body.app { overflow: auto; height: auto; min-height: 100vh; }
       .workspace { grid-template-columns: 1fr; }
@@ -177,6 +194,7 @@
 
     <div class="tb-actions">
       <span class="save-state" id="save-state" aria-live="polite"></span>
+      <button class="icon-btn" id="open-analytics" type="button">Analytics</button>
       <button class="icon-btn" id="open-pages" type="button">Pages</button>
       <button class="btn btn-primary" id="submit" type="button">Publish</button>
       <a class="mini-btn" href="/logout">Log out</a>
@@ -247,6 +265,20 @@
         <a class="mini-btn" id="share-email">Email…</a>
         <button class="mini-btn" data-close-share type="button">Close</button>
       </div>
+    </div>
+  </div>
+
+  <!-- analytics modal -->
+  <div class="modal" id="analytics" hidden>
+    <div class="modal-backdrop" data-close-analytics></div>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-label="Analytics" style="width:min(760px,94vw)">
+      <p class="kicker">Analytics</p>
+      <h2>Proposal performance</h2>
+      <div class="stat-cards" id="an-cards"></div>
+      <h3 class="an-h">Top pages</h3>
+      <div class="an-table" id="an-top"></div>
+      <h3 class="an-h">Sources</h3>
+      <div id="an-sources"></div>
     </div>
   </div>
 
@@ -634,7 +666,7 @@
       if (f && f.focus) f.focus();
     }
     function closeOverlay(el) { el.hidden = true; if (lastFocus && lastFocus.focus) lastFocus.focus(); }
-    function topOverlay() { return [$('pages-drawer'), $('gallery'), $('share')].filter(function (o) { return !o.hidden; }).pop(); }
+    function topOverlay() { return [$('pages-drawer'), $('gallery'), $('share'), $('analytics')].filter(function (o) { return !o.hidden; }).pop(); }
 
     document.addEventListener('keydown', function (e) {
       if ((e.metaKey || e.ctrlKey) && (e.key === 's' || e.key === 'S')) { e.preventDefault(); $('submit').click(); return; }
@@ -785,6 +817,50 @@
         $('pages').appendChild(row);
       });
     }
+
+    /* ---------- analytics ---------- */
+
+    function statCard(value, label) {
+      return '<div class="stat-card"><div class="v">' + value + '</div><div class="l">' + label + '</div></div>';
+    }
+
+    function openAnalytics() {
+      api('GET', '/api/pages').then(function (data) {
+        var pages = data.pages || [];
+        var totalViews = pages.reduce(function (a, p) { return a + Number(p.views || 0); }, 0);
+        var last7 = pages.reduce(function (a, p) { return a + Number(p.last7 || 0); }, 0);
+        var srcAgg = {};
+        pages.forEach(function (p) {
+          var s = p.sources || {};
+          Object.keys(s).forEach(function (k) { srcAgg[k] = (srcAgg[k] || 0) + s[k]; });
+        });
+        var srcEntries = Object.keys(srcAgg).map(function (k) { return [k, srcAgg[k]]; }).sort(function (a, b) { return b[1] - a[1]; });
+
+        $('an-cards').innerHTML =
+          statCard(totalViews, 'Total views') +
+          statCard(last7, 'Last 7 days') +
+          statCard(pages.length, pages.length === 1 ? 'Page' : 'Pages') +
+          statCard(escapeText(srcEntries.length ? srcEntries[0][0] : '—'), 'Top source');
+
+        var top = pages.slice().sort(function (a, b) { return Number(b.views || 0) - Number(a.views || 0); }).slice(0, 8);
+        $('an-top').innerHTML = top.length ? top.map(function (p) {
+          return '<div class="an-row"><span class="nm">' + escapeText(pageName(p)) + '</span>' +
+            '<span class="st">' + Number(p.views || 0) + ' views · ' + Number(p.unique || 0) + ' unique · ' + Number(p.last7 || 0) + ' last 7d</span>' +
+            '<a class="mini-btn" href="/page/' + p.slug + '" target="_blank" rel="noopener">View</a></div>';
+        }).join('') : '<p class="an-empty">No pages yet.</p>';
+
+        var maxc = srcEntries.length ? srcEntries[0][1] : 1;
+        $('an-sources').innerHTML = srcEntries.length ? srcEntries.map(function (e) {
+          return '<div class="src-row"><span class="nm">' + escapeText(e[0]) + '</span>' +
+            '<span class="bar"><i style="width:' + Math.round(e[1] / maxc * 100) + '%"></i></span>' +
+            '<span class="ct">' + e[1] + '</span></div>';
+        }).join('') : '<p class="an-empty">No views recorded yet.</p>';
+
+        openOverlay($('analytics'));
+      }).catch(function (e) { toast('Analytics: ' + escapeText(e.message), 'err'); });
+    }
+    $('open-analytics').addEventListener('click', openAnalytics);
+    $('analytics').addEventListener('click', function (e) { if (e.target.hasAttribute('data-close-analytics')) closeOverlay($('analytics')); });
 
     /* ---------- publish ---------- */
 
