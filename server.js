@@ -220,7 +220,7 @@ function renderLogin(message) {
 const NOT_FOUND_PAGE = `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><title>Page not found</title>
 <style>body{font-family:system-ui,sans-serif;background:#0f1f3d;color:#fff;display:grid;place-items:center;min-height:100vh;margin:0}
 main{text-align:center}h1{font-size:3rem;margin:0 0 8px}p{color:#9db8f5}</style></head>
-<body><main><h1>404</h1><p>This proposal page does not exist.</p></main></body></html>`;
+<body><main><h1>404</h1><p>This proposal does not exist.</p></main></body></html>`;
 
 /* ---------- routes ---------- */
 

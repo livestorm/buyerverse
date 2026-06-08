@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Buyerverse — Page builder</title>
+  <title>Buyerverse — Proposal builder</title>
   <meta name="robots" content="noindex">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -186,7 +186,7 @@
         <span class="tpl-btn-name" id="tpl-name">—</span>
         <span class="caret" aria-hidden="true">▾</span>
       </button>
-      <div class="slug-wrap" title="Page URL">
+      <div class="slug-wrap" title="Proposal URL">
         <span class="prefix">/page/</span>
         <input class="slug-input" id="f-slug" type="text" maxlength="64" pattern="[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?" placeholder="acme-corp" required>
       </div>
@@ -195,7 +195,7 @@
     <div class="tb-actions">
       <span class="save-state" id="save-state" aria-live="polite"></span>
       <button class="icon-btn" id="open-analytics" type="button">Analytics</button>
-      <button class="icon-btn" id="open-pages" type="button">Pages</button>
+      <button class="icon-btn" id="open-pages" type="button">Proposals</button>
       <button class="btn btn-primary" id="submit" type="button">Publish</button>
       <a class="mini-btn" href="/logout">Log out</a>
     </div>
@@ -204,7 +204,7 @@
   <main class="workspace">
     <div class="form-col" id="form-col">
       <div class="form-head">
-        <p class="kicker">Page builder</p>
+        <p class="kicker">Proposal builder</p>
         <h1>Build a proposal</h1>
         <div class="stepper" id="stepper" role="tablist" aria-label="Form sections"></div>
       </div>
@@ -233,7 +233,7 @@
         <button class="mini-btn" id="preview-open" type="button">Open ↗</button>
       </div>
       <div class="preview-stage">
-        <iframe class="preview-frame" id="preview" title="Page preview"></iframe>
+        <iframe class="preview-frame" id="preview" title="Proposal preview"></iframe>
       </div>
     </section>
   </main>
@@ -275,7 +275,7 @@
       <p class="kicker">Analytics</p>
       <h2>Proposal performance</h2>
       <div class="stat-cards" id="an-cards"></div>
-      <h3 class="an-h">Top pages</h3>
+      <h3 class="an-h">Top proposals</h3>
       <div class="an-table" id="an-top"></div>
       <h3 class="an-h">Sources</h3>
       <div id="an-sources"></div>
@@ -285,14 +285,14 @@
   <!-- pages drawer -->
   <aside class="drawer" id="pages-drawer" hidden>
     <div class="drawer-backdrop" data-close-pages></div>
-    <div class="drawer-panel" role="dialog" aria-modal="true" aria-label="Pages library">
+    <div class="drawer-panel" role="dialog" aria-modal="true" aria-label="Proposals">
       <header>
-        <h2>Pages</h2>
+        <h2>Proposals</h2>
         <button id="pages-close" type="button" aria-label="Close">×</button>
       </header>
       <div class="drawer-tools">
-        <input id="pages-search" type="text" placeholder="Search pages…" aria-label="Search pages">
-        <select id="pages-sort" aria-label="Sort pages">
+        <input id="pages-search" type="text" placeholder="Search proposals…" aria-label="Search proposals">
+        <select id="pages-sort" aria-label="Sort proposals">
           <option value="updated">Recently updated</option>
           <option value="views">Most views</option>
           <option value="name">Name A–Z</option>
@@ -765,7 +765,7 @@
         if (sort === 'name') return pageName(a).localeCompare(pageName(b));
         return new Date(b.updated_at || 0) - new Date(a.updated_at || 0);
       });
-      if (!rows.length) { $('pages').innerHTML = '<p class="empty">' + (allPages.length ? 'No pages match.' : 'No pages yet. Fill the form and hit Publish.') + '</p>'; return; }
+      if (!rows.length) { $('pages').innerHTML = '<p class="empty">' + (allPages.length ? 'No proposals match.' : 'No proposals yet — fill the form and hit Publish.') + '</p>'; return; }
       $('pages').innerHTML = '';
       rows.forEach(function (p) {
         var t = findTemplate(p.config.template);
@@ -839,7 +839,7 @@
         $('an-cards').innerHTML =
           statCard(totalViews, 'Total views') +
           statCard(last7, 'Last 7 days') +
-          statCard(pages.length, pages.length === 1 ? 'Page' : 'Pages') +
+          statCard(pages.length, pages.length === 1 ? 'Proposal' : 'Proposals') +
           statCard(escapeText(srcEntries.length ? srcEntries[0][0] : '—'), 'Top source');
 
         var top = pages.slice().sort(function (a, b) { return Number(b.views || 0) - Number(a.views || 0); }).slice(0, 8);
