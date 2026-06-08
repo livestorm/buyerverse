@@ -83,6 +83,11 @@ Default string-length caps when `max` is omitted: `text` 1000, `textarea` 5000,
   After editing, grep for stray `{{…}}` (see Validate).
 - Reference assets by **absolute path**: `/templates/<id>/styles.css`,
   `/templates/<id>/page.js`. Relative paths will not resolve.
+- **Engagement tracking is automatic.** Published pages get a tracking beacon
+  injected before `</body>` that reports scroll depth, dwell time, and which
+  **`<section id="…">`** the prospect reached. Wrap each major content block in a
+  `<section id="…">` with a meaningful id — those ids appear verbatim in the
+  builder's analytics "Section engagement" funnel. No script needed in the template.
 
 ## Client-side JS (derived values, formatting, i18n)
 

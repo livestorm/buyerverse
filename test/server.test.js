@@ -230,6 +230,51 @@ test('page views count visitors but not the logged-in admin', async () => {
   await fetch(`${base}/api/pages/viewed`, { method: 'DELETE', headers: AUTH });
 });
 
+test('engagement beacon: /api/track records sections + dwell/depth and surfaces in analytics', async () => {
+  await fetch(`${base}/api/pages`, {
+    method: 'POST', headers: JSON_HEADERS,
+    body: JSON.stringify({ slug: 'eng', template: 'renewal', values: sampleValues(), status: 'published' })
+  });
+  // The public page carries the engagement beacon with its slug baked in.
+  const html = await (await fetch(`${base}/page/eng`)).text();
+  assert.match(html, /navigator\.sendBeacon\('\/api\/track'/);
+  assert.match(html, /var slug="eng"/);
+
+  const trackHeaders = (ip) => ({ 'Content-Type': 'application/json', 'x-forwarded-for': ip });
+  // visitor A reaches two sections; visitor B reaches one
+  const t1 = await fetch(`${base}/api/track`, { method: 'POST', headers: trackHeaders('3.3.3.3'), body: JSON.stringify({ slug: 'eng', sections: ['partenariat', 'offre'], dwell: 42, depth: 80 }) });
+  assert.equal(t1.status, 204);
+  await fetch(`${base}/api/track`, { method: 'POST', headers: trackHeaders('4.4.4.4'), body: JSON.stringify({ slug: 'eng', sections: ['partenariat'], dwell: 20, depth: 50 }) });
+  // the admin's own beacon (session cookie) must not count
+  await fetch(`${base}/api/track`, { method: 'POST', headers: { 'Content-Type': 'application/json', ...COOKIE }, body: JSON.stringify({ slug: 'eng', sections: ['contact'], dwell: 999, depth: 100 }) });
+
+  const { pages } = await (await fetch(`${base}/api/pages`, { headers: AUTH })).json();
+  const row = pages.find(p => p.slug === 'eng');
+  assert.equal(row.sections.partenariat, 2);     // both prospect visitors
+  assert.equal(row.sections.offre, 1);           // visitor A only
+  assert.equal(row.sections.contact, undefined); // admin not recorded
+  assert.equal(row.dwell, 31);                   // avg of per-visitor max dwell (42, 20)
+  assert.equal(row.depth, 65);                   // avg of per-visitor max depth (80, 50)
+  await fetch(`${base}/api/pages/eng`, { method: 'DELETE', headers: AUTH });
+});
+
+test('/api/track is a clean 204 no-op for drafts and unknown slugs', async () => {
+  await fetch(`${base}/api/pages`, {
+    method: 'POST', headers: JSON_HEADERS,
+    body: JSON.stringify({ slug: 'eng-draft', template: 'renewal', values: sampleValues({ prospect: '' }), status: 'draft' })
+  });
+  const draft = await fetch(`${base}/api/track`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-forwarded-for': '5.5.5.5' }, body: JSON.stringify({ slug: 'eng-draft', sections: ['offre'], dwell: 10, depth: 30 }) });
+  assert.equal(draft.status, 204);
+  const unknown = await fetch(`${base}/api/track`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-forwarded-for': '5.5.5.5' }, body: JSON.stringify({ slug: 'does-not-exist', sections: ['offre'], dwell: 10, depth: 30 }) });
+  assert.equal(unknown.status, 204);
+  // nothing recorded for the draft
+  const { pages } = await (await fetch(`${base}/api/pages`, { headers: AUTH })).json();
+  const row = pages.find(p => p.slug === 'eng-draft');
+  assert.deepEqual(row.sections, {});
+  assert.equal(row.dwell, 0);
+  await fetch(`${base}/api/pages/eng-draft`, { method: 'DELETE', headers: AUTH });
+});
+
 test('drafts save server-side, are not served, and go live on publish', async () => {
   // Save as draft (incomplete values allowed) — not live.
   const draft = await fetch(`${base}/api/pages`, {

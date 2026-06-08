@@ -5,9 +5,10 @@
  *   GET    /login                     login page (admin token → session cookie)
  *   POST   /login                     validate token, set bv_session cookie
  *   GET    /logout                    clear the session cookie
- *   GET    /page/<slug>               rendered proposal page (public)
+ *   GET    /page/<slug>               rendered proposal page (public, carries the engagement beacon)
  *   GET    /templates/<id>/<asset>    template assets (public)
  *   GET    /api/templates             list template manifests (public)
+ *   POST   /api/track                 engagement beacon: sections/dwell/depth (public, 204)
  *   POST   /api/preview               render without storing (Bearer ADMIN_TOKEN)
  *   GET    /api/pages                 list pages            (Bearer ADMIN_TOKEN)
  *   POST   /api/pages                 create/update a page  (Bearer ADMIN_TOKEN)
@@ -26,6 +27,7 @@ const crypto = require('crypto');
 const store = require('./store');
 const engine = require('./engine');
 const salesforce = require('./salesforce');
+const notify = require('./notify');
 
 const ROOT = __dirname;
 const PORT = process.env.PORT || 3000;
@@ -75,6 +77,28 @@ function visitorHash(req) {
 function utmParams(url) {
   const pick = (k) => (url.searchParams.get(k) || '').trim().slice(0, 80);
   return { source: pick('utm_source'), medium: pick('utm_medium'), campaign: pick('utm_campaign') };
+}
+
+/*
+ * Engagement beacon injected into public proposal pages (not the builder
+ * preview). Reports sections reached, max scroll depth and active dwell to
+ * /api/track via sendBeacon. Same-origin, no third-party calls; visitor is
+ * the server-side hashed IP, so this carries no identifying data itself.
+ */
+const BEACON = "(function(){var slug=__SLUG__;var reached={},sections=[],maxDepth=0,dwellMs=0,last=Date.now();" +
+  "function accrue(){var n=Date.now();if(document.visibilityState==='visible'){dwellMs+=Math.min(n-last,30000);}last=n;}" +
+  "function flush(){accrue();try{navigator.sendBeacon('/api/track',JSON.stringify({slug:slug,sections:sections,dwell:Math.round(dwellMs/1000),depth:maxDepth}));}catch(e){}}" +
+  "setInterval(accrue,5000);" +
+  "document.addEventListener('visibilitychange',function(){accrue();if(document.visibilityState==='hidden')flush();});" +
+  "window.addEventListener('pagehide',flush);" +
+  "window.addEventListener('scroll',function(){var h=document.documentElement;var d=Math.round((h.scrollTop+window.innerHeight)/(h.scrollHeight||1)*100);if(d>maxDepth)maxDepth=Math.min(100,d);},{passive:true});" +
+  "try{var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting&&e.target.id&&!reached[e.target.id]){reached[e.target.id]=1;sections.push(e.target.id);}});},{threshold:0.4});" +
+  "document.querySelectorAll('section[id]').forEach(function(s){io.observe(s);});}catch(e){}})();";
+
+/** Insert the engagement beacon before </body> (appended if there's no body tag). */
+function injectBeacon(html, slug) {
+  const tag = '<script>' + BEACON.replace('__SLUG__', JSON.stringify(slug)) + '</' + 'script>';
+  return html.includes('</body>') ? html.replace('</body>', tag + '</body>') : html + tag;
 }
 
 function sendJSON(res, status, data) {
@@ -298,13 +322,40 @@ async function handle(req, res) {
     const t = engine.getTemplate(row.config.template);
     if (!t) return sendHTML(res, 404, NOT_FOUND_PAGE, false); // template removed from repo
     // Count prospect visits only — don't inflate analytics with the AM's own previews.
-    if (!authed(req)) store.recordView(slug, visitorHash(req), utmParams(url)).catch(() => {});
-    return sendHTML(res, 200, engine.renderTemplate(t, row.config.values), true);
+    if (!authed(req)) {
+      const prospect = row.config.values && row.config.values.prospect;
+      store.recordView(slug, visitorHash(req), utmParams(url))
+        .then((r) => { if (r && r.firstView && notify.configured()) notify.proposalOpened(slug, prospect).catch(() => {}); })
+        .catch(() => {});
+    }
+    return sendHTML(res, 200, injectBeacon(engine.renderTemplate(t, row.config.values), slug), true);
   }
 
   // API
   if (pathname === '/api/templates' && req.method === 'GET') {
     return sendJSON(res, 200, { templates: engine.listTemplates() });
+  }
+
+  // Public engagement beacon from proposal pages (sendBeacon). Always 204 —
+  // it's fire-and-forget and must never leak whether a slug exists.
+  if (pathname === '/api/track' && req.method === 'POST') {
+    if (!authed(req)) { // never record the AM's own previews
+      let body = null;
+      try { body = await readBody(req); } catch (e) { body = null; }
+      const slug = body && typeof body.slug === 'string' ? body.slug : '';
+      if (body && engine.validSlug(slug)) {
+        const row = await store.get(slug);
+        if (row && row.status !== 'draft') {
+          const sections = Array.isArray(body.sections)
+            ? body.sections.filter((s) => typeof s === 'string' && /^[A-Za-z0-9_-]{1,40}$/.test(s)).slice(0, 30)
+            : [];
+          const clamp = (n, max) => { n = Math.round(Number(n)); return Number.isFinite(n) && n >= 0 ? Math.min(n, max) : undefined; };
+          store.recordEngagement(slug, visitorHash(req), { sections, dwell: clamp(body.dwell, 86400), depth: clamp(body.depth, 100) }).catch(() => {});
+        }
+      }
+    }
+    res.writeHead(204).end();
+    return;
   }
 
   if (pathname === '/api/preview' && req.method === 'POST') {
@@ -327,7 +378,10 @@ async function handle(req, res) {
         ...p,
         unique: (s[p.slug] && s[p.slug].unique) || 0,
         last7: (s[p.slug] && s[p.slug].last7) || 0,
-        sources: (s[p.slug] && s[p.slug].sources) || {}
+        sources: (s[p.slug] && s[p.slug].sources) || {},
+        dwell: (s[p.slug] && s[p.slug].dwell) || 0,
+        depth: (s[p.slug] && s[p.slug].depth) || 0,
+        sections: (s[p.slug] && s[p.slug].sections) || {}
       }))
     });
   }

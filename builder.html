@@ -869,6 +869,8 @@ body { --row-gap: 16px; --field-mb: 16px; --card-pad: 24px; }
       <div class="stat-cards" id="an-cards"></div>
       <h3 class="an-h">Top proposals</h3>
       <div class="an-table" id="an-top"></div>
+      <h3 class="an-h">Section engagement</h3>
+      <div id="an-sections"></div>
       <h3 class="an-h">Sources</h3>
       <div id="an-sources"></div>
     </div>
@@ -1504,30 +1506,51 @@ body { --row-gap: 16px; --field-mb: 16px; --card-pad: 24px; }
       return '<div class="stat-card"><div class="v">' + value + '</div><div class="l">' + label + '</div></div>';
     }
 
+    // Seconds → "45s" / "1m 12s".
+    function fmtDur(s) { s = Math.round(Number(s) || 0); if (s < 60) return s + 's'; var m = Math.floor(s / 60), r = s % 60; return m + 'm' + (r ? ' ' + r + 's' : ''); }
+    function humanizeSection(id) { id = String(id).replace(/[-_]+/g, ' '); return id.charAt(0).toUpperCase() + id.slice(1); }
+
     function openAnalytics() {
       api('GET', '/api/pages').then(function (data) {
         var pages = data.pages || [];
         var totalViews = pages.reduce(function (a, p) { return a + Number(p.views || 0); }, 0);
         var last7 = pages.reduce(function (a, p) { return a + Number(p.last7 || 0); }, 0);
-        var srcAgg = {};
+        var srcAgg = {}, secAgg = {}, dwellNum = 0, dwellDen = 0;
         pages.forEach(function (p) {
           var s = p.sources || {};
           Object.keys(s).forEach(function (k) { srcAgg[k] = (srcAgg[k] || 0) + s[k]; });
+          var sec = p.sections || {};
+          Object.keys(sec).forEach(function (k) { secAgg[k] = (secAgg[k] || 0) + sec[k]; });
+          var u = Number(p.unique || 0);
+          if (Number(p.dwell || 0) > 0 && u > 0) { dwellNum += Number(p.dwell) * u; dwellDen += u; }
         });
         var srcEntries = Object.keys(srcAgg).map(function (k) { return [k, srcAgg[k]]; }).sort(function (a, b) { return b[1] - a[1]; });
+        var secEntries = Object.keys(secAgg).map(function (k) { return [k, secAgg[k]]; }).sort(function (a, b) { return b[1] - a[1]; });
+        var avgDwell = dwellDen ? Math.round(dwellNum / dwellDen) : 0;
 
         $('an-cards').innerHTML =
           statCard(totalViews, 'Total views') +
           statCard(last7, 'Last 7 days') +
           statCard(pages.length, pages.length === 1 ? 'Proposal' : 'Proposals') +
-          statCard(escapeText(srcEntries.length ? srcEntries[0][0] : '—'), 'Top source');
+          statCard(avgDwell ? fmtDur(avgDwell) : '—', 'Avg time on page');
 
         var top = pages.slice().sort(function (a, b) { return Number(b.views || 0) - Number(a.views || 0); }).slice(0, 8);
         $('an-top').innerHTML = top.length ? top.map(function (p) {
+          var eng = [];
+          if (Number(p.dwell || 0) > 0) eng.push(fmtDur(p.dwell) + ' avg');
+          if (Number(p.depth || 0) > 0) eng.push(Number(p.depth) + '% read');
           return '<div class="an-row"><span class="nm">' + escapeText(pageName(p)) + '</span>' +
-            '<span class="st">' + Number(p.views || 0) + ' views · ' + Number(p.unique || 0) + ' unique · ' + Number(p.last7 || 0) + ' last 7d</span>' +
+            '<span class="st">' + Number(p.views || 0) + ' views · ' + Number(p.unique || 0) + ' unique · ' + Number(p.last7 || 0) + ' last 7d' +
+            (eng.length ? ' · ' + eng.join(' · ') : '') + '</span>' +
             '<a class="mini-btn" href="/page/' + p.slug + '" target="_blank" rel="noopener">View</a></div>';
         }).join('') : '<p class="an-empty">No pages yet.</p>';
+
+        var maxs = secEntries.length ? secEntries[0][1] : 1;
+        $('an-sections').innerHTML = secEntries.length ? secEntries.map(function (e) {
+          return '<div class="src-row"><span class="nm">' + escapeText(humanizeSection(e[0])) + '</span>' +
+            '<span class="bar"><i style="width:' + Math.round(e[1] / maxs * 100) + '%"></i></span>' +
+            '<span class="ct">' + e[1] + '</span></div>';
+        }).join('') : '<p class="an-empty">No section engagement recorded yet.</p>';
 
         var maxc = srcEntries.length ? srcEntries[0][1] : 1;
         $('an-sources').innerHTML = srcEntries.length ? srcEntries.map(function (e) {
