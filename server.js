@@ -25,6 +25,7 @@ const crypto = require('crypto');
 
 const store = require('./store');
 const engine = require('./engine');
+const salesforce = require('./salesforce');
 
 const ROOT = __dirname;
 const PORT = process.env.PORT || 3000;
@@ -33,7 +34,8 @@ const BODY_LIMIT = 100 * 1024;
 
 // Builder-owned static files; template assets go through /templates/<id>/.
 const STATIC_FILES = {
-  '/styles.css': 'text/css; charset=utf-8'
+  '/styles.css': 'text/css; charset=utf-8',
+  '/qr.js': 'text/javascript; charset=utf-8'
 };
 
 const ASSET_TYPES = {
@@ -269,6 +271,8 @@ async function handle(req, res) {
     if (!row) return sendHTML(res, 404, NOT_FOUND_PAGE, false);
     const t = engine.getTemplate(row.config.template);
     if (!t) return sendHTML(res, 404, NOT_FOUND_PAGE, false); // template removed from repo
+    // Count prospect visits only — don't inflate analytics with the AM's own previews.
+    if (!authed(req)) store.recordView(slug).catch(() => {});
     return sendHTML(res, 200, engine.renderTemplate(t, row.config.values), true);
   }
 
@@ -315,6 +319,18 @@ async function handle(req, res) {
     if (!requireAuth(req, res)) return;
     const removed = await store.remove(apiMatch[1]);
     return sendJSON(res, removed ? 200 : 404, removed ? { ok: true } : { error: 'page not found' });
+  }
+
+  // Salesforce autofill — paste an Account/Contact ID to prefill prospect + AM
+  const sfMatch = /^\/api\/crm\/salesforce\/([^/]+)$/.exec(pathname);
+  if (sfMatch && req.method === 'GET') {
+    if (!requireAuth(req, res)) return;
+    try {
+      const { values } = await salesforce.lookup(sfMatch[1]);
+      return sendJSON(res, 200, { values });
+    } catch (e) {
+      return sendJSON(res, e.status || 502, { error: e.message });
+    }
   }
 
   if (pathname.startsWith('/api/')) return sendJSON(res, 404, { error: 'not found' });

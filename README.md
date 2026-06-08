@@ -24,6 +24,14 @@ from a template and serve them at `/page/<slug>`.
 | `DATABASE_URL` | Postgres connection string; without it pages are stored in memory |
 | `PORT`         | Injected by Render                                                |
 | `NODE_ENV`     | Set to `production` to cache the template registry (otherwise it re-scans `templates/` per request) |
+| `SF_LOGIN_URL` | Salesforce token endpoint base (e.g. `https://login.salesforce.com`) — enables Salesforce autofill |
+| `SF_CLIENT_ID` | Salesforce connected-app consumer key (OAuth2 client-credentials)  |
+| `SF_CLIENT_SECRET` | Salesforce connected-app consumer secret                       |
+
+Salesforce autofill (paste an Account/Contact ID to prefill prospect + account
+manager) is active only when all three `SF_*` vars are set; otherwise the
+endpoint returns a graceful "not configured". Published pages track view counts
+(prospect visits, excluding the logged-in admin), shown in the Pages drawer.
 
 No pages exist until you create one in the builder. The bundled `renewal`
 template ships with sample defaults so a new page can be published immediately.

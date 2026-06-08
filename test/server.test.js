@@ -204,3 +204,29 @@ test('GET /logout clears the cookie and then / redirects again', async () => {
   assert.equal(out.headers.get('location'), '/login');
   assert.match(out.headers.get('set-cookie'), /bv_session=;.*Max-Age=0/);
 });
+
+/* ---------- analytics + salesforce ---------- */
+
+test('page views count visitors but not the logged-in admin', async () => {
+  await fetch(`${base}/api/pages`, {
+    method: 'POST', headers: JSON_HEADERS,
+    body: JSON.stringify({ slug: 'viewed', template: 'renewal', values: sampleValues() })
+  });
+  await fetch(`${base}/page/viewed`);                  // visitor → +1
+  await fetch(`${base}/page/viewed`);                  // visitor → +1
+  await fetch(`${base}/page/viewed`, { headers: COOKIE }); // admin → not counted
+  const { pages } = await (await fetch(`${base}/api/pages`, { headers: AUTH })).json();
+  const row = pages.find(p => p.slug === 'viewed');
+  assert.equal(Number(row.views), 2);
+  assert.ok(row.last_viewed);
+  await fetch(`${base}/api/pages/viewed`, { method: 'DELETE', headers: AUTH });
+});
+
+test('Salesforce route requires auth and reports when unconfigured', async () => {
+  const noAuth = await fetch(`${base}/api/crm/salesforce/0011234567890ABCDE`);
+  assert.equal(noAuth.status, 401);
+  // SF_* env vars are not set in tests → graceful 503, not a crash
+  const res = await fetch(`${base}/api/crm/salesforce/0011234567890ABCDE`, { headers: AUTH });
+  assert.equal(res.status, 503);
+  assert.match((await res.json()).error, /not configured/);
+});

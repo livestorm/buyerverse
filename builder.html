@@ -117,6 +117,23 @@
     .toast.err { border-left-color: var(--red); }
     .toast a { color: var(--blue); }
 
+    /* ---------- salesforce autofill ---------- */
+    .autofill { display: flex; align-items: center; gap: 8px; padding: 12px 14px; margin-bottom: 18px; border: 1px solid var(--line); border-radius: 11px; background: #fff; }
+    .autofill .lbl { font-size: .68rem; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); font-weight: 800; white-space: nowrap; }
+    .autofill input { flex: 1 1 auto; min-width: 0; font: inherit; font-size: .86rem; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: #fbfcfe; }
+    .autofill input:focus { outline: none; border-color: var(--blue); }
+
+    /* ---------- restore draft bar ---------- */
+    .restore-bar { display: flex; align-items: center; gap: 10px; padding: 10px 14px; margin-bottom: 16px; border: 1px solid #fde68a; background: #fffbeb; border-radius: 11px; font-size: .84rem; font-weight: 600; color: #92400e; }
+    .restore-bar[hidden] { display: none; }
+    .restore-bar .spacer { flex: 1 1 auto; }
+
+    /* ---------- share modal ---------- */
+    .share-url { display: flex; gap: 8px; margin: 16px 0; }
+    .share-url input { flex: 1 1 auto; min-width: 0; font: inherit; font-size: .85rem; padding: 9px 12px; border: 1px solid var(--line); border-radius: 9px; background: #fbfcfe; color: var(--ink); }
+    .share-qr { display: block; margin: 0 auto 16px; border-radius: 10px; }
+    .share-actions { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+
     @media (max-width: 980px) {
       body.app { overflow: auto; height: auto; min-height: 100vh; }
       .workspace { grid-template-columns: 1fr; }
@@ -163,6 +180,17 @@
     </nav>
 
     <div class="form-col" id="form-col">
+      <div class="restore-bar" id="restore-bar" hidden>
+        <span id="restore-text">Unsaved draft found.</span>
+        <span class="spacer"></span>
+        <button class="mini-btn" id="restore-yes" type="button">Restore</button>
+        <button class="mini-btn" id="restore-no" type="button">Discard</button>
+      </div>
+      <div class="autofill">
+        <span class="lbl">Salesforce</span>
+        <input id="sf-id" type="text" placeholder="Account or Contact ID" autocomplete="off">
+        <button class="mini-btn" id="sf-fetch" type="button">Fetch</button>
+      </div>
       <div id="form"></div>
     </div>
 
@@ -193,6 +221,25 @@
     </div>
   </div>
 
+  <!-- share modal -->
+  <div class="modal" id="share" hidden>
+    <div class="modal-backdrop" data-close-share></div>
+    <div class="modal-card" style="width:min(440px,92vw)">
+      <p class="kicker">Share</p>
+      <h2 id="share-title">Proposal published</h2>
+      <div class="share-url">
+        <input id="share-link" type="text" readonly>
+        <button class="mini-btn" id="share-copy" type="button">Copy</button>
+      </div>
+      <canvas id="share-qr" class="share-qr"></canvas>
+      <div class="share-actions">
+        <a class="mini-btn" id="share-open" target="_blank" rel="noopener">Open ↗</a>
+        <a class="mini-btn" id="share-email">Email…</a>
+        <button class="mini-btn" data-close-share type="button">Close</button>
+      </div>
+    </div>
+  </div>
+
   <!-- pages drawer -->
   <aside class="drawer" id="pages-drawer" hidden>
     <div class="drawer-backdrop" data-close-pages></div>
@@ -207,6 +254,7 @@
 
   <div class="toasts" id="toasts" aria-live="polite"></div>
 
+  <script src="/qr.js"></script>
   <script>
   (function () {
     'use strict';
@@ -220,6 +268,8 @@
     var previewSeq = 0;
     var lastPreviewHtml = '';
     var lastBlobUrl = null;
+    var DRAFT_KEY = 'buyerverse-draft';
+    var dirty = false;
 
     function api(method, path, body) {
       return fetch(path, {
@@ -377,6 +427,7 @@
         $('f-slug').value = slugify(e.target.value);
       }
       updateCompletion();
+      markDirty();
       schedulePreview();
     }
 
@@ -428,6 +479,74 @@
       window.open(lastBlobUrl, '_blank', 'noopener');
     });
 
+    /* ---------- drafts (local autosave + unload guard) ---------- */
+
+    function markDirty() { dirty = true; saveDraft(); }
+    function saveDraft() {
+      if (!current) return;
+      try { localStorage.setItem(DRAFT_KEY, JSON.stringify({ template: current.id, slug: $('f-slug').value, values: readValues(), at: Date.now() })); } catch (e) {}
+    }
+    function clearDraft() { dirty = false; try { localStorage.removeItem(DRAFT_KEY); } catch (e) {} }
+    window.addEventListener('beforeunload', function (e) { if (dirty) { e.preventDefault(); e.returnValue = ''; } });
+
+    function maybeOfferRestore() {
+      var d;
+      try { d = JSON.parse(localStorage.getItem(DRAFT_KEY) || 'null'); } catch (e) { return; }
+      if (!d || !findTemplate(d.template)) return;
+      $('restore-text').textContent = 'Unsaved draft for /page/' + (d.slug || '…') + '.';
+      $('restore-bar').hidden = false;
+      $('restore-yes').onclick = function () {
+        slugTouched = true;
+        buildForm(findTemplate(d.template), d.values);
+        $('f-slug').value = d.slug || '';
+        $('restore-bar').hidden = true;
+        dirty = true;
+      };
+      $('restore-no').onclick = function () { clearDraft(); $('restore-bar').hidden = true; };
+    }
+
+    /* ---------- salesforce autofill ---------- */
+
+    $('sf-fetch').addEventListener('click', function () {
+      var id = $('sf-id').value.trim();
+      if (!id || !current) return;
+      $('sf-fetch').disabled = true;
+      api('GET', '/api/crm/salesforce/' + encodeURIComponent(id))
+        .then(function (data) {
+          var v = (data && data.values) || {};
+          var n = 0;
+          Object.keys(v).forEach(function (k) {
+            var el = $('f-' + k);
+            if (el && v[k] != null) {
+              el.value = v[k]; n++;
+              if (k === current.nameField && !slugTouched) $('f-slug').value = slugify(el.value);
+            }
+          });
+          updateCompletion(); markDirty(); schedulePreview();
+          toast(n ? ('Prefilled ' + n + ' field' + (n > 1 ? 's' : '') + ' from Salesforce') : 'No matching fields returned', n ? 'ok' : 'err');
+        })
+        .catch(function (e) { toast('Salesforce: ' + escapeText(e.message), 'err'); })
+        .finally(function () { $('sf-fetch').disabled = false; });
+    });
+
+    /* ---------- share ---------- */
+
+    function openShare(path) {
+      var url = location.origin + path;
+      $('share-link').value = url;
+      $('share-open').href = url;
+      $('share-email').href = 'mailto:?subject=' + encodeURIComponent('Your Livestorm proposal') +
+        '&body=' + encodeURIComponent('Here is your personalized proposal:\n' + url);
+      try { if (window.QR) QR.toCanvas(url, $('share-qr'), { scale: 5, margin: 3 }); } catch (e) {}
+      $('share').hidden = false;
+    }
+    $('share-copy').addEventListener('click', function () {
+      var v = $('share-link').value;
+      if (navigator.clipboard) navigator.clipboard.writeText(v).then(function () { toast('Link copied', 'ok'); }, function () {});
+      else { $('share-link').select(); try { document.execCommand('copy'); toast('Link copied', 'ok'); } catch (e) {} }
+    });
+    $('share').addEventListener('click', function (e) { if (e.target.hasAttribute('data-close-share')) $('share').hidden = true; });
+
     /* ---------- template gallery ---------- */
 
     function findTemplate(id) { return templates.filter(function (t) { return t.id === id; })[0] || null; }
@@ -453,7 +572,7 @@
     function closeGallery() { $('gallery').hidden = true; }
     $('open-gallery').addEventListener('click', openGallery);
     $('gallery').addEventListener('click', function (e) { if (e.target.hasAttribute('data-close')) closeGallery(); });
-    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') { closeGallery(); $('pages-drawer').hidden = true; } });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') { closeGallery(); $('pages-drawer').hidden = true; $('share').hidden = true; } });
 
     /* ---------- pages drawer ---------- */
 
@@ -472,21 +591,36 @@
           var name = (t && t.nameField && p.config.values) ? p.config.values[t.nameField] : '';
           var row = document.createElement('div');
           row.className = 'page-row';
-          var date = p.updated_at ? new Date(p.updated_at).toLocaleString() : '';
+          var date = p.updated_at ? new Date(p.updated_at).toLocaleDateString() : '';
+          var views = Number(p.views || 0);
+          var lastV = p.last_viewed ? ' · last viewed ' + new Date(p.last_viewed).toLocaleDateString() : '';
           row.innerHTML =
             '<span class="slug">/page/' + p.slug + '</span>' +
-            '<span class="meta">' + escapeText(name || p.slug) + (t ? ' · ' + escapeText(t.name) : '') + (date ? ' · ' + date : '') + '</span>' +
+            '<span class="meta">' + escapeText(name || p.slug) + (t ? ' · ' + escapeText(t.name) : '') + (date ? ' · ' + date : '') +
+              ' · ' + views + (views === 1 ? ' view' : ' views') + lastV + '</span>' +
             '<span class="ops">' +
               '<a class="mini-btn" href="/page/' + p.slug + '" target="_blank" rel="noopener">View</a>' +
+              '<button class="mini-btn" data-share type="button">Share</button>' +
               '<button class="mini-btn" data-edit type="button">Edit</button>' +
+              '<button class="mini-btn" data-dup type="button">Duplicate</button>' +
               '<button class="mini-btn danger" data-del type="button">Delete</button>' +
             '</span>';
+          row.querySelector('[data-share]').addEventListener('click', function () { openShare('/page/' + p.slug); });
           row.querySelector('[data-edit]').addEventListener('click', function () {
             if (!t) { toast('Template "' + escapeText(p.config.template) + '" no longer exists.', 'err'); return; }
             slugTouched = true;
             buildForm(t, p.config.values);
             $('f-slug').value = p.slug;
             closePages();
+          });
+          row.querySelector('[data-dup]').addEventListener('click', function () {
+            if (!t) { toast('Template "' + escapeText(p.config.template) + '" no longer exists.', 'err'); return; }
+            slugTouched = true;
+            buildForm(t, p.config.values);
+            $('f-slug').value = (p.slug + '-copy').slice(0, 64);
+            markDirty();
+            closePages();
+            toast('Duplicated — rename the slug and Publish', 'ok');
           });
           row.querySelector('[data-del]').addEventListener('click', function () {
             if (!confirm('Delete /page/' + p.slug + '?')) return;
@@ -509,20 +643,22 @@
       if (!/^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$/.test(slug)) { return toast('Invalid slug', 'err'); }
       api('POST', '/api/pages', { slug: slug, template: current.id, values: readValues() })
         .then(function (data) {
-          toast('Published → <a href="' + data.url + '" target="_blank" rel="noopener">' + data.url + '</a>', 'ok');
+          clearDraft();
+          toast('Published', 'ok');
+          openShare(data.url);
         })
         .catch(function (e) { toast(escapeText(e.message), 'err'); });
     });
 
     /* ---------- wiring ---------- */
 
-    $('f-slug').addEventListener('input', function () { slugTouched = true; });
+    $('f-slug').addEventListener('input', function () { slugTouched = true; markDirty(); });
 
     fetch('/api/templates')
       .then(function (res) { return res.json(); })
       .then(function (data) {
         templates = data.templates || [];
-        if (templates.length) { buildForm(templates[0]); }
+        if (templates.length) { buildForm(templates[0]); maybeOfferRestore(); }
         else { $('tpl-name').textContent = 'No templates'; $('form').innerHTML = '<p class="empty">No templates available.</p>'; }
       })
       .catch(function () { $('tpl-name').textContent = 'Error'; $('form').innerHTML = '<p class="empty">Couldn\'t load templates — is the server up? Refresh to retry.</p>'; });

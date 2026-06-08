@@ -25,19 +25,24 @@ if (DATABASE_URL) {
         CREATE TABLE IF NOT EXISTS pages (
           slug       TEXT PRIMARY KEY,
           config     JSONB NOT NULL,
+          views      BIGINT NOT NULL DEFAULT 0,
+          last_viewed TIMESTAMPTZ,
           created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
           updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
         )
       `);
+      // Columns added after the initial release.
+      await pool.query('ALTER TABLE pages ADD COLUMN IF NOT EXISTS views BIGINT NOT NULL DEFAULT 0');
+      await pool.query('ALTER TABLE pages ADD COLUMN IF NOT EXISTS last_viewed TIMESTAMPTZ');
     },
 
     async get(slug) {
-      const { rows } = await pool.query('SELECT slug, config, updated_at FROM pages WHERE slug = $1', [slug]);
+      const { rows } = await pool.query('SELECT slug, config, views, last_viewed, updated_at FROM pages WHERE slug = $1', [slug]);
       return rows[0] || null;
     },
 
     async list() {
-      const { rows } = await pool.query('SELECT slug, config, updated_at FROM pages ORDER BY updated_at DESC');
+      const { rows } = await pool.query('SELECT slug, config, views, last_viewed, updated_at FROM pages ORDER BY updated_at DESC');
       return rows;
     },
 
@@ -47,6 +52,10 @@ if (DATABASE_URL) {
          ON CONFLICT (slug) DO UPDATE SET config = EXCLUDED.config, updated_at = now()`,
         [slug, JSON.stringify(config)]
       );
+    },
+
+    async recordView(slug) {
+      await pool.query('UPDATE pages SET views = views + 1, last_viewed = now() WHERE slug = $1', [slug]);
     },
 
     async remove(slug) {
@@ -73,7 +82,17 @@ if (DATABASE_URL) {
     },
 
     async upsert(slug, config) {
-      pages.set(slug, { slug, config, updated_at: new Date() });
+      const prev = pages.get(slug);
+      pages.set(slug, {
+        slug, config, updated_at: new Date(),
+        views: prev ? prev.views : 0,
+        last_viewed: prev ? prev.last_viewed : null
+      });
+    },
+
+    async recordView(slug) {
+      const row = pages.get(slug);
+      if (row) { row.views = (row.views || 0) + 1; row.last_viewed = new Date(); }
     },
 
     async remove(slug) {
