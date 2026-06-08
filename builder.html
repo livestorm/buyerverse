@@ -533,7 +533,7 @@ body { --row-gap: 16px; --field-mb: 16px; --card-pad: 24px; }
 .seg button:hover { color: var(--fg-default); }
 .seg button.is-active { background: var(--livestorm-blue-700); color: #fff; }
 
-.preview-stage { flex: 1 1 auto; min-height: 0; overflow: auto; display: flex; justify-content: center; padding: 24px; }
+.preview-stage { flex: 1 1 auto; min-height: 0; overflow: hidden; display: flex; justify-content: center; align-items: flex-start; padding: 24px; }
 .device { width: 100%; max-width: 100%; align-self: flex-start; transition: max-width var(--dur-base) var(--ease-out); }
 .device.tablet { max-width: 840px; }
 .device.mobile { max-width: 392px; }
@@ -628,7 +628,8 @@ body { --row-gap: 16px; --field-mb: 16px; --card-pad: 24px; }
 /* ---------- Modals / drawer ---------- */
 .modal, .drawer { position: fixed; inset: 0; z-index: 900; }
 .modal { display: grid; place-items: center; }
-.modal[hidden], .drawer[hidden] { display: none; }  /* author display must not override the hidden attribute */
+/* The hidden attribute must win over any author display rule (modals, drawer, restore-bar, slug-lock, …) */
+[hidden] { display: none !important; }
 .modal-backdrop, .drawer-backdrop { position: absolute; inset: 0; background: rgba(9,19,22,.42); animation: fade var(--dur-base) var(--ease-out); }
 @keyframes fade { from { opacity: 0; } }
 .modal-card { position: relative; background: var(--bg-surface); border-radius: var(--radius-4xl); padding: 32px;
@@ -1245,7 +1246,26 @@ body { --row-gap: 16px; --field-mb: 16px; --card-pad: 24px; }
       });
     });
 
-    function fitPreview() { var f = $('preview'); try { f.style.height = f.contentDocument.documentElement.scrollHeight + 'px'; } catch (e) {} }
+    // Size the iframe to exactly its content height. The preview is same-origin srcdoc,
+    // so we can read its height directly. A ResizeObserver keeps it exact as late layout
+    // (web fonts, images) lands — otherwise the iframe keeps a sliver of internal scroll
+    // that swallows the first wheel gesture ("scroll twice"). With it exact, there is no
+    // inner scroll and the wheel chains straight to .preview-scroll.
+    var previewRO = null;
+    function fitPreview() {
+      var f = $('preview');
+      try {
+        var de = f.contentDocument.documentElement;
+        f.style.height = de.scrollHeight + 'px';
+        if (window.ResizeObserver) {
+          if (previewRO) previewRO.disconnect();
+          previewRO = new ResizeObserver(function () {
+            try { f.style.height = f.contentDocument.documentElement.scrollHeight + 'px'; } catch (e) {}
+          });
+          previewRO.observe(de);
+        }
+      } catch (e) {}
+    }
     $('preview').addEventListener('load', fitPreview);
 
     $('preview-open').addEventListener('click', function () {
