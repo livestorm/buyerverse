@@ -855,6 +855,7 @@ body { --row-gap: 16px; --field-mb: 16px; --card-pad: 24px; }
       <div class="share-actions">
         <a class="mini-btn" id="share-open" target="_blank" rel="noopener">Open ↗</a>
         <a class="mini-btn" id="share-email">Email…</a>
+        <button class="mini-btn" id="share-regen" type="button" title="Generate a new link and disable the current one">Regenerate link</button>
         <button class="mini-btn" data-close-share type="button">Close</button>
       </div>
     </div>
@@ -1361,19 +1362,29 @@ body { --row-gap: 16px; --field-mb: 16px; --card-pad: 24px; }
 
     /* ---------- share ---------- */
 
-    function openShare(path) {
+    var currentShareSlug = null;
+    function openShare(path, slug) {
+      currentShareSlug = slug || null;
       var url = location.origin + path;
       $('share-link').value = url;
       $('share-open').href = url;
       $('share-email').href = 'mailto:?subject=' + encodeURIComponent('Your Livestorm proposal') +
         '&body=' + encodeURIComponent('Here is your personalized proposal:\n' + url);
       try { if (window.QR) QR.toCanvas(url, $('share-qr'), { scale: 5, margin: 3 }); } catch (e) {}
+      $('share-regen').hidden = !currentShareSlug; // can only rotate when we know which proposal
       openOverlay($('share'));
     }
     $('share-copy').addEventListener('click', function () {
       var v = $('share-link').value;
       if (navigator.clipboard) navigator.clipboard.writeText(v).then(function () { toast('Link copied', 'ok'); }, function () {});
       else { $('share-link').select(); try { document.execCommand('copy'); toast('Link copied', 'ok'); } catch (e) {} }
+    });
+    $('share-regen').addEventListener('click', function () {
+      if (!currentShareSlug) return;
+      if (!confirm('Generate a new link? The current link will stop working immediately.')) return;
+      api('POST', '/api/pages/' + encodeURIComponent(currentShareSlug) + '/rotate')
+        .then(function (data) { openShare(data.url, currentShareSlug); toast('New link generated — the old one no longer works', 'ok'); })
+        .catch(function (e) { toast('Regenerate: ' + escapeText(e.message), 'err'); });
     });
     $('share').addEventListener('click', function (e) { if (e.target.hasAttribute('data-close-share')) closeOverlay($('share')); });
 
@@ -1472,7 +1483,7 @@ body { --row-gap: 16px; --field-mb: 16px; --card-pad: 24px; }
             '<button class="mini-btn" data-dup type="button">Duplicate</button>' +
             '<button class="mini-btn danger" data-del type="button">Delete</button>' +
           '</span>';
-        if (published) row.querySelector('[data-share]').addEventListener('click', function () { openShare(pagePath(p)); });
+        if (published) row.querySelector('[data-share]').addEventListener('click', function () { closeOverlay($('pages-drawer')); openShare(pagePath(p), p.slug); });
         row.querySelector('[data-edit]').addEventListener('click', function () {
           if (!t) { toast('Template "' + escapeText(p.config.template) + '" no longer exists.', 'err'); return; }
           slugTouched = true; editingSlug = p.slug; currentStatus = p.status || 'published'; dirty = false;
@@ -1589,7 +1600,7 @@ body { --row-gap: 16px; --field-mb: 16px; --card-pad: 24px; }
           clearDraft(); applyEditState(); updateSlugWarn();
           if (status === 'published') {
             if (wasPublished) { toast('Updated → <a href="' + data.url + '" target="_blank" rel="noopener">' + data.url + '</a>', 'ok'); }
-            else { toast('Published', 'ok'); openShare(data.url); }  // share the link on first publish
+            else { toast('Published', 'ok'); openShare(data.url, data.slug); }  // share the link on first publish
           } else {
             toast(wasPublished ? 'Unpublished — saved as draft' : 'Draft saved', 'ok');
           }

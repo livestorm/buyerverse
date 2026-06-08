@@ -328,6 +328,26 @@ test('proposal pages require the capability token in the URL', async () => {
   await fetch(`${base}/api/pages/secret`, { method: 'DELETE', headers: AUTH });
 });
 
+test('rotating a token disables the old link and mints a working new one', async () => {
+  const post = await fetch(`${base}/api/pages`, {
+    method: 'POST', headers: JSON_HEADERS,
+    body: JSON.stringify({ slug: 'rot', template: 'renewal', values: sampleValues(), status: 'published' })
+  });
+  const url1 = (await post.json()).url;
+  assert.equal((await fetch(`${base}${url1}`)).status, 200);
+
+  const rot = await fetch(`${base}/api/pages/rot/rotate`, { method: 'POST', headers: AUTH });
+  assert.equal(rot.status, 200);
+  const url2 = (await rot.json()).url;
+  assert.notEqual(url2, url1);                                  // fresh token
+  assert.equal((await fetch(`${base}${url2}`)).status, 200);    // new link works
+  assert.equal((await fetch(`${base}${url1}`)).status, 404);    // old link is dead
+
+  assert.equal((await fetch(`${base}/api/pages/rot/rotate`, { method: 'POST' })).status, 401);          // needs auth
+  assert.equal((await fetch(`${base}/api/pages/ghost/rotate`, { method: 'POST', headers: AUTH })).status, 404); // unknown slug
+  await fetch(`${base}/api/pages/rot`, { method: 'DELETE', headers: AUTH });
+});
+
 test('repeated bad page guesses are rate-limited', async () => {
   const headers = { 'x-forwarded-for': '9.9.9.9' };
   let blocked = false;

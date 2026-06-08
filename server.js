@@ -465,6 +465,18 @@ async function handle(req, res) {
     return sendJSON(res, removed ? 200 : 404, removed ? { ok: true } : { error: 'page not found' });
   }
 
+  // Rotate a proposal's capability token — invalidates the old share link.
+  const rotateMatch = /^\/api\/pages\/([^/]+)\/rotate$/.exec(pathname);
+  if (rotateMatch && req.method === 'POST') {
+    if (!requireAuth(req, res)) return;
+    const slug = rotateMatch[1];
+    const row = await store.get(slug);
+    if (!row) return sendJSON(res, 404, { error: 'page not found' });
+    const token = randomToken();
+    await store.setToken(slug, token);
+    return sendJSON(res, 200, { ok: true, slug, url: '/page/' + slug + '/' + token });
+  }
+
   // Salesforce autofill — paste an Account/Contact ID to prefill prospect + AM
   const sfMatch = /^\/api\/crm\/salesforce\/([^/]+)$/.exec(pathname);
   if (sfMatch && req.method === 'GET') {
