@@ -12,10 +12,18 @@
   <style>
     /* ---------- app shell ---------- */
     html, body { height: 100%; }
-    body.app { margin: 0; height: 100vh; display: flex; flex-direction: column; overflow: hidden; background: var(--blue-pale, #eef2f9); }
+    body.app { margin: 0; height: 100vh; display: flex; flex-direction: row; overflow: hidden; background: var(--blue-pale, #eef2f9); }
 
+    /* left icon rail: global navigation + account */
+    .railnav { flex: 0 0 60px; width: 60px; height: 100vh; background: #fff; border-right: 1px solid var(--line); display: flex; flex-direction: column; align-items: center; padding: 12px 0; gap: 4px; }
+    .rail-brand { display: flex; align-items: center; justify-content: center; margin-bottom: 12px; }
+    .rail-btn { width: 42px; height: 42px; display: inline-flex; align-items: center; justify-content: center; border: 0; background: transparent; color: var(--ink-soft); border-radius: 11px; cursor: pointer; text-decoration: none; transition: background .15s, color .15s; }
+    .rail-btn:hover { background: var(--blue-pale); color: var(--blue); }
+    .rail-btn svg { width: 20px; height: 20px; }
+    .rail-bottom { margin-top: auto; }
+
+    .app-main { flex: 1 1 auto; min-width: 0; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
     .topbar { flex: 0 0 auto; display: flex; align-items: center; gap: 16px; padding: 11px 20px; background: #fff; border-bottom: 1px solid var(--line); }
-    .topbar .brand { flex: 0 0 auto; }
     .tb-mid { display: flex; align-items: center; gap: 10px; flex: 1 1 auto; min-width: 0; }
     .tb-actions { flex: 0 0 auto; display: flex; align-items: center; gap: 10px; }
     .tb-actions .btn, .tb-actions .mini-btn, .tpl-btn, .icon-btn {
@@ -174,6 +182,8 @@
 
     @media (max-width: 980px) {
       body.app { overflow: auto; height: auto; min-height: 100vh; }
+      .railnav { height: auto; min-height: 100vh; }
+      .app-main { height: auto; overflow: visible; }
       .workspace { grid-template-columns: 1fr; }
       .form-col { border-right: 0; border-bottom: 1px solid var(--line); padding-bottom: 32px; }
       .preview-frame { height: 70vh; }
@@ -181,37 +191,45 @@
   </style>
 </head>
 <body class="app">
-  <header class="topbar">
-    <a class="brand" href="/" aria-label="Buyerverse">
+  <nav class="railnav" aria-label="Sections">
+    <a class="rail-brand" href="/" aria-label="Buyerverse" title="Buyerverse">
       <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
-      <span class="brand-name">Livestorm</span>
-      <span class="brand-x">·</span>
-      <span class="brand-partner">Buyerverse</span>
     </a>
+    <button class="rail-btn" id="new-proposal" type="button" title="New proposal" aria-label="New proposal">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+    </button>
+    <button class="rail-btn" id="open-pages" type="button" title="Proposals" aria-label="Proposals">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M8 4v16"/></svg>
+    </button>
+    <button class="rail-btn" id="open-analytics" type="button" title="Analytics" aria-label="Analytics">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 20V10M12 20V4M19 20v-7"/></svg>
+    </button>
+    <a class="rail-btn rail-bottom" href="/logout" title="Log out" aria-label="Log out">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+    </a>
+  </nav>
 
-    <div class="tb-mid">
-      <button class="tpl-btn" id="open-gallery" type="button" title="Change template">
-        <span class="lbl">Template</span>
-        <span class="tpl-btn-name" id="tpl-name">—</span>
-        <span class="caret" aria-hidden="true">▾</span>
-      </button>
-      <div class="slug-wrap" id="slug-wrap" title="Proposal URL">
-        <span class="prefix">/page/</span>
-        <input class="slug-input" id="f-slug" type="text" maxlength="64" pattern="[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?" placeholder="acme-corp" required>
-        <span class="lock" id="slug-lock" aria-hidden="true" hidden>🔒</span>
+  <div class="app-main">
+    <header class="topbar">
+      <div class="tb-mid">
+        <button class="tpl-btn" id="open-gallery" type="button" title="Change template">
+          <span class="lbl">Template</span>
+          <span class="tpl-btn-name" id="tpl-name">—</span>
+          <span class="caret" aria-hidden="true">▾</span>
+        </button>
+        <div class="slug-wrap" id="slug-wrap" title="Proposal URL">
+          <span class="prefix">/page/</span>
+          <input class="slug-input" id="f-slug" type="text" maxlength="64" pattern="[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?" placeholder="acme-corp" required>
+          <span class="lock" id="slug-lock" aria-hidden="true" hidden>🔒</span>
+        </div>
+        <span class="status-pill draft" id="status-pill" aria-live="polite">Draft · new</span>
       </div>
-    </div>
 
-    <div class="tb-actions">
-      <span class="status-pill draft" id="status-pill" aria-live="polite">Draft · new</span>
-      <button class="icon-btn" id="new-proposal" type="button">New</button>
-      <button class="icon-btn" id="open-analytics" type="button">Analytics</button>
-      <button class="icon-btn" id="open-pages" type="button">Proposals</button>
-      <button class="icon-btn" id="save-draft" type="button">Save draft</button>
-      <button class="btn btn-primary" id="submit" type="button">Publish</button>
-      <a class="mini-btn" href="/logout">Log out</a>
-    </div>
-  </header>
+      <div class="tb-actions">
+        <button class="icon-btn" id="save-draft" type="button">Save draft</button>
+        <button class="btn btn-primary" id="submit" type="button">Publish</button>
+      </div>
+    </header>
 
   <main class="workspace">
     <div class="form-col" id="form-col">
@@ -248,7 +266,8 @@
         <iframe class="preview-frame" id="preview" title="Proposal preview"></iframe>
       </div>
     </section>
-  </main>
+    </main>
+  </div>
 
   <!-- template gallery -->
   <div class="modal" id="gallery" hidden>
