@@ -35,7 +35,10 @@ const BODY_LIMIT = 100 * 1024;
 // Builder-owned static files; template assets go through /templates/<id>/.
 const STATIC_FILES = {
   '/styles.css': 'text/css; charset=utf-8',
-  '/qr.js': 'text/javascript; charset=utf-8'
+  '/qr.js': 'text/javascript; charset=utf-8',
+  '/fonts/object-sans/regular.woff2': 'font/woff2',
+  '/fonts/object-sans/medium.woff2': 'font/woff2',
+  '/fonts/object-sans/bold.woff2': 'font/woff2'
 };
 
 const ASSET_TYPES = {

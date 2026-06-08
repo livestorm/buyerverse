@@ -5,11 +5,33 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Buyerverse — Proposal builder</title>
   <meta name="robots" content="noindex">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <!-- Typography: self-hosted Object Sans (Livestorm design system). The 3 woff2 files
+       live in /fonts/object-sans/ and are served via the STATIC whitelist in server.js. -->
   <link rel="stylesheet" href="/styles.css">
   <style>
+    /* ===== Livestorm design system — fonts + token remap (builder chrome) ===== */
+    @font-face { font-family: "Object Sans"; src: url("/fonts/object-sans/regular.woff2") format("woff2"); font-weight: 400; font-display: swap; }
+    @font-face { font-family: "Object Sans"; src: url("/fonts/object-sans/medium.woff2") format("woff2"); font-weight: 500; font-display: swap; }
+    @font-face { font-family: "Object Sans"; src: url("/fonts/object-sans/bold.woff2") format("woff2"); font-weight: 600; font-display: swap; }
+    /* Override the renewal-template tokens (from /styles.css) with DS values — chrome only;
+       the preview iframe is a separate document and keeps its own styles. */
+    body.app {
+      --font-display: "Object Sans", ui-sans-serif, system-ui, sans-serif;
+      --font-body: "Object Sans", ui-sans-serif, system-ui, sans-serif;
+      --ink: #12262B;          /* winter-green-900 */
+      --ink-soft: #3F4950;     /* grey-blue-800 */
+      --muted: #5D6D79;        /* grey-blue-600 */
+      --blue: #0B42C3;         /* livestorm-blue-700 */
+      --blue-deep: #05299E;    /* livestorm-blue-800 */
+      --blue-pale: #F0F4FF;    /* livestorm-blue-100 */
+      --blue-mist: #DCE6FE;    /* livestorm-blue-200 */
+      --line: #EAEEF1;         /* grey-blue-200 */
+      --mint-deep: #0C7C59;    /* spring-green-800 */
+      --red: #BE3A37;          /* live-red-600 */
+      --gold: #FFC91A;         /* sandstorm-yellow-600 */
+      font-family: var(--font-body);
+    }
+
     /* ---------- app shell ---------- */
     html, body { height: 100%; }
     body.app { margin: 0; height: 100vh; display: flex; flex-direction: row; overflow: hidden; background: var(--blue-pale, #eef2f9); }
