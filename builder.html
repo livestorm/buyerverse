@@ -518,6 +518,20 @@
 
     /* ---------- live preview ---------- */
 
+    // The preview runs detached (srcdoc / blob), so its base URL is the builder,
+    // not the proposal page. Inject a <base> so root-relative asset URLs resolve,
+    // and intercept in-page (#anchor) clicks so the proposal's own nav scrolls
+    // within the preview instead of navigating away to the builder.
+    function decorate(html) {
+      var inject = '<base href="' + location.origin + '/">' +
+        '<scr' + 'ipt>document.addEventListener("click",function(e){' +
+        'var a=e.target.closest&&e.target.closest(\'a[href^="#"]\');if(!a)return;' +
+        'e.preventDefault();var id=a.getAttribute("href").slice(1);' +
+        'var t=id?document.getElementById(id):null;if(t)t.scrollIntoView({behavior:"smooth"});' +
+        '},true);</scr' + 'ipt>';
+      return /<head[^>]*>/i.test(html) ? html.replace(/<head[^>]*>/i, function (m) { return m + inject; }) : inject + html;
+    }
+
     function schedulePreview() { clearTimeout(previewTimer); previewTimer = setTimeout(renderPreview, 400); }
 
     function renderPreview() {
@@ -530,7 +544,7 @@
           var errs = (data && data.errors) || [];
           if (html == null) { setStatus($('preview-status'), 'Preview failed: empty response', false); return; }
           lastPreviewHtml = html;
-          $('preview').srcdoc = html;
+          $('preview').srcdoc = decorate(html);
           if (errs.length) {
             setStatus($('preview-status'), errs.length + ' field' + (errs.length > 1 ? 's' : '') +
               ' using fallback: ' + escapeText(errs.join(' · ')), false);
@@ -554,13 +568,8 @@
 
     $('preview-open').addEventListener('click', function () {
       if (!lastPreviewHtml) return;
-      // a blob: document has no origin for root-relative asset URLs — inject <base>
-      var base = '<base href="' + location.origin + '/">';
-      var html = /<head[^>]*>/i.test(lastPreviewHtml)
-        ? lastPreviewHtml.replace(/<head[^>]*>/i, function (m) { return m + base; })
-        : base + lastPreviewHtml;
       if (lastBlobUrl) URL.revokeObjectURL(lastBlobUrl);
-      lastBlobUrl = URL.createObjectURL(new Blob([html], { type: 'text/html' }));
+      lastBlobUrl = URL.createObjectURL(new Blob([decorate(lastPreviewHtml)], { type: 'text/html' }));
       window.open(lastBlobUrl, '_blank', 'noopener');
     });
 
