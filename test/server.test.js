@@ -145,3 +145,64 @@ test('rendered pages are cacheable for five minutes', async () => {
   const res = await fetch(`${base}/page/galileo`);
   assert.equal(res.headers.get('cache-control'), 'public, max-age=300');
 });
+
+/* ---------- login gate ---------- */
+
+const COOKIE = { Cookie: 'bv_session=test-token' };
+
+test('GET / without a session redirects to /login', async () => {
+  const res = await fetch(`${base}/`, { redirect: 'manual' });
+  assert.equal(res.status, 302);
+  assert.equal(res.headers.get('location'), '/login');
+});
+
+test('GET /login serves the login form', async () => {
+  const res = await fetch(`${base}/login`);
+  assert.equal(res.status, 200);
+  assert.match(await res.text(), /name="token"/);
+});
+
+test('POST /login with the correct token sets an HttpOnly cookie and redirects', async () => {
+  const res = await fetch(`${base}/login`, {
+    method: 'POST', redirect: 'manual',
+    body: new URLSearchParams({ token: 'test-token' })
+  });
+  assert.equal(res.status, 303);
+  assert.equal(res.headers.get('location'), '/');
+  const cookie = res.headers.get('set-cookie');
+  assert.match(cookie, /bv_session=test-token/);
+  assert.match(cookie, /HttpOnly/);
+  assert.match(cookie, /SameSite=Strict/);
+});
+
+test('POST /login with a wrong token is 401 and sets no cookie', async () => {
+  const res = await fetch(`${base}/login`, {
+    method: 'POST', redirect: 'manual',
+    body: new URLSearchParams({ token: 'nope' })
+  });
+  assert.equal(res.status, 401);
+  assert.equal(res.headers.get('set-cookie'), null);
+  assert.match(await res.text(), /Invalid token/);
+});
+
+test('GET / with a valid session cookie serves the builder', async () => {
+  const res = await fetch(`${base}/`, { headers: COOKIE });
+  assert.equal(res.status, 200);
+  assert.match(await res.text(), /id="f-template"/);
+});
+
+test('the API accepts the session cookie as well as the Bearer header', async () => {
+  const viaCookie = await fetch(`${base}/api/pages`, { headers: COOKIE });
+  assert.equal(viaCookie.status, 200);
+  const viaBearer = await fetch(`${base}/api/pages`, { headers: AUTH });
+  assert.equal(viaBearer.status, 200);
+  const neither = await fetch(`${base}/api/pages`);
+  assert.equal(neither.status, 401);
+});
+
+test('GET /logout clears the cookie and then / redirects again', async () => {
+  const out = await fetch(`${base}/logout`, { redirect: 'manual' });
+  assert.equal(out.status, 302);
+  assert.equal(out.headers.get('location'), '/login');
+  assert.match(out.headers.get('set-cookie'), /bv_session=;.*Max-Age=0/);
+});

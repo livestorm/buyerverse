@@ -46,9 +46,9 @@
     }
     .field input:focus, .field textarea:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 3px rgba(37, 99, 235, .15); }
     .field .hint { font-size: .76rem; color: var(--muted); }
-    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 16px; }
-    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0 16px; }
-    .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0 16px; }
+    .grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 16px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0 16px; }
+    .grid-4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0 16px; }
     .actions { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
     .actions .btn { border: 0; }
     .status { font-size: .9rem; font-weight: 600; }
@@ -81,13 +81,14 @@
 </head>
 <body>
   <header class="site-header">
-    <div class="container header-inner">
+    <div class="container header-inner" style="display:flex;align-items:center;justify-content:space-between">
       <a class="brand" href="/" aria-label="Buyerverse">
         <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
         <span class="brand-name">Livestorm</span>
         <span class="brand-x">·</span>
         <span class="brand-partner">Buyerverse</span>
       </a>
+      <a class="mini-btn" href="/logout">Log out</a>
     </div>
   </header>
 
@@ -119,19 +120,13 @@
 
           <section class="card panel">
             <h2><span class="step">✓</span> Publish</h2>
-            <div class="token-row">
-              <div class="field">
-                <label for="f-token">Admin token</label>
-                <input id="f-token" type="password" autocomplete="off" placeholder="ADMIN_TOKEN">
-              </div>
-              <button class="btn btn-primary btn-lg" id="submit" type="button">Publish page</button>
-            </div>
-            <p class="status" id="status" role="status"></p>
+            <button class="btn btn-primary btn-lg" id="submit" type="button">Publish page</button>
+            <p class="status" id="status" role="status" style="margin-top:16px"></p>
           </section>
 
           <section class="card panel">
             <h2>Existing pages</h2>
-            <div class="pages-list" id="pages"><p class="empty">Enter the admin token to load pages.</p></div>
+            <div class="pages-list" id="pages"><p class="empty">Loading…</p></div>
             <p style="margin-top:16px"><button class="mini-btn" id="refresh" type="button">↻ Refresh list</button></p>
           </section>
         </div>
@@ -140,7 +135,7 @@
           <div class="preview-bar">
             <p class="status" id="preview-status"></p>
           </div>
-          <div class="preview-empty" id="preview-empty">Enter your admin token to activate the live preview.</div>
+          <div class="preview-empty" id="preview-empty">Preview will appear here.</div>
           <iframe class="preview-frame" id="preview" title="Page preview" hidden></iframe>
         </aside>
       </div>
@@ -158,17 +153,14 @@
     var previewTimer = null;
     var previewSeq = 0;     // stamps preview requests so late responses can't paint stale HTML
 
-    function token() { return $('f-token').value.trim(); }
-
     function api(method, path, body) {
       return fetch(path, {
         method: method,
-        headers: Object.assign(
-          { 'Authorization': 'Bearer ' + token() },
-          body ? { 'Content-Type': 'application/json' } : {}
-        ),
+        credentials: 'same-origin',           // send the session cookie
+        headers: body ? { 'Content-Type': 'application/json' } : {},
         body: body ? JSON.stringify(body) : undefined
       }).then(function (res) {
+        if (res.status === 401) { location.href = '/login'; throw new Error('Session expired'); }
         return res.json().catch(function () { return {}; }).then(function (data) {
           if (!res.ok) throw new Error(data.error || ('HTTP ' + res.status));
           return data;
@@ -280,11 +272,6 @@
 
     function renderPreview() {
       if (!current) return;
-      if (!token()) {
-        $('preview').hidden = true;
-        $('preview-empty').hidden = false;
-        return;
-      }
       var seq = ++previewSeq;
       api('POST', '/api/preview', { template: current.id, values: readValues() })
         .then(function (data) {
@@ -346,7 +333,6 @@
     /* ---------- pages list ---------- */
 
     function loadPages() {
-      if (!token()) { $('pages').innerHTML = '<p class="empty">Enter the admin token to load pages.</p>'; return; }
       api('GET', '/api/pages').then(function (data) {
         if (!data.pages.length) { $('pages').innerHTML = '<p class="empty">No pages yet.</p>'; return; }
         $('pages').innerHTML = '';
@@ -390,7 +376,6 @@
     $('submit').addEventListener('click', function () {
       var slug = $('f-slug').value.trim();
       if (!current) return;
-      if (!token()) return setStatus($('status'), 'Admin token required.', false);
       if (!/^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$/.test(slug)) {
         return setStatus($('status'), 'Invalid slug (lowercase letters, digits, hyphens).', false);
       }
@@ -407,15 +392,9 @@
 
     $('f-slug').addEventListener('input', function () { slugTouched = true; });
     $('refresh').addEventListener('click', loadPages);
-    $('f-token').value = localStorage.getItem('buyerverse-token') || '';
-    $('f-token').addEventListener('change', function () {
-      localStorage.setItem('buyerverse-token', token());
-      loadPages();
-      schedulePreview();
-    });
 
     loadTemplateList().then(function () {
-      if (token()) loadPages();
+      loadPages();
     }).catch(function () {
       $('tpl-desc').textContent = 'Couldn\'t load templates — is the server up? Refresh to retry.';
     });

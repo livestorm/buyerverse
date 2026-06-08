@@ -1,7 +1,10 @@
 /*
  * Buyerverse — proposal page builder.
  *
- *   GET    /                          builder UI
+ *   GET    /                          builder UI (redirects to /login without a session)
+ *   GET    /login                     login page (admin token → session cookie)
+ *   POST   /login                     validate token, set bv_session cookie
+ *   GET    /logout                    clear the session cookie
  *   GET    /page/<slug>               rendered proposal page (public)
  *   GET    /templates/<id>/<asset>    template assets (public)
  *   GET    /api/templates             list template manifests (public)
@@ -61,13 +64,58 @@ function sendHTML(res, status, html, cacheable) {
   res.end(html);
 }
 
-function authed(req) {
-  if (!ADMIN_TOKEN) return false;
-  const m = /^Bearer\s+(.+)$/.exec(req.headers.authorization || '');
-  if (!m) return false;
-  const a = crypto.createHash('sha256').update(m[1]).digest();
+const SESSION_COOKIE = 'bv_session';
+
+/** Timing-safe compare of a candidate string against ADMIN_TOKEN. */
+function tokenMatches(candidate) {
+  if (!ADMIN_TOKEN || typeof candidate !== 'string') return false;
+  const a = crypto.createHash('sha256').update(candidate).digest();
   const b = crypto.createHash('sha256').update(ADMIN_TOKEN).digest();
   return crypto.timingSafeEqual(a, b);
+}
+
+function parseCookies(req) {
+  const out = {};
+  for (const part of (req.headers.cookie || '').split(';')) {
+    const i = part.indexOf('=');
+    if (i < 0) continue;
+    const k = part.slice(0, i).trim();
+    if (k) out[k] = part.slice(i + 1).trim();
+  }
+  return out;
+}
+
+/** The session token carried by the bv_session cookie, or null. */
+function sessionToken(req) {
+  const raw = parseCookies(req)[SESSION_COOKIE];
+  if (raw === undefined) return null;
+  try { return decodeURIComponent(raw); } catch (e) { return null; }
+}
+
+/** Authenticated by either a Bearer header (scripts/API) or the session cookie (browser). */
+function authed(req) {
+  const m = /^Bearer\s+(.+)$/.exec(req.headers.authorization || '');
+  if (m && tokenMatches(m[1])) return true;
+  const cookieTok = sessionToken(req);
+  return cookieTok !== null && tokenMatches(cookieTok);
+}
+
+/** Render TLS-terminating proxies (and local HTTPS) advertise the original scheme here. */
+function isHttps(req) {
+  return (req.headers['x-forwarded-proto'] || '').split(',')[0].trim() === 'https';
+}
+
+/** Set-Cookie value for the session cookie; clear=true expires it immediately. */
+function sessionCookie(req, value, clear) {
+  const attrs = [`${SESSION_COOKIE}=${value}`, 'HttpOnly', 'SameSite=Strict', 'Path=/'];
+  if (isHttps(req)) attrs.push('Secure');
+  if (clear) attrs.push('Max-Age=0');
+  return attrs.join('; ');
+}
+
+function redirect(res, location, status) {
+  res.writeHead(status || 302, { Location: location });
+  res.end();
 }
 
 function requireAuth(req, res) {
@@ -82,7 +130,7 @@ function requireAuth(req, res) {
   return true;
 }
 
-function readBody(req) {
+function readRaw(req) {
   return new Promise((resolve, reject) => {
     const chunks = [];
     let size = 0;
@@ -99,12 +147,23 @@ function readBody(req) {
       }
       chunks.push(c);
     });
-    req.on('end', () => {
-      try { resolve(JSON.parse(Buffer.concat(chunks).toString('utf8') || '{}')); }
-      catch (e) { reject(Object.assign(new Error('invalid JSON body'), { status: 400 })); }
-    });
+    req.on('end', () => resolve(Buffer.concat(chunks).toString('utf8')));
     req.on('error', reject);
   });
+}
+
+function readBody(req) {
+  return readRaw(req).then(raw => {
+    try { return JSON.parse(raw || '{}'); }
+    catch (e) { throw Object.assign(new Error('invalid JSON body'), { status: 400 }); }
+  });
+}
+
+/** Login page with an optional error banner injected at the {{ERROR}} marker. */
+function renderLogin(message) {
+  const html = fs.readFileSync(path.join(ROOT, 'login.html'), 'utf8');
+  const banner = message ? `<p class="login-error" role="alert">${engine.escapeHtml(message)}</p>` : '';
+  return html.replace('{{ERROR}}', banner);
 }
 
 const NOT_FOUND_PAGE = `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><title>Page not found</title>
@@ -153,8 +212,30 @@ async function handle(req, res) {
   try { pathname = decodeURIComponent(url.pathname); }
   catch (e) { return sendHTML(res, 404, NOT_FOUND_PAGE, false); } // malformed escape — client error, not ours
 
-  // Builder UI
+  // Login
+  if (pathname === '/login' && req.method === 'GET') {
+    if (!ADMIN_TOKEN) return sendHTML(res, 200, renderLogin('This server has no ADMIN_TOKEN configured.'), false);
+    if (authed(req)) return redirect(res, '/');
+    return sendHTML(res, 200, renderLogin(''), false);
+  }
+  if (pathname === '/login' && req.method === 'POST') {
+    if (!ADMIN_TOKEN) return sendHTML(res, 503, renderLogin('This server has no ADMIN_TOKEN configured.'), false);
+    let raw;
+    try { raw = await readRaw(req); }
+    catch (e) { return sendHTML(res, e.status || 400, renderLogin('Could not read the request.'), false); }
+    const token = new URLSearchParams(raw).get('token') || '';
+    if (!tokenMatches(token)) return sendHTML(res, 401, renderLogin('Invalid token. Try again.'), false);
+    res.writeHead(303, { 'Set-Cookie': sessionCookie(req, encodeURIComponent(token), false), Location: '/' });
+    return res.end();
+  }
+  if (pathname === '/logout') {
+    res.writeHead(302, { 'Set-Cookie': sessionCookie(req, '', true), Location: '/login' });
+    return res.end();
+  }
+
+  // Builder UI (gated — the only page behind auth; proposal pages stay public)
   if (req.method === 'GET' && (pathname === '/' || pathname === '/index.html')) {
+    if (!authed(req)) return redirect(res, '/login');
     return sendHTML(res, 200, fs.readFileSync(path.join(ROOT, 'builder.html'), 'utf8'), false);
   }
 

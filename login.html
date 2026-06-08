@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Buyerverse — Sign in</title>
+  <meta name="robots" content="noindex">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+  <style>
+    .login-main { min-height: 100vh; display: grid; place-items: center; padding: 24px; }
+    .login-card { width: 100%; max-width: 380px; }
+    .login-card .brand { justify-content: center; margin-bottom: 24px; }
+    .login-card h1 { font-size: 1.4rem; margin: 0 0 6px; text-align: center; }
+    .login-card .kicker { margin: 0 0 24px; text-align: center; }
+    .login-field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 18px; }
+    .login-field label { font-size: .82rem; font-weight: 700; color: var(--ink-soft); }
+    .login-field input {
+      font: inherit; font-size: .95rem; color: var(--ink);
+      padding: 11px 14px; border: 1px solid var(--line); border-radius: 10px; background: #fbfcfe;
+      transition: border-color .15s, box-shadow .15s;
+    }
+    .login-field input:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 3px rgba(37, 99, 235, .15); }
+    .login-card .btn { width: 100%; border: 0; }
+    .login-error {
+      font-size: .85rem; font-weight: 600; color: var(--red);
+      background: #fef2f2; border: 1px solid #fecaca; border-radius: 10px;
+      padding: 10px 14px; margin: 0 0 18px;
+    }
+  </style>
+</head>
+<body>
+  <main class="login-main">
+    <div class="card login-card">
+      <a class="brand" href="/login" aria-label="Buyerverse">
+        <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span class="brand-name">Livestorm</span>
+        <span class="brand-x">·</span>
+        <span class="brand-partner">Buyerverse</span>
+      </a>
+      <h1>Sign in</h1>
+      <p class="kicker">Page builder</p>
+      {{ERROR}}
+      <form method="post" action="/login">
+        <div class="login-field">
+          <label for="token">Admin token</label>
+          <input id="token" name="token" type="password" autocomplete="current-password" autofocus required placeholder="ADMIN_TOKEN">
+        </div>
+        <button class="btn btn-primary btn-lg" type="submit">Sign in</button>
+      </form>
+    </div>
+  </main>
+</body>
+</html>
