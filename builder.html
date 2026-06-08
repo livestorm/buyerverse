@@ -31,6 +31,8 @@
       height: 38px; padding: 0 16px; font-size: .85rem; font-weight: 700;
       border-radius: 9px; display: inline-flex; align-items: center; gap: 8px; justify-content: center; cursor: pointer;
     }
+    .tb-actions .btn:disabled { opacity: .45; cursor: not-allowed; box-shadow: none; transform: none; }
+    .tb-actions .btn:disabled:hover { transform: none; box-shadow: none; }
     .tpl-btn { border: 1px solid var(--line); background: #fbfcfe; color: var(--ink); max-width: 320px; }
     .tpl-btn:hover { border-color: var(--blue); }
     .tpl-btn .tpl-btn-name { font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -400,10 +402,10 @@
       // published. Published proposals get Update / Unpublish instead.
       var pub = currentStatus === 'published';
       var unsaved = currentStatus === null;
-      $('submit').hidden = unsaved;                          // no direct publish before the first save
+      $('submit').disabled = unsaved;                        // publish stays visible but locked until the first save
+      $('submit').title = unsaved ? 'Save as a draft first, then publish' : '';
       $('submit').textContent = pub ? 'Update' : 'Publish';
       $('save-draft').textContent = pub ? 'Unpublish' : 'Save draft';
-      $('save-draft').classList.toggle('primary-action', unsaved); // Save draft is the CTA until saved
       renderStatus();
     }
     function escapeText(s) { var d = document.createElement('div'); d.textContent = String(s == null ? '' : s); return d.innerHTML; }
