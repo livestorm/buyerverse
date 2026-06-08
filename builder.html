@@ -631,11 +631,10 @@ body { --row-gap: 16px; --field-mb: 16px; --card-pad: 24px; }
 .lp-pricing .pr-badge { display: inline-block; margin-left: 8px; background: var(--livestorm-blue-700); color: #fff; font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: var(--radius-xs); text-transform: uppercase; letter-spacing: .04em; }
 
 /* ---------- Modals / drawer ---------- */
-.modal, .drawer { position: fixed; inset: 0; z-index: 900; }
-.modal { display: grid; place-items: center; }
-/* The hidden attribute must win over any author display rule (modals, drawer, restore-bar, slug-lock, …) */
+.modal { position: fixed; inset: 0; z-index: 900; display: grid; place-items: center; }
+/* The hidden attribute must win over any author display rule (modals, restore-bar, slug-lock, …) */
 [hidden] { display: none !important; }
-.modal-backdrop, .drawer-backdrop { position: absolute; inset: 0; background: rgba(9,19,22,.42); animation: fade var(--dur-base) var(--ease-out); }
+.modal-backdrop { position: absolute; inset: 0; background: rgba(9,19,22,.42); animation: fade var(--dur-base) var(--ease-out); }
 @keyframes fade { from { opacity: 0; } }
 .modal-card { position: relative; background: var(--bg-surface); border-radius: var(--radius-4xl); padding: 32px;
   width: min(720px, 92vw); max-height: 86vh; overflow: auto; box-shadow: var(--shadow-light-5); animation: pop var(--dur-base) var(--ease-out); }
@@ -659,19 +658,13 @@ body { --row-gap: 16px; --field-mb: 16px; --card-pad: 24px; }
 .tpl-card-desc { font-size: 13px; color: var(--fg-muted); line-height: 1.5; }
 .tpl-card .tc-meta { font-size: 12px; color: var(--fg-subtle); margin-top: auto; }
 
-/* drawer */
-.drawer-panel { position: absolute; top: 0; right: 0; height: 100%; width: min(480px, 94vw); background: var(--bg-surface);
-  box-shadow: var(--shadow-light-5); display: flex; flex-direction: column; animation: slidein var(--dur-base) var(--ease-out); }
-@keyframes slidein { from { transform: translateX(30px); opacity: .6; } }
-.drawer-panel header { flex: 0 0 auto; display: flex; align-items: center; justify-content: space-between; padding: 20px 22px; border-bottom: 1px solid var(--grey-blue-200); }
-.drawer-panel header h2 { margin: 0; font-size: 20px; font-weight: 600; line-height: 1.2; }
-.drawer-tools { flex: 0 0 auto; display: flex; gap: 8px; padding: 14px 22px; border-bottom: 1px solid var(--grey-blue-200); }
-.drawer-search { flex: 1 1 auto; display: flex; align-items: center; gap: 8px; height: 38px; padding: 0 12px; border: 1px solid var(--grey-blue-300); border-radius: var(--radius-default); background: var(--bg-surface); }
-.drawer-search .ic { color: var(--grey-blue-500); }
-.drawer-search input { flex: 1 1 auto; min-width: 0; border: 0; font: inherit; font-size: 13px; background: transparent; }
-.drawer-search input:focus { outline: none; }
-.drawer-tools select { font: inherit; font-size: 13px; padding: 7px 10px; border: 1px solid var(--grey-blue-300); border-radius: var(--radius-default); background: var(--bg-surface); color: var(--fg-default); cursor: pointer; }
-.pages-list { flex: 1 1 auto; overflow-y: auto; padding: 18px 22px; display: flex; flex-direction: column; gap: 10px; }
+/* proposals modal */
+.pages-tools { display: flex; gap: 8px; margin: 18px 0 4px; }
+.pages-tools input { flex: 1 1 auto; min-width: 0; height: 38px; padding: 0 12px; border: 1px solid var(--grey-blue-300);
+  border-radius: var(--radius-default); font: inherit; font-size: 13px; background: var(--bg-surface); color: var(--fg-default); }
+.pages-tools input:focus { outline: none; border-color: var(--livestorm-blue-700); }
+.pages-tools select { font: inherit; font-size: 13px; padding: 7px 10px; border: 1px solid var(--grey-blue-300); border-radius: var(--radius-default); background: var(--bg-surface); color: var(--fg-default); cursor: pointer; }
+.pages-list { display: flex; flex-direction: column; gap: 10px; margin-top: 16px; }
 .page-row { display: grid; grid-template-columns: auto 1fr; gap: 6px 12px; border: 1px solid var(--grey-blue-200); border-radius: var(--radius-default); padding: 14px 16px; background: var(--bg-surface); transition: border-color var(--dur-base) var(--ease-out), box-shadow var(--dur-base) var(--ease-out); }
 .page-row:hover { border-color: var(--grey-blue-300); box-shadow: var(--shadow-light-1); }
 .page-row .pr-top { grid-column: 1 / -1; display: flex; align-items: center; gap: 10px; }
@@ -881,15 +874,14 @@ body { --row-gap: 16px; --field-mb: 16px; --card-pad: 24px; }
     </div>
   </div>
 
-  <!-- pages drawer -->
-  <aside class="drawer" id="pages-drawer" hidden>
-    <div class="drawer-backdrop" data-close-pages></div>
-    <div class="drawer-panel" role="dialog" aria-modal="true" aria-label="Proposals">
-      <header>
-        <h2>Proposals</h2>
-        <button id="pages-close" type="button" aria-label="Close">×</button>
-      </header>
-      <div class="drawer-tools">
+  <!-- proposals modal -->
+  <div class="modal" id="pages-drawer" hidden>
+    <div class="modal-backdrop" data-close-pages></div>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-label="Proposals" style="width:min(720px,94vw)">
+      <button class="modal-close" id="pages-close" type="button" aria-label="Close">×</button>
+      <p class="kicker">Proposals</p>
+      <h2>Your proposals</h2>
+      <div class="pages-tools">
         <input id="pages-search" type="text" placeholder="Search proposals…" aria-label="Search proposals">
         <select id="pages-sort" aria-label="Sort proposals">
           <option value="updated">Recently updated</option>
@@ -904,7 +896,7 @@ body { --row-gap: 16px; --field-mb: 16px; --card-pad: 24px; }
       </div>
       <div class="pages-list" id="pages"><p class="empty">Loading…</p></div>
     </div>
-  </aside>
+  </div>
 
   <div class="toasts" id="toasts" aria-live="polite"></div>
 
