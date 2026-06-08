@@ -348,6 +348,7 @@ body { --row-gap: 16px; --field-mb: 16px; --card-pad: 24px; }
   cursor: pointer; text-decoration: none; font-size: 20px;
   transition: background var(--dur-base) var(--ease-out), color var(--dur-base) var(--ease-out);
 }
+.rail-btn svg { width: 20px; height: 20px; display: block; }
 .rail-btn:hover { background: var(--livestorm-blue-100); color: var(--livestorm-blue-700); }
 .rail-btn.active { background: var(--livestorm-blue-100); color: var(--livestorm-blue-700); }
 .rail-btn.active::before { content: ""; position: absolute; left: -14px; top: 11px; bottom: 11px; width: 3px;
@@ -627,6 +628,7 @@ body { --row-gap: 16px; --field-mb: 16px; --card-pad: 24px; }
 /* ---------- Modals / drawer ---------- */
 .modal, .drawer { position: fixed; inset: 0; z-index: 900; }
 .modal { display: grid; place-items: center; }
+.modal[hidden], .drawer[hidden] { display: none; }  /* author display must not override the hidden attribute */
 .modal-backdrop, .drawer-backdrop { position: absolute; inset: 0; background: rgba(9,19,22,.42); animation: fade var(--dur-base) var(--ease-out); }
 @keyframes fade { from { opacity: 0; } }
 .modal-card { position: relative; background: var(--bg-surface); border-radius: var(--radius-4xl); padding: 32px;
