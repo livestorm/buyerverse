@@ -293,7 +293,7 @@ body.accent-green .btn-primary:hover { background: var(--winter-green-800); }
 body.accent-green .rail-btn:hover, body.accent-green .rail-btn.active { background: var(--winter-green-100); color: var(--winter-green-800); }
 body.accent-green .rail-btn.active::before { background: var(--winter-green-700); }
 body.accent-green .step-chip.active { border-color: var(--winter-green-700); color: var(--winter-green-800); background: var(--winter-green-100); }
-body.accent-green .panel h2 .step:not(.done) { background: var(--winter-green-100); color: var(--winter-green-700); }
+body.accent-green .panel .step:not(.done) { background: var(--winter-green-100); color: var(--winter-green-700); }
 body.accent-green .panel.is-active { border-color: var(--winter-green-300); }
 body.accent-green .completion .track i:not(.done) { background: var(--winter-green-700); }
 body.accent-green .seg button.is-active { background: var(--winter-green-700); }
@@ -307,7 +307,7 @@ body.accent-blizzard .btn-primary:hover { background: var(--blizzard-700); }
 body.accent-blizzard .rail-btn:hover, body.accent-blizzard .rail-btn.active { background: var(--blizzard-100); color: var(--blizzard-800); }
 body.accent-blizzard .rail-btn.active::before { background: var(--blizzard-600); }
 body.accent-blizzard .step-chip.active { border-color: var(--blizzard-600); color: var(--blizzard-800); background: var(--blizzard-100); }
-body.accent-blizzard .panel h2 .step:not(.done) { background: var(--blizzard-100); color: var(--blizzard-700); }
+body.accent-blizzard .panel .step:not(.done) { background: var(--blizzard-100); color: var(--blizzard-700); }
 body.accent-blizzard .panel.is-active { border-color: var(--blizzard-300); }
 body.accent-blizzard .completion .track i:not(.done) { background: var(--blizzard-600); }
 body.accent-blizzard .seg button.is-active { background: var(--blizzard-600); }
@@ -399,11 +399,6 @@ body { --row-gap: 16px; --field-mb: 16px; --card-pad: 24px; }
 .slug-wrap .lock { font-size: 13px; color: var(--grey-blue-500); padding: 0 12px 0 2px; }
 
 /* status pill */
-.status-pill { display: inline-flex; align-items: center; gap: 7px; font-size: 12px; font-weight: 600;
-  padding: 6px 12px; border-radius: var(--radius-full); white-space: nowrap; border: 1px solid transparent; }
-.status-pill .dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
-.status-pill.draft { background: var(--sandstorm-yellow-100); color: var(--sandstorm-yellow-800); border-color: var(--sandstorm-yellow-300); }
-.status-pill.published { background: var(--spring-green-200); color: var(--spring-green-800); border-color: var(--spring-green-300); }
 
 /* buttons */
 .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 42px; padding: 0 18px;
@@ -490,11 +485,14 @@ body { --row-gap: 16px; --field-mb: 16px; --card-pad: 24px; }
 .panel { background: var(--bg-surface); border-radius: var(--radius-default); padding: var(--card-pad);
   box-shadow: var(--shadow-blue-3); margin-bottom: 16px; scroll-margin-top: 170px; border: 1px solid transparent; }
 .panel.is-active { border-color: var(--livestorm-blue-200); }
-.panel h2 { font-size: 16px; font-weight: 600; line-height: 1.25; margin: 0 0 2px; display: flex; align-items: center; gap: 12px; }
-.panel h2 .step { display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px;
+/* Icon sits beside the header+subheader text block, vertically centred against both. */
+.panel-head { display: flex; align-items: center; gap: 12px; margin: 0 0 14px; }
+.panel-head-text { min-width: 0; }
+.panel h2 { font-size: 16px; font-weight: 600; line-height: 1.25; margin: 0; }
+.panel .step { flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px;
   border-radius: var(--radius-xs); background: var(--livestorm-blue-100); color: var(--livestorm-blue-700); font-size: 15px; }
-.panel h2 .step.done { background: var(--spring-green-200); color: var(--spring-green-800); }
-.panel .panel-desc { font-size: 13px; color: var(--fg-muted); margin: 0 0 14px 42px; }
+.panel .step.done { background: var(--spring-green-200); color: var(--spring-green-800); }
+.panel .panel-desc { font-size: 13px; color: var(--fg-muted); margin: 2px 0 0; }
 
 .field-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0 16px; }
 .field-grid.cols-1 { grid-template-columns: 1fr; }
@@ -775,7 +773,6 @@ body { --row-gap: 16px; --field-mb: 16px; --card-pad: 24px; }
           <input class="slug-input" id="f-slug" type="text" maxlength="64" pattern="[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?" placeholder="acme-corp" required>
           <span class="lock" id="slug-lock" aria-hidden="true" hidden>🔒</span>
         </div>
-        <span class="status-pill draft" id="status-pill" aria-live="polite">Draft · new</span>
       </div>
 
       <div class="tb-actions">
@@ -958,10 +955,6 @@ body { --row-gap: 16px; --field-mb: 16px; --card-pad: 24px; }
     function setStatus(el, msg, ok) { el.className = 'status ' + (ok ? 'ok' : 'err'); el.innerHTML = msg; }
     // Reflect the proposal's saved status + unsaved edits in the topbar pill.
     function renderStatus() {
-      var pill = $('status-pill');
-      var st = currentStatus || 'draft';
-      pill.className = 'status-pill ' + st;
-      pill.textContent = (st === 'published' ? 'Published' : 'Draft');
       var ss = $('save-state');
       if (ss) ss.textContent = dirty ? 'Unsaved changes' : (currentStatus ? 'Saved' : 'Not saved yet');
     }
@@ -1051,10 +1044,12 @@ body { --row-gap: 16px; --field-mb: 16px; --card-pad: 24px; }
         var section = document.createElement('section');
         section.className = 'card panel';
         section.id = 'sec-' + gi;
-        var h = document.createElement('h2');
-        h.innerHTML = '<span class="step">' + (gi + 1) + '</span> ' + escapeText(g);
-        section.appendChild(h);
-        if (GROUP_DESC[g]) { var pd = document.createElement('p'); pd.className = 'panel-desc'; pd.textContent = GROUP_DESC[g]; section.appendChild(pd); }
+        var head = document.createElement('div');
+        head.className = 'panel-head';
+        var headHtml = '<span class="step">' + (gi + 1) + '</span><div class="panel-head-text"><h2>' + escapeText(g) + '</h2>';
+        if (GROUP_DESC[g]) headHtml += '<p class="panel-desc">' + escapeText(GROUP_DESC[g]) + '</p>';
+        head.innerHTML = headHtml + '</div>';
+        section.appendChild(head);
         var grid = document.createElement('div');
         grid.className = 'field-grid';
         byGroup[g].forEach(function (f) {
@@ -1151,7 +1146,7 @@ body { --row-gap: 16px; --field-mb: 16px; --card-pad: 24px; }
       // section-header badges: number → check when the section is complete
       sections.forEach(function (s, i) {
         var ok = sectionComplete(s);
-        var badge = s.el.querySelector('h2 .step');
+        var badge = s.el.querySelector('.step');
         if (badge) { badge.classList.toggle('done', ok); badge.innerHTML = ok ? CHECK_SVG : String(i + 1); }
       });
       // overall completion meter (share of valid fields)
