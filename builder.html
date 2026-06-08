@@ -548,8 +548,10 @@ body { --row-gap: 16px; --field-mb: 16px; --card-pad: 24px; }
   font-size: 12px; color: var(--fg-muted); min-width: 0; }
 .browser-url .ic { font-size: 12px; color: var(--grey-blue-500); }
 .browser-url span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.preview-scroll { max-height: calc(100vh - 220px); overflow: auto; }
-.device.mobile .preview-scroll, .device.tablet .preview-scroll { max-height: calc(100vh - 200px); }
+/* Fixed-height window; the iframe scrolls its OWN content (single scroller, no
+   chaining) so the wheel works on the first gesture in either direction. */
+.preview-scroll { height: calc(100vh - 220px); overflow: hidden; }
+.device.mobile .preview-scroll, .device.tablet .preview-scroll { height: calc(100vh - 200px); }
 
 /* ===== Live proposal hero (rendered on the Livestorm DS) ===== */
 .lp { font-family: var(--font-sans); background: var(--bg-surface); color: var(--winter-green-900); }
@@ -819,7 +821,7 @@ body { --row-gap: 16px; --field-mb: 16px; --card-pad: 24px; }
               <div class="browser-url"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span id="browser-url">buyerverse.onrender.com/page/</span></div>
             </div>
             <div class="preview-scroll">
-              <iframe id="preview" title="Proposal preview" style="width:100%;border:0;display:block;height:600px;background:#fff;"></iframe>
+              <iframe id="preview" title="Proposal preview" style="width:100%;border:0;display:block;height:100%;background:#fff;"></iframe>
             </div>
           </div>
         </div>
@@ -1246,26 +1248,10 @@ body { --row-gap: 16px; --field-mb: 16px; --card-pad: 24px; }
       });
     });
 
-    // Size the iframe to exactly its content height. The preview is same-origin srcdoc,
-    // so we can read its height directly. A ResizeObserver keeps it exact as late layout
-    // (web fonts, images) lands — otherwise the iframe keeps a sliver of internal scroll
-    // that swallows the first wheel gesture ("scroll twice"). With it exact, there is no
-    // inner scroll and the wheel chains straight to .preview-scroll.
-    var previewRO = null;
-    function fitPreview() {
-      var f = $('preview');
-      try {
-        var de = f.contentDocument.documentElement;
-        f.style.height = de.scrollHeight + 'px';
-        if (window.ResizeObserver) {
-          if (previewRO) previewRO.disconnect();
-          previewRO = new ResizeObserver(function () {
-            try { f.style.height = f.contentDocument.documentElement.scrollHeight + 'px'; } catch (e) {}
-          });
-          previewRO.observe(de);
-        }
-      } catch (e) {}
-    }
+    // The iframe is a fixed-height window that scrolls its own content (see .preview-scroll),
+    // so there is no auto-sizing: setting an inline height here would override height:100% and
+    // reintroduce parent scroll-chaining (the wheel "blocks then works on direction change").
+    function fitPreview() {}
     $('preview').addEventListener('load', fitPreview);
 
     $('preview-open').addEventListener('click', function () {
