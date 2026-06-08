@@ -200,39 +200,6 @@ const NOT_FOUND_PAGE = `<!DOCTYPE html><html lang="en"><head><meta charset="utf-
 main{text-align:center}h1{font-size:3rem;margin:0 0 8px}p{color:#9db8f5}</style></head>
 <body><main><h1>404</h1><p>This proposal page does not exist.</p></main></body></html>`;
 
-/* ---------- legacy conversion ---------- */
-
-/** Convert a pre-templates config row ({prospect, am, kpis, pricing}) to the galileo template shape. */
-function legacyToGalileo(c) {
-  return {
-    template: 'galileo',
-    values: {
-      prospect: c.prospect, am_name: c.am.name, am_email: c.am.email,
-      kpi_schools: c.kpis.schools, kpi_users: c.kpis.users, kpi_sessions: c.kpis.sessions,
-      kpi_registrants: c.kpis.registrants, kpi_attendees: c.kpis.attendees,
-      kpi_rate: c.kpis.rate, kpi_nps: c.kpis.nps,
-      price_current: c.pricing.currentAnnual,
-      vol_1: c.pricing.volumes[0], vol_2: c.pricing.volumes[1], vol_3: c.pricing.volumes[2],
-      discount_1: c.pricing.discounts[0], discount_2: c.pricing.discounts[1], discount_3: c.pricing.discounts[2],
-      price_1: c.pricing.initial[0], price_2: c.pricing.initial[1], price_3: c.pricing.initial[2]
-    }
-  };
-}
-
-async function convertLegacyPages() {
-  for (const row of await store.list()) {
-    if (!row.config.template && row.config.prospect) {
-      try {
-        await store.upsert(row.slug, legacyToGalileo(row.config));
-        console.log(`converted legacy page /page/${row.slug} to template galileo`);
-      } catch (e) {
-        // A partial legacy row must not take the whole service down.
-        console.error(`skipping legacy page /page/${row.slug}: ${e.message}`);
-      }
-    }
-  }
-}
-
 /* ---------- routes ---------- */
 
 async function handle(req, res) {
@@ -367,15 +334,6 @@ const server = http.createServer((req, res) => {
 async function start(port = PORT) {
   engine.loadTemplates(); // fail fast on malformed templates
   await store.init();
-  await convertLegacyPages();
-  if (!(await store.get('galileo'))) {
-    const g = engine.getTemplate('galileo');
-    if (g) {
-      const { values } = engine.validateValues(g.manifest, {}, { lenient: true }); // defaults
-      await store.upsert('galileo', { template: 'galileo', values });
-      console.log('seeded /page/galileo');
-    }
-  }
   return new Promise((resolve, reject) => {
     server.listen(port, '0.0.0.0', () => {
       const actual = server.address().port;
@@ -393,4 +351,4 @@ if (require.main === module) {
   });
 }
 
-module.exports = { server, start, legacyToGalileo };
+module.exports = { server, start };

@@ -4,7 +4,7 @@
 
 **Goal:** Replace the single hardcoded proposal template with a `templates/` directory of manifest-driven templates, and add a side-by-side live preview to the builder.
 
-**Architecture:** A new generic engine (`engine.js`) scans `templates/<id>/` directories, validates configs against each template's `template.json` field schema, and does `{{token}}` substitution into the template's `index.html`. The server exposes `/api/templates`, `/api/preview` (lenient validation, nothing stored), and `/templates/<id>/<asset>`. The builder generates its form from the selected manifest and renders a debounced preview into an iframe. The existing Galileo page migrates to `templates/galileo/` with all derived values (price matrix, FR/EN number formatting) computed in its own `page.js`.
+**Architecture:** A new generic engine (`engine.js`) scans `templates/<id>/` directories, validates configs against each template's `template.json` field schema, and does `{{token}}` substitution into the template's `index.html`. The server exposes `/api/templates`, `/api/preview` (lenient validation, nothing stored), and `/templates/<id>/<asset>`. The builder generates its form from the selected manifest and renders a debounced preview into an iframe. The existing Acme page migrates to `templates/renewal/` with all derived values (price matrix, FR/EN number formatting) computed in its own `page.js`.
 
 **Tech Stack:** Node 18+ (zero runtime deps beyond `pg`), `node:test` built-in test runner, vanilla JS in the browser.
 
@@ -580,28 +580,28 @@ git commit -m "feat: template rendering with token substitution"
 
 ---
 
-### Task 5: The galileo template directory
+### Task 5: The renewal template directory
 
-Migrates the existing page into `templates/galileo/`. The server still uses the old pipeline after this task (rewired in Task 6); the engine tests prove the new template renders.
+Migrates the existing page into `templates/renewal/`. The server still uses the old pipeline after this task (rewired in Task 6); the engine tests prove the new template renders.
 
 **Files:**
-- Create: `templates/galileo/template.json`
-- Create: `templates/galileo/index.html` (from `template.html`)
-- Create: `templates/galileo/page.js` (from `app.js`)
-- Create: `templates/galileo/styles.css` (copy of `styles.css`)
+- Create: `templates/renewal/template.json`
+- Create: `templates/renewal/index.html` (from `template.html`)
+- Create: `templates/renewal/page.js` (from `app.js`)
+- Create: `templates/renewal/styles.css` (copy of `styles.css`)
 - Modify: `test/engine.test.js`
 
 - [ ] **Step 1: Write the manifest**
 
-Create `templates/galileo/template.json` (defaults = today's seeded Galileo page):
+Create `templates/renewal/template.json` (defaults = today's seeded Acme page):
 
 ```json
 {
   "name": "Renewal proposal — education",
-  "description": "Bilingual FR/EN renewal microsite (original Galileo layout)",
+  "description": "Bilingual FR/EN renewal microsite (original Acme layout)",
   "nameField": "prospect",
   "fields": [
-    { "id": "prospect", "label": "Prospect name", "type": "text", "required": true, "max": 80, "group": "Prospect", "default": "Galileo" },
+    { "id": "prospect", "label": "Prospect name", "type": "text", "required": true, "max": 80, "group": "Prospect", "default": "Acme" },
     { "id": "am_name", "label": "Name", "type": "text", "required": true, "max": 80, "group": "Account manager", "default": "Tiphaine Lemerle" },
     { "id": "am_email", "label": "Email", "type": "email", "required": true, "group": "Account manager", "default": "tiphaine.lemerle@livestorm.co" },
     { "id": "kpi_schools", "label": "Schools", "type": "number", "int": true, "min": 0, "group": "2025 key figures", "default": 34 },
@@ -628,11 +628,11 @@ Create `templates/galileo/template.json` (defaults = today's seeded Galileo page
 - [ ] **Step 2: Migrate index.html**
 
 ```bash
-git mv template.html templates/galileo/index.html
-cp styles.css templates/galileo/styles.css
+git mv template.html templates/renewal/index.html
+cp styles.css templates/renewal/styles.css
 ```
 
-Then apply these exact replacements in `templates/galileo/index.html`:
+Then apply these exact replacements in `templates/renewal/index.html`:
 
 | Old token | New content | Notes |
 |---|---|---|
@@ -667,13 +667,13 @@ to:
 ```
 
 Asset references change:
-- `<link rel="stylesheet" href="/styles.css">` → `href="/templates/galileo/styles.css"`
-- `<script src="/app.js"></script>` → `<script src="/templates/galileo/page.js"></script>`
+- `<link rel="stylesheet" href="/styles.css">` → `href="/templates/renewal/styles.css"`
+- `<script src="/app.js"></script>` → `<script src="/templates/renewal/page.js"></script>`
 
 `{{PAGE_CONFIG_JSON}}` stays as-is. Verify zero stale tokens remain:
 
 ```bash
-grep -o '{{[A-Z][A-Z_0-9]*}}' templates/galileo/index.html
+grep -o '{{[A-Z][A-Z_0-9]*}}' templates/renewal/index.html
 ```
 
 Expected output: only `{{PAGE_CONFIG_JSON}}`.
@@ -681,10 +681,10 @@ Expected output: only `{{PAGE_CONFIG_JSON}}`.
 - [ ] **Step 3: Migrate page.js**
 
 ```bash
-git mv app.js templates/galileo/page.js
+git mv app.js templates/renewal/page.js
 ```
 
-In `templates/galileo/page.js`, replace the entire "Page config" block (the `var CFG = window.PAGE_CONFIG || {...}` statement) with an adapter that rebuilds the same `CFG` shape from the new flat values (so the EN dictionary below it stays untouched):
+In `templates/renewal/page.js`, replace the entire "Page config" block (the `var CFG = window.PAGE_CONFIG || {...}` statement) with an adapter that rebuilds the same `CFG` shape from the new flat values (so the EN dictionary below it stays untouched):
 
 ```js
   /* ---------- Page config adapter ----------
@@ -692,7 +692,7 @@ In `templates/galileo/page.js`, replace the entire "Page config" block (the `var
      Rebuild the structured CFG the dictionaries below consume; derived
      values (price rows, initials) are computed here, not on the server. */
   var FALLBACK = {
-    prospect: 'Galileo', am_name: 'Tiphaine Lemerle', am_email: 'tiphaine.lemerle@livestorm.co',
+    prospect: 'Acme', am_name: 'Tiphaine Lemerle', am_email: 'tiphaine.lemerle@livestorm.co',
     kpi_schools: 34, kpi_users: 589, kpi_sessions: 1210, kpi_registrants: 39351,
     kpi_attendees: 22263, kpi_rate: 57, kpi_nps: 7.7,
     price_current: 120000, vol_1: 25000, vol_2: 40000, vol_3: 60000,
@@ -767,10 +767,10 @@ Immediately after the existing `var EN = { ... };` dictionary, add the FR value 
 Append to `test/engine.test.js`:
 
 ```js
-test('the galileo template loads and renders its defaults with no stale tokens', () => {
+test('the renewal template loads and renders its defaults with no stale tokens', () => {
   const map = loadTemplates(path.join(__dirname, '..', 'templates'));
-  const t = map.get('galileo');
-  assert.ok(t, 'templates/galileo must exist');
+  const t = map.get('renewal');
+  assert.ok(t, 'templates/renewal must exist');
   const defaults = {};
   for (const f of t.manifest.fields) defaults[f.id] = f.default;
   const { values, error } = require('../engine').validateValues(t.manifest, defaults);
@@ -778,8 +778,8 @@ test('the galileo template loads and renders its defaults with no stale tokens',
   const html = renderTemplate(t, values);
   const stale = html.match(/\{\{\w+\}\}/g);
   assert.equal(stale, null, `unreplaced tokens: ${stale}`);
-  assert.match(html, /<title>Galileo × Livestorm/);
-  assert.match(html, /\/templates\/galileo\/page\.js/);
+  assert.match(html, /<title>Acme × Livestorm/);
+  assert.match(html, /\/templates\/renewal\/page\.js/);
 });
 ```
 
@@ -793,7 +793,7 @@ Expected: PASS (19 tests). If stale tokens are reported, fix the missed spots in
 ```bash
 git add templates/ test/engine.test.js
 git rm --cached template.html app.js 2>/dev/null || true
-git commit -m "feat: migrate Galileo page into templates/galileo"
+git commit -m "feat: migrate Acme page into templates/renewal"
 ```
 
 ---
@@ -823,7 +823,7 @@ let base;
 const AUTH = { Authorization: 'Bearer test-token' };
 const JSON_HEADERS = { ...AUTH, 'Content-Type': 'application/json' };
 
-function galileoValues(over = {}) {
+function renewalValues(over = {}) {
   return {
     prospect: 'Acme', am_name: 'Jane Doe', am_email: 'jane@livestorm.co',
     kpi_schools: 10, kpi_users: 100, kpi_sessions: 50, kpi_registrants: 2000,
@@ -840,11 +840,11 @@ test.before(async () => {
 });
 test.after(() => server.close());
 
-test('GET /api/templates lists galileo with its field schema (no auth)', async () => {
+test('GET /api/templates lists renewal with its field schema (no auth)', async () => {
   const res = await fetch(`${base}/api/templates`);
   assert.equal(res.status, 200);
   const { templates } = await res.json();
-  const g = templates.find(t => t.id === 'galileo');
+  const g = templates.find(t => t.id === 'renewal');
   assert.ok(g);
   assert.equal(g.nameField, 'prospect');
   assert.ok(g.fields.length >= 20);
@@ -853,15 +853,15 @@ test('GET /api/templates lists galileo with its field schema (no auth)', async (
 test('POST /api/preview renders without storing; lenient errors reported', async () => {
   const res = await fetch(`${base}/api/preview`, {
     method: 'POST', headers: JSON_HEADERS,
-    body: JSON.stringify({ template: 'galileo', values: galileoValues({ prospect: '', kpi_nps: 99 }) })
+    body: JSON.stringify({ template: 'renewal', values: renewalValues({ prospect: '', kpi_nps: 99 }) })
   });
   assert.equal(res.status, 200);
   const { html, errors } = await res.json();
-  assert.match(html, /<title>Galileo × Livestorm/); // prospect fell back to default
+  assert.match(html, /<title>Acme × Livestorm/); // prospect fell back to default
   assert.equal(errors.length, 2);
   // nothing stored
   const list = await (await fetch(`${base}/api/pages`, { headers: AUTH })).json();
-  assert.deepEqual(list.pages.map(p => p.slug), ['galileo']);
+  assert.deepEqual(list.pages.map(p => p.slug), ['renewal']);
 });
 
 test('POST /api/preview requires auth and a known template', async () => {
@@ -876,7 +876,7 @@ test('POST /api/preview requires auth and a known template', async () => {
 test('publish -> render -> delete round-trip with the new payload', async () => {
   const post = await fetch(`${base}/api/pages`, {
     method: 'POST', headers: JSON_HEADERS,
-    body: JSON.stringify({ slug: 'acme', template: 'galileo', values: galileoValues() })
+    body: JSON.stringify({ slug: 'acme', template: 'renewal', values: renewalValues() })
   });
   assert.equal(post.status, 200);
   const page = await fetch(`${base}/page/acme`);
@@ -890,7 +890,7 @@ test('publish -> render -> delete round-trip with the new payload', async () => 
 test('POST /api/pages strict-validates and rejects unknown templates', async () => {
   const bad = await fetch(`${base}/api/pages`, {
     method: 'POST', headers: JSON_HEADERS,
-    body: JSON.stringify({ slug: 'bad', template: 'galileo', values: galileoValues({ am_email: 'nope' }) })
+    body: JSON.stringify({ slug: 'bad', template: 'renewal', values: renewalValues({ am_email: 'nope' }) })
   });
   assert.equal(bad.status, 400);
   assert.match((await bad.json()).error, /am_email/);
@@ -901,8 +901,8 @@ test('POST /api/pages strict-validates and rejects unknown templates', async () 
   assert.equal(unknown.status, 400);
 });
 
-test('seeded galileo page was created from manifest defaults', async () => {
-  const res = await fetch(`${base}/page/galileo`);
+test('seeded renewal page was created from manifest defaults', async () => {
+  const res = await fetch(`${base}/page/renewal`);
   assert.equal(res.status, 200);
   const html = await res.text();
   assert.match(html, /"kpi_attendees":22263/);
@@ -910,24 +910,24 @@ test('seeded galileo page was created from manifest defaults', async () => {
 
 test('legacy-shaped rows are converted on boot', async () => {
   // boot conversion already ran; simulate by checking the converter directly
-  const { legacyToGalileo } = require('../server');
-  const v = legacyToGalileo({
+  const { legacyToAcme } = require('../server');
+  const v = legacyToAcme({
     prospect: 'Old', am: { name: 'A B', email: 'a@b.co' },
     kpis: { schools: 1, users: 2, sessions: 3, registrants: 4, attendees: 5, rate: 6, nps: 7 },
     pricing: { currentAnnual: 8, volumes: [9, 10, 11], discounts: [12, 13, 14], initial: [15, 16, 17] }
   });
-  assert.equal(v.template, 'galileo');
+  assert.equal(v.template, 'renewal');
   assert.equal(v.values.kpi_attendees, 5);
   assert.equal(v.values.discount_3, 14);
   assert.equal(v.values.price_2, 16);
 });
 
 test('template assets are served; traversal and manifest access are blocked', async () => {
-  assert.equal((await fetch(`${base}/templates/galileo/styles.css`)).status, 200);
-  assert.equal((await fetch(`${base}/templates/galileo/page.js`)).status, 200);
-  assert.equal((await fetch(`${base}/templates/galileo/template.json`)).status, 404);
-  assert.equal((await fetch(`${base}/templates/galileo/index.html`)).status, 404);
-  assert.equal((await fetch(`${base}/templates/galileo/..%2Fserver.js`)).status, 404);
+  assert.equal((await fetch(`${base}/templates/renewal/styles.css`)).status, 200);
+  assert.equal((await fetch(`${base}/templates/renewal/page.js`)).status, 200);
+  assert.equal((await fetch(`${base}/templates/renewal/template.json`)).status, 404);
+  assert.equal((await fetch(`${base}/templates/renewal/index.html`)).status, 404);
+  assert.equal((await fetch(`${base}/templates/renewal/..%2Fserver.js`)).status, 404);
   assert.equal((await fetch(`${base}/templates/nope/styles.css`)).status, 404);
 });
 ```
@@ -1050,10 +1050,10 @@ main{text-align:center}h1{font-size:3rem;margin:0 0 8px}p{color:#9db8f5}</style>
 
 /* ---------- legacy conversion ---------- */
 
-/** Convert a pre-templates config row ({prospect, am, kpis, pricing}) to the galileo template shape. */
-function legacyToGalileo(c) {
+/** Convert a pre-templates config row ({prospect, am, kpis, pricing}) to the renewal template shape. */
+function legacyToAcme(c) {
   return {
-    template: 'galileo',
+    template: 'renewal',
     values: {
       prospect: c.prospect, am_name: c.am.name, am_email: c.am.email,
       kpi_schools: c.kpis.schools, kpi_users: c.kpis.users, kpi_sessions: c.kpis.sessions,
@@ -1070,8 +1070,8 @@ function legacyToGalileo(c) {
 async function convertLegacyPages() {
   for (const row of await store.list()) {
     if (!row.config.template && row.config.prospect) {
-      await store.upsert(row.slug, legacyToGalileo(row.config));
-      console.log(`converted legacy page /page/${row.slug} to template galileo`);
+      await store.upsert(row.slug, legacyToAcme(row.config));
+      console.log(`converted legacy page /page/${row.slug} to template renewal`);
     }
   }
 }
@@ -1186,12 +1186,12 @@ async function start(port = PORT) {
   engine.loadTemplates(); // fail fast on malformed templates
   await store.init();
   await convertLegacyPages();
-  if (!(await store.get('galileo'))) {
-    const g = engine.getTemplate('galileo');
+  if (!(await store.get('renewal'))) {
+    const g = engine.getTemplate('renewal');
     if (g) {
       const { values } = engine.validateValues(g.manifest, {}, { lenient: true }); // defaults
-      await store.upsert('galileo', { template: 'galileo', values });
-      console.log('seeded /page/galileo');
+      await store.upsert('renewal', { template: 'renewal', values });
+      console.log('seeded /page/renewal');
     }
   }
   return new Promise((resolve, reject) => {
@@ -1211,7 +1211,7 @@ if (require.main === module) {
   });
 }
 
-module.exports = { server, start, legacyToGalileo };
+module.exports = { server, start, legacyToAcme };
 ```
 
 Then delete the superseded modules:
@@ -1619,9 +1619,9 @@ Expected: PASS — the builder is not covered by automated tests, but the suite 
 
 Run: `ADMIN_TOKEN=dev yarn start` and open `http://localhost:3000`:
 
-1. Template dropdown shows "Renewal proposal — education"; form is grouped Prospect / Account manager / 2025 key figures / Pricing, prefilled with Galileo defaults.
+1. Template dropdown shows "Renewal proposal — education"; form is grouped Prospect / Account manager / 2025 key figures / Pricing, prefilled with Acme defaults.
 2. Without a token: preview pane shows the "enter admin token" placeholder.
-3. Enter token `dev` (then blur the field): preview renders the Galileo page in the iframe.
+3. Enter token `dev` (then blur the field): preview renders the Acme page in the iframe.
 4. Change "Prospect name" to `Acme`: slug auto-updates to `acme`; after ~0.5 s the preview hero shows Acme.
 5. Clear a required field: preview still renders (fallback) and the status line lists the field.
 6. Publish as `acme`; open `/page/acme` in a tab; verify FR + EN toggle, count-ups, and the price matrix (computed client-side) all work.
@@ -1647,18 +1647,18 @@ git commit -m "feat: template picker and live preview in the builder"
 yarn test
 ADMIN_TOKEN=dev node server.js &
 sleep 1
-curl -s localhost:3000/api/templates | grep -o '"id":"galileo"'
-curl -s -o /dev/null -w '%{http_code}\n' localhost:3000/templates/galileo/template.json   # 404
-curl -s -o /dev/null -w '%{http_code}\n' "localhost:3000/templates/galileo/..%2Fserver.js" # 404
-curl -s localhost:3000/page/galileo | grep -c '{{'                                         # 0
+curl -s localhost:3000/api/templates | grep -o '"id":"renewal"'
+curl -s -o /dev/null -w '%{http_code}\n' localhost:3000/templates/renewal/template.json   # 404
+curl -s -o /dev/null -w '%{http_code}\n' "localhost:3000/templates/renewal/..%2Fserver.js" # 404
+curl -s localhost:3000/page/renewal | grep -c '{{'                                         # 0
 kill %1
 ```
 
-Expected: tests pass; `"id":"galileo"`; `404`; `404`; `0`.
+Expected: tests pass; `"id":"renewal"`; `404`; `404`; `0`.
 
 - [ ] **Step 2: Visual check against production**
 
-Open `http://localhost:3000/page/galileo` and `https://buyerverse.onrender.com/page/galileo` side by side. Compare FR and EN: hero chips, KPI count-ups, growth chart, pricing table (initial + 9 revised prices), overage grid, AM card initials. They must match. Known acceptable difference: with JS disabled, FR numbers show unformatted and revised-price cells show "—".
+Open `http://localhost:3000/page/renewal` and `https://buyerverse.onrender.com/page/renewal` side by side. Compare FR and EN: hero chips, KPI count-ups, growth chart, pricing table (initial + 9 revised prices), overage grid, AM card initials. They must match. Known acceptable difference: with JS disabled, FR numbers show unformatted and revised-price cells show "—".
 
 - [ ] **Step 3: Update README**
 
@@ -1680,7 +1680,7 @@ Templates live in `templates/<id>/` — self-contained directories with:
 Derived values (computed prices, locale formatting, FR/EN i18n) are the
 template's own JS's job, fed by `PAGE_CONFIG`. A malformed manifest fails
 the boot — and therefore the deploy. Stored pages reference their template
-by id: `{ "template": "galileo", "values": { ... } }`.
+by id: `{ "template": "renewal", "values": { ... } }`.
 ```
 
 And update the routes table to include:
@@ -1694,9 +1694,9 @@ And update the routes table to include:
 Also update the Development section's last paragraph to:
 
 ```markdown
-FR copy lives inline in `templates/galileo/index.html` (the source of
+FR copy lives inline in `templates/renewal/index.html` (the source of
 truth); the EN dictionary and FR number formatting live in
-`templates/galileo/page.js`, fed by the server-injected `window.PAGE_CONFIG`.
+`templates/renewal/page.js`, fed by the server-injected `window.PAGE_CONFIG`.
 Run `yarn test` for the engine + server suite.
 ```
 
@@ -1713,17 +1713,17 @@ git push origin main
 After auto-deploy completes (`https://api.render.com/v1/services/srv-d8gjuknlk1mc73eviu10/deploys?limit=1` with `Authorization: Bearer $(cat ~/.render_api_key)` → status `live`):
 
 ```bash
-curl -s https://buyerverse.onrender.com/api/templates | grep -o '"id":"galileo"'
-curl -s https://buyerverse.onrender.com/page/galileo | grep -o '<title>[^<]*</title>'
+curl -s https://buyerverse.onrender.com/api/templates | grep -o '"id":"renewal"'
+curl -s https://buyerverse.onrender.com/page/renewal | grep -o '<title>[^<]*</title>'
 ```
 
-Expected: `"id":"galileo"` and `<title>Galileo × Livestorm — Renouvellement 2026</title>` (the seeded page was converted from its legacy shape on boot). Then a manual pass over the live builder: select template, live preview, publish + delete a test page.
+Expected: `"id":"renewal"` and `<title>Acme × Livestorm — Renouvellement 2026</title>` (the seeded page was converted from its legacy shape on boot). Then a manual pass over the live builder: select template, live preview, publish + delete a test page.
 
 ---
 
 ## Self-Review (completed during planning)
 
-**Spec coverage:** template directory format → Tasks 1–5; manifest-driven validation strict/lenient → Task 3; generic rendering → Task 4; Galileo migration with client-side derived values → Task 5; all routes incl. assets whitelist + traversal protection → Task 6; legacy conversion + manifest-defaults seeding → Task 6; schema-driven form + picker + debounced srcdoc preview + lenient status + edit flow → Task 7; spec's six-point test list → Tasks 5–6 automated, Task 7–8 manual; visual-parity acceptance → Task 8.
+**Spec coverage:** template directory format → Tasks 1–5; manifest-driven validation strict/lenient → Task 3; generic rendering → Task 4; Acme migration with client-side derived values → Task 5; all routes incl. assets whitelist + traversal protection → Task 6; legacy conversion + manifest-defaults seeding → Task 6; schema-driven form + picker + debounced srcdoc preview + lenient status + edit flow → Task 7; spec's six-point test list → Tasks 5–6 automated, Task 7–8 manual; visual-parity acceptance → Task 8.
 
 **Known deviation from spec (documented in header):** preview returns `{html, errors}` JSON, not raw HTML — updated in the spec in Task 6 Step 5.
 

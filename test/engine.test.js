@@ -155,10 +155,10 @@ test('renderTemplate escapes quotes for attribute contexts and blanks missing fi
   assert.doesNotMatch(html, /undefined/);
 });
 
-test('the galileo template loads and renders its defaults with no stale tokens', () => {
+test('the renewal template loads and renders its defaults with no stale tokens', () => {
   const map = loadTemplates(path.join(__dirname, '..', 'templates'));
-  const t = map.get('galileo');
-  assert.ok(t, 'templates/galileo must exist');
+  const t = map.get('renewal');
+  assert.ok(t, 'templates/renewal must exist');
   const defaults = {};
   for (const f of t.manifest.fields) defaults[f.id] = f.default;
   const { values, error } = require('../engine').validateValues(t.manifest, defaults);
@@ -166,6 +166,6 @@ test('the galileo template loads and renders its defaults with no stale tokens',
   const html = renderTemplate(t, values);
   const stale = html.match(/\{\{\w+\}\}/g);
   assert.equal(stale, null, `unreplaced tokens: ${stale}`);
-  assert.match(html, /<title>Galileo × Livestorm/);
-  assert.match(html, /\/templates\/galileo\/page\.js/);
+  assert.match(html, /<title>Acme × Livestorm/);
+  assert.match(html, /\/templates\/renewal\/page\.js/);
 });

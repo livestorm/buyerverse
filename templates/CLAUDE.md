@@ -7,7 +7,7 @@ correctly. Read it fully before editing — a malformed template **fails the boo
 and therefore the deploy** (Render keeps the previous version live).
 
 The engine is `../engine.js`; routing/asset rules are in `../server.js`. The
-working reference template is `galileo/`.
+working reference template is `renewal/`.
 
 ## What a template is
 
@@ -87,13 +87,13 @@ Default string-length caps when `max` is omitted: `text` 1000, `textarea` 5000,
 ## Client-side JS (derived values, formatting, i18n)
 
 The server substitutes raw values only. Everything else lives in your template's
-JS, fed by `window.PAGE_CONFIG.values`. See `galileo/page.js` for the pattern:
+JS, fed by `window.PAGE_CONFIG.values`. See `renewal/page.js` for the pattern:
 it rebuilds a structured config, computes the discount price matrix, formats
 numbers per locale, and runs the FR/EN dictionary — all client-side.
 
 **Security gotcha:** field values are untrusted user input. They are auto-escaped
 inside `{{…}}`, but if your JS interpolates a string value into `innerHTML`, you
-must escape it yourself. `galileo/page.js` escapes `prospect` before using it in
+must escape it yourself. `renewal/page.js` escapes `prospect` before using it in
 its English dictionary for this reason. Prefer `textContent` over `innerHTML` for
 raw values.
 

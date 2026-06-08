@@ -25,8 +25,8 @@ from a template and serve them at `/page/<slug>`.
 | `PORT`         | Injected by Render                                                |
 | `NODE_ENV`     | Set to `production` to cache the template registry (otherwise it re-scans `templates/` per request) |
 
-A `galileo` page is seeded on first boot, so the original proposal lives at
-`/page/galileo`.
+No pages exist until you create one in the builder. The bundled `renewal`
+template ships with sample defaults so a new page can be published immediately.
 
 ## Templates
 
@@ -43,7 +43,7 @@ Templates live in `templates/<id>/` — self-contained directories with:
 Derived values (computed prices, locale formatting, FR/EN i18n) are the
 template's own JS's job, fed by `PAGE_CONFIG`. A malformed manifest fails
 the boot — and therefore the deploy. Stored pages reference their template
-by id: `{ "template": "galileo", "values": { ... } }`.
+by id: `{ "template": "renewal", "values": { ... } }`.
 
 ## Development
 
@@ -52,6 +52,6 @@ ADMIN_TOKEN=dev pnpm start   # in-memory store, http://localhost:3000
 pnpm test                    # engine + server suite (node:test)
 ```
 
-FR copy lives inline in `templates/galileo/index.html` (the source of
+FR copy lives inline in `templates/renewal/index.html` (the source of
 truth); the EN dictionary and FR number formatting live in
-`templates/galileo/page.js`, fed by the server-injected `window.PAGE_CONFIG`.
+`templates/renewal/page.js`, fed by the server-injected `window.PAGE_CONFIG`.

@@ -2,7 +2,7 @@
   "name": "buyerverse",
   "version": "1.0.0",
   "private": true,
-  "description": "Galileo × Livestorm — 2026 renewal proposal microsite",
+  "description": "Livestorm renewal proposal microsite builder",
   "scripts": {
     "start": "node server.js",
     "test": "node --test"

@@ -10,7 +10,7 @@ let base;
 const AUTH = { Authorization: 'Bearer test-token' };
 const JSON_HEADERS = { ...AUTH, 'Content-Type': 'application/json' };
 
-function galileoValues(over = {}) {
+function sampleValues(over = {}) {
   return {
     prospect: 'Acme', am_name: 'Jane Doe', am_email: 'jane@livestorm.co',
     kpi_schools: 10, kpi_users: 100, kpi_sessions: 50, kpi_registrants: 2000,
@@ -27,11 +27,11 @@ test.before(async () => {
 });
 test.after(() => server.close());
 
-test('GET /api/templates lists galileo with its field schema (no auth)', async () => {
+test('GET /api/templates lists renewal with its field schema (no auth)', async () => {
   const res = await fetch(`${base}/api/templates`);
   assert.equal(res.status, 200);
   const { templates } = await res.json();
-  const g = templates.find(t => t.id === 'galileo');
+  const g = templates.find(t => t.id === 'renewal');
   assert.ok(g);
   assert.equal(g.nameField, 'prospect');
   assert.ok(g.fields.length >= 20);
@@ -40,15 +40,15 @@ test('GET /api/templates lists galileo with its field schema (no auth)', async (
 test('POST /api/preview renders without storing; lenient errors reported', async () => {
   const res = await fetch(`${base}/api/preview`, {
     method: 'POST', headers: JSON_HEADERS,
-    body: JSON.stringify({ template: 'galileo', values: galileoValues({ prospect: '', kpi_nps: 99 }) })
+    body: JSON.stringify({ template: 'renewal', values: sampleValues({ prospect: '', kpi_nps: 99 }) })
   });
   assert.equal(res.status, 200);
   const { html, errors } = await res.json();
-  assert.match(html, /<title>Galileo × Livestorm/); // prospect fell back to default
+  assert.match(html, /<title>Acme × Livestorm/); // prospect fell back to default
   assert.equal(errors.length, 2);
   // nothing stored
   const list = await (await fetch(`${base}/api/pages`, { headers: AUTH })).json();
-  assert.deepEqual(list.pages.map(p => p.slug), ['galileo']);
+  assert.deepEqual(list.pages.map(p => p.slug), []);
 });
 
 test('POST /api/preview requires auth and a known template', async () => {
@@ -63,7 +63,7 @@ test('POST /api/preview requires auth and a known template', async () => {
 test('publish -> render -> delete round-trip with the new payload', async () => {
   const post = await fetch(`${base}/api/pages`, {
     method: 'POST', headers: JSON_HEADERS,
-    body: JSON.stringify({ slug: 'acme', template: 'galileo', values: galileoValues() })
+    body: JSON.stringify({ slug: 'acme', template: 'renewal', values: sampleValues() })
   });
   assert.equal(post.status, 200);
   const page = await fetch(`${base}/page/acme`);
@@ -77,7 +77,7 @@ test('publish -> render -> delete round-trip with the new payload', async () => 
 test('POST /api/pages strict-validates and rejects unknown templates', async () => {
   const bad = await fetch(`${base}/api/pages`, {
     method: 'POST', headers: JSON_HEADERS,
-    body: JSON.stringify({ slug: 'bad', template: 'galileo', values: galileoValues({ am_email: 'nope' }) })
+    body: JSON.stringify({ slug: 'bad', template: 'renewal', values: sampleValues({ am_email: 'nope' }) })
   });
   assert.equal(bad.status, 400);
   assert.match((await bad.json()).error, /am_email/);
@@ -88,40 +88,19 @@ test('POST /api/pages strict-validates and rejects unknown templates', async () 
   assert.equal(unknown.status, 400);
 });
 
-test('seeded galileo page was created from manifest defaults', async () => {
-  const res = await fetch(`${base}/page/galileo`);
-  assert.equal(res.status, 200);
-  const html = await res.text();
-  assert.match(html, /"kpi_attendees":22263/);
-});
-
-test('legacy-shaped rows are converted on boot', async () => {
-  // boot conversion already ran; simulate by checking the converter directly
-  const { legacyToGalileo } = require('../server');
-  const v = legacyToGalileo({
-    prospect: 'Old', am: { name: 'A B', email: 'a@b.co' },
-    kpis: { schools: 1, users: 2, sessions: 3, registrants: 4, attendees: 5, rate: 6, nps: 7 },
-    pricing: { currentAnnual: 8, volumes: [9, 10, 11], discounts: [12, 13, 14], initial: [15, 16, 17] }
-  });
-  assert.equal(v.template, 'galileo');
-  assert.equal(v.values.kpi_attendees, 5);
-  assert.equal(v.values.discount_3, 14);
-  assert.equal(v.values.price_2, 16);
-});
-
 test('template assets are served; traversal and manifest access are blocked', async () => {
-  assert.equal((await fetch(`${base}/templates/galileo/styles.css`)).status, 200);
-  assert.equal((await fetch(`${base}/templates/galileo/page.js`)).status, 200);
-  assert.equal((await fetch(`${base}/templates/galileo/template.json`)).status, 404);
-  assert.equal((await fetch(`${base}/templates/galileo/index.html`)).status, 404);
-  assert.equal((await fetch(`${base}/templates/galileo/..%2Fserver.js`)).status, 404);
+  assert.equal((await fetch(`${base}/templates/renewal/styles.css`)).status, 200);
+  assert.equal((await fetch(`${base}/templates/renewal/page.js`)).status, 200);
+  assert.equal((await fetch(`${base}/templates/renewal/template.json`)).status, 404);
+  assert.equal((await fetch(`${base}/templates/renewal/index.html`)).status, 404);
+  assert.equal((await fetch(`${base}/templates/renewal/..%2Fserver.js`)).status, 404);
   assert.equal((await fetch(`${base}/templates/nope/styles.css`)).status, 404);
 });
 
 test('oversized request bodies get a clean 413, not a connection reset', async () => {
   const res = await fetch(`${base}/api/pages`, {
     method: 'POST', headers: JSON_HEADERS,
-    body: JSON.stringify({ slug: 'big', template: 'galileo', values: { prospect: 'x'.repeat(150 * 1024) } })
+    body: JSON.stringify({ slug: 'big', template: 'renewal', values: { prospect: 'x'.repeat(150 * 1024) } })
   });
   assert.equal(res.status, 413);
   assert.match((await res.json()).error, /too large/);
@@ -142,8 +121,13 @@ test('malformed percent-encoding in the path is a 404, not a 500', async () => {
 });
 
 test('rendered pages are cacheable for five minutes', async () => {
-  const res = await fetch(`${base}/page/galileo`);
+  await fetch(`${base}/api/pages`, {
+    method: 'POST', headers: JSON_HEADERS,
+    body: JSON.stringify({ slug: 'cacheable', template: 'renewal', values: sampleValues() })
+  });
+  const res = await fetch(`${base}/page/cacheable`);
   assert.equal(res.headers.get('cache-control'), 'public, max-age=300');
+  await fetch(`${base}/api/pages/cacheable`, { method: 'DELETE', headers: AUTH });
 });
 
 /* ---------- login gate ---------- */
@@ -202,7 +186,7 @@ test('POST /login with a wrong token is 401 and sets no cookie', async () => {
 test('GET / with a valid session cookie serves the builder', async () => {
   const res = await fetch(`${base}/`, { headers: COOKIE });
   assert.equal(res.status, 200);
-  assert.match(await res.text(), /id="f-template"/);
+  assert.match(await res.text(), /class="workspace"/);
 });
 
 test('the API accepts the session cookie as well as the Bearer header', async () => {

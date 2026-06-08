@@ -1,5 +1,5 @@
 /* ============================================================
-   Galileo × Livestorm — i18n (FR inline / EN dictionary),
+   Livestorm — i18n (FR inline / EN dictionary),
    scroll reveals, KPI count-ups, header state.
    ============================================================ */
 
@@ -11,9 +11,9 @@
      Rebuild the structured CFG the dictionaries below consume; derived
      values (price rows, initials) are computed here, not on the server. */
   var FALLBACK = {
-    prospect: 'Galileo', am_name: 'Tiphaine Lemerle', am_email: 'tiphaine.lemerle@livestorm.co',
-    kpi_schools: 34, kpi_users: 589, kpi_sessions: 1210, kpi_registrants: 39351,
-    kpi_attendees: 22263, kpi_rate: 57, kpi_nps: 7.7,
+    prospect: 'Acme', am_name: 'Alex Martin', am_email: 'alex.martin@livestorm.co',
+    kpi_schools: 30, kpi_users: 600, kpi_sessions: 1200, kpi_registrants: 40000,
+    kpi_attendees: 22000, kpi_rate: 55, kpi_nps: 8,
     price_current: 120000, vol_1: 25000, vol_2: 40000, vol_3: 60000,
     price_1: 120000, price_2: 143000, price_3: 163000,
     discount_1: 20, discount_2: 30, discount_3: 40
@@ -192,7 +192,7 @@
     'pil.p5c': 'A smooth experience for up to <strong>3,000 live attendees</strong>',
     'pil.p5d': 'Rock-solid stability: <strong>99.98% uptime</strong>',
     'pil.quote': '“With Livestorm, attendees at our demo webinars are highly engaged. They’re also more likely to convert thanks to the highly interactive format. Livestorm is a very intuitive, complete platform. Even after a year, I still haven’t run into a single technical issue — it’s very reliable.”',
-    'pil.quoteRole': 'Field Marketing Specialist · Brevo',
+    'pil.quoteRole': 'Enterprise customer',
 
     'offer.interlude': '2026 Renewal',
     'offer.kicker': 'Before / After',

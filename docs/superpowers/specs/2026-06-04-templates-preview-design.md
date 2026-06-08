@@ -28,7 +28,7 @@ A template is a directory under `templates/<id>/`; the directory name is the
 template id (same character rules as page slugs).
 
 ```
-templates/galileo/
+templates/renewal/
   template.json   ← manifest (display info + field schema)
   index.html      ← the page, with {{token}} placeholders
   styles.css      ← template-owned assets (any name/count)
@@ -40,7 +40,7 @@ templates/galileo/
 ```json
 {
   "name": "Renewal proposal — education",
-  "description": "Bilingual FR/EN renewal microsite (original Galileo layout)",
+  "description": "Bilingual FR/EN renewal microsite (original Acme layout)",
   "nameField": "prospect",
   "fields": [
     { "id": "prospect", "label": "Prospect name", "type": "text",
@@ -61,7 +61,7 @@ templates/galileo/
 - Field ids must match `^[a-z][a-z0-9_]*$` — they double as template tokens.
 - `nameField`: id of the field shown in the builder's page list (falls back
   to the page slug).
-- `default` values double as form prefill; the Galileo manifest's defaults
+- `default` values double as form prefill; the Acme manifest's defaults
   reproduce today's seeded page.
 
 ### Page contract (`index.html`)
@@ -79,12 +79,12 @@ templates/galileo/
 No schema change. `pages.config` JSONB becomes:
 
 ```json
-{ "template": "galileo", "values": { "prospect": "Galileo", ... } }
+{ "template": "renewal", "values": { "prospect": "Acme", ... } }
 ```
 
 On boot, a one-time converter rewrites legacy-shaped rows (the current
 `{prospect, am, kpis, pricing}` structure) into the new shape. The seed
-creates the `galileo` page from the Galileo manifest's defaults; `defaults.js`
+creates the `renewal` page from the Acme manifest's defaults; `defaults.js`
 is deleted.
 
 ## Server
@@ -136,17 +136,17 @@ is deleted.
 - **Edit flow:** "Edit" switches the picker to the page's template and loads
   its values.
 
-## Galileo migration
+## Acme migration
 
-- `template.html` → `templates/galileo/index.html`; `app.js` →
-  `templates/galileo/page.js`; the page stylesheet → `templates/galileo/styles.css`.
+- `template.html` → `templates/renewal/index.html`; `app.js` →
+  `templates/renewal/page.js`; the page stylesheet → `templates/renewal/styles.css`.
   The builder keeps its own copy of the base stylesheet at `/styles.css`.
 - FR formatting + price-matrix math currently in `render.js` move into
   `page.js` — FR becomes a second dictionary alongside the existing EN one,
   both fed by `PAGE_CONFIG`.
 - Tokens in `index.html` change from derived names (`{{SCHOOLS_FR}}`) to flat
   field ids (`{{kpi_schools}}`) — formatted display is template-JS territory.
-- Acceptance: `/page/galileo` must be **visually identical** to the currently
+- Acceptance: `/page/renewal` must be **visually identical** to the currently
   deployed version in both FR and EN.
 
 ## Error handling
@@ -160,11 +160,11 @@ is deleted.
 
 Extend the existing smoke-test pattern (boot with memory store, curl):
 
-1. `GET /api/templates` lists `galileo` with its full field schema.
+1. `GET /api/templates` lists `renewal` with its full field schema.
 2. `POST /api/preview` returns HTML with values substituted, zero unreplaced
    `{{...}}` tokens, and the lenient fallback applied for a missing field.
 3. Publish → render → delete round-trip with `{slug, template, values}`.
 4. Legacy-config row is converted on boot and still renders.
-5. `GET /templates/galileo/../server.js` (traversal) and
-   `GET /templates/galileo/template.json` are rejected.
-6. Manual visual check: `/page/galileo` FR + EN identical to production.
+5. `GET /templates/renewal/../server.js` (traversal) and
+   `GET /templates/renewal/template.json` are rejected.
+6. Manual visual check: `/page/renewal` FR + EN identical to production.
