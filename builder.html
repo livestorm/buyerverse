@@ -34,20 +34,23 @@
     .slug-input { border: 0; font: inherit; font-size: .88rem; color: var(--ink); padding: 0 12px 0 2px; width: 140px; background: transparent; }
     .slug-input:focus { outline: none; }
     .slug-wrap:focus-within { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(37, 99, 235, .15); }
+    .slug-wrap.warn { border-color: #f59e0b; background: #fffbeb; }
+    .save-state { font-size: .76rem; font-weight: 700; color: var(--muted); white-space: nowrap; }
+    .save-state.saved { color: var(--mint-deep); }
 
-    /* ---------- workspace: rail | form | preview ---------- */
-    .workspace { flex: 1 1 auto; display: grid; grid-template-columns: 220px minmax(340px, 460px) 1fr; min-height: 0; }
+    /* ---------- workspace: form | preview ---------- */
+    .workspace { flex: 1 1 auto; display: grid; grid-template-columns: minmax(420px, 600px) 1fr; min-height: 0; }
 
-    .rail { overflow-y: auto; background: #fff; border-right: 1px solid var(--line); padding: 22px 14px; }
-    .rail .kicker { margin: 0 8px; }
-    .rail h1 { font-size: 1.05rem; margin: 2px 8px 18px; }
-    .rail-item { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; border: 0; background: transparent; cursor: pointer; font: inherit; font-size: .86rem; font-weight: 600; color: var(--ink-soft); padding: 9px 10px; border-radius: 9px; margin-bottom: 2px; }
-    .rail-item:hover { background: var(--blue-pale); }
-    .rail-item.active { background: var(--blue-mist); color: var(--blue-deep); }
-    .rail-item .tick { flex: 0 0 auto; width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid var(--line); display: inline-flex; align-items: center; justify-content: center; font-size: .62rem; color: transparent; }
-    .rail-item.done .tick { background: var(--mint-deep); border-color: var(--mint-deep); color: #fff; }
-
-    .form-col { position: relative; overflow-y: auto; background: #fbfcfe; border-right: 1px solid var(--line); padding: 22px 22px 120px; }
+    .form-col { position: relative; overflow-y: auto; background: #fbfcfe; border-right: 1px solid var(--line); padding: 0 22px 120px; }
+    .form-head { position: sticky; top: 0; z-index: 6; background: #fbfcfe; padding: 18px 0 12px; margin-bottom: 14px; border-bottom: 1px solid var(--line); }
+    .form-head .kicker { margin: 0; }
+    .form-head h1 { font-size: 1.15rem; margin: 2px 0 12px; }
+    .stepper { display: flex; flex-wrap: wrap; gap: 6px; }
+    .step-chip { display: inline-flex; align-items: center; gap: 7px; padding: 6px 11px; border: 1px solid var(--line); border-radius: 999px; background: #fff; font: inherit; font-size: .8rem; font-weight: 700; color: var(--ink-soft); cursor: pointer; }
+    .step-chip:hover { border-color: var(--blue); }
+    .step-chip.active { border-color: var(--blue); color: var(--blue-deep); background: var(--blue-mist); }
+    .step-chip .tick { flex: 0 0 auto; width: 17px; height: 17px; border-radius: 50%; border: 1.5px solid var(--line); display: inline-flex; align-items: center; justify-content: center; font-size: .6rem; color: transparent; }
+    .step-chip.done .tick { background: var(--mint-deep); border-color: var(--mint-deep); color: #fff; }
     .panel { margin-bottom: 18px; }
     .panel h2 { font-size: 1rem; margin-bottom: 14px; display: flex; align-items: center; gap: 10px; }
     .panel h2 .step { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 8px; background: var(--blue-mist); color: var(--blue-deep); font-size: .8rem; font-weight: 800; }
@@ -61,6 +64,11 @@
     .field input:focus, .field textarea:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 3px rgba(37, 99, 235, .15); }
     .field .hint { font-size: .74rem; color: var(--muted); }
     .field-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0 14px; }
+    .with-unit { position: relative; }
+    .with-unit .unit { position: absolute; right: 12px; top: 9px; font-size: .82rem; color: var(--muted); pointer-events: none; }
+    .with-unit input { padding-right: 30px; }
+    .field.invalid input, .field.invalid textarea { border-color: var(--red); }
+    .field-err { font-size: .74rem; color: var(--red); font-weight: 600; }
 
     /* ---------- preview ---------- */
     .preview-pane { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
@@ -98,6 +106,9 @@
     .drawer-panel header { flex: 0 0 auto; display: flex; align-items: center; justify-content: space-between; padding: 18px 20px; border-bottom: 1px solid var(--line); }
     .drawer-panel header h2 { margin: 0; font-size: 1.1rem; }
     .drawer-panel header button { border: 0; background: transparent; font-size: 1.4rem; line-height: 1; cursor: pointer; color: var(--muted); }
+    .drawer-tools { flex: 0 0 auto; display: flex; gap: 8px; padding: 12px 20px; border-bottom: 1px solid var(--line); }
+    .drawer-tools input, .drawer-tools select { font: inherit; font-size: .82rem; padding: 7px 10px; border: 1px solid var(--line); border-radius: 8px; background: #fbfcfe; }
+    .drawer-tools input { flex: 1 1 auto; min-width: 0; }
     .pages-list { flex: 1 1 auto; overflow-y: auto; padding: 18px 20px; display: flex; flex-direction: column; gap: 10px; }
     .page-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; border: 1px solid var(--line); border-radius: 11px; padding: 12px 14px; background: #fbfcfe; }
     .page-row .slug { font-family: var(--font-display); font-weight: 700; font-size: .88rem; }
@@ -137,8 +148,6 @@
     @media (max-width: 980px) {
       body.app { overflow: auto; height: auto; min-height: 100vh; }
       .workspace { grid-template-columns: 1fr; }
-      .rail { border-right: 0; border-bottom: 1px solid var(--line); }
-      .rail-list { display: flex; flex-wrap: wrap; gap: 6px; }
       .form-col { border-right: 0; border-bottom: 1px solid var(--line); padding-bottom: 32px; }
       .preview-frame { height: 70vh; }
     }
@@ -166,6 +175,7 @@
     </div>
 
     <div class="tb-actions">
+      <span class="save-state" id="save-state" aria-live="polite"></span>
       <button class="icon-btn" id="open-pages" type="button">Pages</button>
       <button class="btn btn-primary" id="submit" type="button">Publish</button>
       <a class="mini-btn" href="/logout">Log out</a>
@@ -173,13 +183,12 @@
   </header>
 
   <main class="workspace">
-    <nav class="rail">
-      <p class="kicker">Page builder</p>
-      <h1>Build a proposal</h1>
-      <div class="rail-list" id="rail"></div>
-    </nav>
-
     <div class="form-col" id="form-col">
+      <div class="form-head">
+        <p class="kicker">Page builder</p>
+        <h1>Build a proposal</h1>
+        <div class="stepper" id="stepper" role="tablist" aria-label="Form sections"></div>
+      </div>
       <div class="restore-bar" id="restore-bar" hidden>
         <span id="restore-text">Unsaved draft found.</span>
         <span class="spacer"></span>
@@ -213,7 +222,7 @@
   <!-- template gallery -->
   <div class="modal" id="gallery" hidden>
     <div class="modal-backdrop" data-close></div>
-    <div class="modal-card">
+    <div class="modal-card" role="dialog" aria-modal="true" aria-label="Choose a template">
       <p class="kicker">Templates</p>
       <h2>Choose a template</h2>
       <p class="kicker" id="gallery-sub" style="margin-bottom:20px"></p>
@@ -224,7 +233,7 @@
   <!-- share modal -->
   <div class="modal" id="share" hidden>
     <div class="modal-backdrop" data-close-share></div>
-    <div class="modal-card" style="width:min(440px,92vw)">
+    <div class="modal-card" role="dialog" aria-modal="true" aria-label="Share proposal" style="width:min(440px,92vw)">
       <p class="kicker">Share</p>
       <h2 id="share-title">Proposal published</h2>
       <div class="share-url">
@@ -243,11 +252,19 @@
   <!-- pages drawer -->
   <aside class="drawer" id="pages-drawer" hidden>
     <div class="drawer-backdrop" data-close-pages></div>
-    <div class="drawer-panel">
+    <div class="drawer-panel" role="dialog" aria-modal="true" aria-label="Pages library">
       <header>
         <h2>Pages</h2>
         <button id="pages-close" type="button" aria-label="Close">×</button>
       </header>
+      <div class="drawer-tools">
+        <input id="pages-search" type="text" placeholder="Search pages…" aria-label="Search pages">
+        <select id="pages-sort" aria-label="Sort pages">
+          <option value="updated">Recently updated</option>
+          <option value="views">Most views</option>
+          <option value="name">Name A–Z</option>
+        </select>
+      </div>
       <div class="pages-list" id="pages"><p class="empty">Loading…</p></div>
     </div>
   </aside>
@@ -260,10 +277,14 @@
     'use strict';
 
     var $ = function (id) { return document.getElementById(id); };
+    var SLUG_RE = /^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$/;
     var templates = [];        // manifests from /api/templates
     var current = null;        // selected manifest
     var sections = [];         // [{ group, el, fields }]
     var slugTouched = false;
+    var editingSlug = null;    // slug loaded via Edit (so re-publishing it isn't an "overwrite")
+    var knownSlugs = {};       // slugs that already exist (overwrite warning)
+    var allPages = [];         // last fetched pages (for search/sort in the drawer)
     var previewTimer = null;
     var previewSeq = 0;
     var lastPreviewHtml = '';
@@ -287,7 +308,7 @@
     }
 
     function setStatus(el, msg, ok) { el.className = 'status ' + (ok ? 'ok' : 'err'); el.innerHTML = msg; }
-
+    function saveState(text, ok) { var el = $('save-state'); el.textContent = text || ''; el.className = 'save-state' + (ok ? ' saved' : ''); }
     function escapeText(s) { var d = document.createElement('div'); d.textContent = String(s == null ? '' : s); return d.innerHTML; }
 
     function slugify(s) {
@@ -304,6 +325,35 @@
       el.addEventListener('click', dismiss);
       $('toasts').appendChild(el);
       requestAnimationFrame(function () { el.classList.add('in'); });
+    }
+
+    /* ---------- field validation (mirrors the server engine) ---------- */
+
+    function fieldById(id) { return current && current.fields.filter(function (f) { return f.id === id; })[0]; }
+
+    function validateField(f, raw) {
+      if (f.type === 'number') {
+        if (raw === '' || raw == null) return f.required ? 'Required' : null;
+        var n = Number(raw);
+        if (!isFinite(n)) return 'Must be a number';
+        if (f.min !== undefined && n < f.min) return 'Minimum ' + f.min;
+        if (f.max !== undefined && n > f.max) return 'Maximum ' + f.max;
+        return null;
+      }
+      var s = String(raw).trim();
+      if (!s) return f.required ? 'Required' : null;
+      var max = f.max !== undefined ? f.max : (f.type === 'email' ? 120 : (f.type === 'textarea' ? 5000 : 1000));
+      if (s.length > max) return 'Max ' + max + ' characters';
+      if (f.type === 'email' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s)) return 'Invalid email';
+      return null;
+    }
+
+    function showFieldError(f) {
+      if (!f) return;
+      var el = $('f-' + f.id); if (!el) return;
+      var msg = validateField(f, el.value);
+      el.closest('.field').classList.toggle('invalid', !!msg);
+      var errEl = $('err-' + f.id); if (errEl) errEl.textContent = msg || '';
     }
 
     /* ---------- schema-driven form ---------- */
@@ -353,13 +403,25 @@
           var v = values && values[f.id] !== undefined ? values[f.id] : f.default;
           if (v !== undefined) input.value = v;
           input.addEventListener('input', onFieldInput);
-          wrap.appendChild(input);
+          input.addEventListener('blur', function () { showFieldError(f); });
+          if (f.type === 'number' && f.unit) {
+            var uw = document.createElement('div');
+            uw.className = 'with-unit';
+            uw.appendChild(input);
+            var us = document.createElement('span'); us.className = 'unit'; us.textContent = f.unit;
+            uw.appendChild(us);
+            wrap.appendChild(uw);
+          } else {
+            wrap.appendChild(input);
+          }
           if (f.hint) {
             var hint = document.createElement('span');
             hint.className = 'hint';
             hint.textContent = f.hint;
             wrap.appendChild(hint);
           }
+          var err = document.createElement('span'); err.className = 'field-err'; err.id = 'err-' + f.id;
+          wrap.appendChild(err);
           grid.appendChild(wrap);
         });
         section.appendChild(grid);
@@ -367,52 +429,60 @@
         sections.push({ group: g, el: section, fields: byGroup[g] });
       });
 
-      buildRail();
+      buildStepper();
       if (!slugTouched && current.nameField) {
         var nameEl = $('f-' + current.nameField);
         if (nameEl) $('f-slug').value = slugify(nameEl.value);
       }
       updateCompletion();
+      updateSlugWarn();
       $('form-col').scrollTop = 0;
       schedulePreview();
     }
 
-    function buildRail() {
-      var rail = $('rail');
-      rail.innerHTML = '';
+    function buildStepper() {
+      var st = $('stepper');
+      st.innerHTML = '';
       sections.forEach(function (s, i) {
         var b = document.createElement('button');
         b.type = 'button';
-        b.className = 'rail-item' + (i === 0 ? ' active' : '');
+        b.className = 'step-chip' + (i === 0 ? ' active' : '');
         b.dataset.idx = i;
+        b.setAttribute('role', 'tab');
+        b.setAttribute('aria-current', i === 0 ? 'true' : 'false');
         b.innerHTML = '<span class="tick" aria-hidden="true">✓</span> ' + escapeText(s.group);
         b.addEventListener('click', function () {
-          $('form-col').scrollTo({ top: s.el.offsetTop - 16, behavior: 'smooth' });
+          var head = document.querySelector('.form-head');
+          var off = (head ? head.offsetHeight : 80) + 8;
+          $('form-col').scrollTo({ top: s.el.offsetTop - off, behavior: 'smooth' });
         });
-        rail.appendChild(b);
+        st.appendChild(b);
       });
     }
 
     function sectionComplete(s) {
       return s.fields.every(function (f) {
-        if (!f.required) return true;
         var el = $('f-' + f.id);
-        return el && el.value.trim() !== '';
+        return el && validateField(f, el.value) === null;
       });
     }
 
     function updateCompletion() {
-      document.querySelectorAll('.rail-item').forEach(function (b) {
+      document.querySelectorAll('.step-chip').forEach(function (b) {
         b.classList.toggle('done', sectionComplete(sections[+b.dataset.idx]));
       });
     }
 
     $('form-col').addEventListener('scroll', function () {
-      var st = $('form-col').scrollTop + 28;
+      var head = document.querySelector('.form-head');
+      var pad = (head ? head.offsetHeight : 80) + 12;
+      var st = $('form-col').scrollTop + pad;
       var active = 0;
       sections.forEach(function (s, i) { if (s.el.offsetTop <= st) active = i; });
-      document.querySelectorAll('.rail-item').forEach(function (b) {
-        b.classList.toggle('active', +b.dataset.idx === active);
+      document.querySelectorAll('.step-chip').forEach(function (b) {
+        var on = +b.dataset.idx === active;
+        b.classList.toggle('active', on);
+        b.setAttribute('aria-current', on ? 'true' : 'false');
       });
     });
 
@@ -423,12 +493,26 @@
     }
 
     function onFieldInput(e) {
-      if (current && current.nameField && e.target.dataset.field === current.nameField && !slugTouched) {
+      var fid = e.target.dataset.field;
+      if (current && current.nameField && fid === current.nameField && !slugTouched) {
         $('f-slug').value = slugify(e.target.value);
+        updateSlugWarn();
       }
+      var wrap = e.target.closest('.field');
+      if (wrap && wrap.classList.contains('invalid')) showFieldError(fieldById(fid)); // clear once valid
       updateCompletion();
       markDirty();
       schedulePreview();
+    }
+
+    /* ---------- slug overwrite warning ---------- */
+
+    function updateSlugWarn() {
+      var s = $('f-slug').value.trim();
+      var collide = !!knownSlugs[s] && s !== editingSlug;
+      var wrap = document.querySelector('.slug-wrap');
+      wrap.classList.toggle('warn', collide);
+      wrap.title = location.origin + '/page/' + s + (collide ? '  —  already exists, publishing overwrites it' : '');
     }
 
     /* ---------- live preview ---------- */
@@ -481,7 +565,7 @@
 
     /* ---------- drafts (local autosave + unload guard) ---------- */
 
-    function markDirty() { dirty = true; saveDraft(); }
+    function markDirty() { dirty = true; saveDraft(); saveState('Draft saved', true); }
     function saveDraft() {
       if (!current) return;
       try { localStorage.setItem(DRAFT_KEY, JSON.stringify({ template: current.id, slug: $('f-slug').value, values: readValues(), at: Date.now() })); } catch (e) {}
@@ -496,13 +580,14 @@
       $('restore-text').textContent = 'Unsaved draft for /page/' + (d.slug || '…') + '.';
       $('restore-bar').hidden = false;
       $('restore-yes').onclick = function () {
-        slugTouched = true;
+        slugTouched = true; editingSlug = null;
         buildForm(findTemplate(d.template), d.values);
         $('f-slug').value = d.slug || '';
+        updateSlugWarn();
         $('restore-bar').hidden = true;
-        dirty = true;
+        dirty = true; saveState('Draft restored', true);
       };
-      $('restore-no').onclick = function () { clearDraft(); $('restore-bar').hidden = true; };
+      $('restore-no').onclick = function () { clearDraft(); saveState(''); $('restore-bar').hidden = true; };
     }
 
     /* ---------- salesforce autofill ---------- */
@@ -519,7 +604,7 @@
             var el = $('f-' + k);
             if (el && v[k] != null) {
               el.value = v[k]; n++;
-              if (k === current.nameField && !slugTouched) $('f-slug').value = slugify(el.value);
+              if (k === current.nameField && !slugTouched) { $('f-slug').value = slugify(el.value); updateSlugWarn(); }
             }
           });
           updateCompletion(); markDirty(); schedulePreview();
@@ -527,6 +612,32 @@
         })
         .catch(function (e) { toast('Salesforce: ' + escapeText(e.message), 'err'); })
         .finally(function () { $('sf-fetch').disabled = false; });
+    });
+
+    /* ---------- overlays (modals/drawer) with focus management ---------- */
+
+    var lastFocus = null;
+    function openOverlay(el) {
+      lastFocus = document.activeElement;
+      el.hidden = false;
+      var f = el.querySelector('input:not([type=hidden]), button, select, textarea, a[href]');
+      if (f && f.focus) f.focus();
+    }
+    function closeOverlay(el) { el.hidden = true; if (lastFocus && lastFocus.focus) lastFocus.focus(); }
+    function topOverlay() { return [$('pages-drawer'), $('gallery'), $('share')].filter(function (o) { return !o.hidden; }).pop(); }
+
+    document.addEventListener('keydown', function (e) {
+      if ((e.metaKey || e.ctrlKey) && (e.key === 's' || e.key === 'S')) { e.preventDefault(); $('submit').click(); return; }
+      var ov = topOverlay();
+      if (e.key === 'Escape' && ov) { closeOverlay(ov); return; }
+      if (e.key === 'Tab' && ov) {
+        var nodes = ov.querySelectorAll('a[href], button:not([disabled]), input:not([disabled]), select, textarea');
+        var f = Array.prototype.filter.call(nodes, function (n) { return n.offsetParent !== null; });
+        if (!f.length) return;
+        var first = f[0], last = f[f.length - 1];
+        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+      }
     });
 
     /* ---------- share ---------- */
@@ -538,14 +649,14 @@
       $('share-email').href = 'mailto:?subject=' + encodeURIComponent('Your Livestorm proposal') +
         '&body=' + encodeURIComponent('Here is your personalized proposal:\n' + url);
       try { if (window.QR) QR.toCanvas(url, $('share-qr'), { scale: 5, margin: 3 }); } catch (e) {}
-      $('share').hidden = false;
+      openOverlay($('share'));
     }
     $('share-copy').addEventListener('click', function () {
       var v = $('share-link').value;
       if (navigator.clipboard) navigator.clipboard.writeText(v).then(function () { toast('Link copied', 'ok'); }, function () {});
       else { $('share-link').select(); try { document.execCommand('copy'); toast('Link copied', 'ok'); } catch (e) {} }
     });
-    $('share').addEventListener('click', function (e) { if (e.target.hasAttribute('data-close-share')) $('share').hidden = true; });
+    $('share').addEventListener('click', function (e) { if (e.target.hasAttribute('data-close-share')) closeOverlay($('share')); });
 
     /* ---------- template gallery ---------- */
 
@@ -562,76 +673,97 @@
         card.innerHTML = '<span class="tpl-card-name">' + escapeText(t.name) + '</span>' +
           '<span class="tpl-card-desc">' + escapeText(t.description || '') + '</span>';
         card.addEventListener('click', function () {
-          if (!current || current.id !== t.id) { slugTouched = false; buildForm(t); }
-          closeGallery();
+          if (!current || current.id !== t.id) { slugTouched = false; editingSlug = null; buildForm(t); }
+          closeOverlay($('gallery'));
         });
         c.appendChild(card);
       });
     }
-    function openGallery() { renderGallery(); $('gallery').hidden = false; }
-    function closeGallery() { $('gallery').hidden = true; }
-    $('open-gallery').addEventListener('click', openGallery);
-    $('gallery').addEventListener('click', function (e) { if (e.target.hasAttribute('data-close')) closeGallery(); });
-    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') { closeGallery(); $('pages-drawer').hidden = true; $('share').hidden = true; } });
+    $('open-gallery').addEventListener('click', function () { renderGallery(); openOverlay($('gallery')); });
+    $('gallery').addEventListener('click', function (e) { if (e.target.hasAttribute('data-close')) closeOverlay($('gallery')); });
 
     /* ---------- pages drawer ---------- */
 
-    function openPages() { $('pages-drawer').hidden = false; loadPages(); }
-    function closePages() { $('pages-drawer').hidden = true; }
-    $('open-pages').addEventListener('click', openPages);
-    $('pages-close').addEventListener('click', closePages);
-    $('pages-drawer').addEventListener('click', function (e) { if (e.target.hasAttribute('data-close-pages')) closePages(); });
+    $('open-pages').addEventListener('click', function () { openOverlay($('pages-drawer')); loadPages(); });
+    $('pages-close').addEventListener('click', function () { closeOverlay($('pages-drawer')); });
+    $('pages-drawer').addEventListener('click', function (e) { if (e.target.hasAttribute('data-close-pages')) closeOverlay($('pages-drawer')); });
+    $('pages-search').addEventListener('input', renderPagesList);
+    $('pages-sort').addEventListener('change', renderPagesList);
+
+    function pageName(p) {
+      var t = findTemplate(p.config.template);
+      return (t && t.nameField && p.config.values && p.config.values[t.nameField]) ? String(p.config.values[t.nameField]) : p.slug;
+    }
 
     function loadPages() {
+      $('pages').innerHTML = '<p class="empty">Loading…</p>';
       api('GET', '/api/pages').then(function (data) {
-        if (!data.pages.length) { $('pages').innerHTML = '<p class="empty">No pages yet. Fill the form and hit Publish.</p>'; return; }
-        $('pages').innerHTML = '';
-        data.pages.forEach(function (p) {
-          var t = findTemplate(p.config.template);
-          var name = (t && t.nameField && p.config.values) ? p.config.values[t.nameField] : '';
-          var row = document.createElement('div');
-          row.className = 'page-row';
-          var date = p.updated_at ? new Date(p.updated_at).toLocaleDateString() : '';
-          var views = Number(p.views || 0);
-          var lastV = p.last_viewed ? ' · last viewed ' + new Date(p.last_viewed).toLocaleDateString() : '';
-          row.innerHTML =
-            '<span class="slug">/page/' + p.slug + '</span>' +
-            '<span class="meta">' + escapeText(name || p.slug) + (t ? ' · ' + escapeText(t.name) : '') + (date ? ' · ' + date : '') +
-              ' · ' + views + (views === 1 ? ' view' : ' views') + lastV + '</span>' +
-            '<span class="ops">' +
-              '<a class="mini-btn" href="/page/' + p.slug + '" target="_blank" rel="noopener">View</a>' +
-              '<button class="mini-btn" data-share type="button">Share</button>' +
-              '<button class="mini-btn" data-edit type="button">Edit</button>' +
-              '<button class="mini-btn" data-dup type="button">Duplicate</button>' +
-              '<button class="mini-btn danger" data-del type="button">Delete</button>' +
-            '</span>';
-          row.querySelector('[data-share]').addEventListener('click', function () { openShare('/page/' + p.slug); });
-          row.querySelector('[data-edit]').addEventListener('click', function () {
-            if (!t) { toast('Template "' + escapeText(p.config.template) + '" no longer exists.', 'err'); return; }
-            slugTouched = true;
-            buildForm(t, p.config.values);
-            $('f-slug').value = p.slug;
-            closePages();
-          });
-          row.querySelector('[data-dup]').addEventListener('click', function () {
-            if (!t) { toast('Template "' + escapeText(p.config.template) + '" no longer exists.', 'err'); return; }
-            slugTouched = true;
-            buildForm(t, p.config.values);
-            $('f-slug').value = (p.slug + '-copy').slice(0, 64);
-            markDirty();
-            closePages();
-            toast('Duplicated — rename the slug and Publish', 'ok');
-          });
-          row.querySelector('[data-del]').addEventListener('click', function () {
-            if (!confirm('Delete /page/' + p.slug + '?')) return;
-            api('DELETE', '/api/pages/' + p.slug)
-              .then(function () { toast('Deleted /page/' + escapeText(p.slug), 'ok'); loadPages(); })
-              .catch(function (e) { toast(escapeText(e.message), 'err'); });
-          });
-          $('pages').appendChild(row);
+        allPages = data.pages || [];
+        data.pages.forEach(function (p) { knownSlugs[p.slug] = true; });
+        renderPagesList();
+      }).catch(function (e) { $('pages').innerHTML = '<p class="empty">' + escapeText(e.message) + '</p>'; });
+    }
+
+    function renderPagesList() {
+      var q = $('pages-search').value.trim().toLowerCase();
+      var sort = $('pages-sort').value;
+      var rows = allPages.filter(function (p) {
+        return !q || p.slug.toLowerCase().indexOf(q) >= 0 || pageName(p).toLowerCase().indexOf(q) >= 0;
+      });
+      rows.sort(function (a, b) {
+        if (sort === 'views') return Number(b.views || 0) - Number(a.views || 0);
+        if (sort === 'name') return pageName(a).localeCompare(pageName(b));
+        return new Date(b.updated_at || 0) - new Date(a.updated_at || 0);
+      });
+      if (!rows.length) { $('pages').innerHTML = '<p class="empty">' + (allPages.length ? 'No pages match.' : 'No pages yet. Fill the form and hit Publish.') + '</p>'; return; }
+      $('pages').innerHTML = '';
+      rows.forEach(function (p) {
+        var t = findTemplate(p.config.template);
+        var row = document.createElement('div');
+        row.className = 'page-row';
+        var date = p.updated_at ? new Date(p.updated_at).toLocaleDateString() : '';
+        var total = Number(p.views || 0), uniq = Number(p.unique || 0), last7 = Number(p.last7 || 0);
+        row.innerHTML =
+          '<span class="slug">/page/' + p.slug + '</span>' +
+          '<span class="meta">' + escapeText(pageName(p)) + (t ? ' · ' + escapeText(t.name) : '') + (date ? ' · ' + date : '') +
+            ' · ' + total + ' views · ' + uniq + ' unique · ' + last7 + ' last 7d</span>' +
+          '<span class="ops">' +
+            '<a class="mini-btn" href="/page/' + p.slug + '" target="_blank" rel="noopener">View</a>' +
+            '<button class="mini-btn" data-share type="button">Share</button>' +
+            '<button class="mini-btn" data-edit type="button">Edit</button>' +
+            '<button class="mini-btn" data-dup type="button">Duplicate</button>' +
+            '<button class="mini-btn danger" data-del type="button">Delete</button>' +
+          '</span>';
+        row.querySelector('[data-share]').addEventListener('click', function () { openShare('/page/' + p.slug); });
+        row.querySelector('[data-edit]').addEventListener('click', function () {
+          if (!t) { toast('Template "' + escapeText(p.config.template) + '" no longer exists.', 'err'); return; }
+          slugTouched = true; editingSlug = p.slug;
+          buildForm(t, p.config.values);
+          $('f-slug').value = p.slug;
+          updateSlugWarn();
+          closeOverlay($('pages-drawer'));
         });
-      }).catch(function (e) {
-        $('pages').innerHTML = '<p class="empty">' + escapeText(e.message) + '</p>';
+        row.querySelector('[data-dup]').addEventListener('click', function () {
+          if (!t) { toast('Template "' + escapeText(p.config.template) + '" no longer exists.', 'err'); return; }
+          slugTouched = true; editingSlug = null;
+          buildForm(t, p.config.values);
+          $('f-slug').value = (p.slug + '-copy').slice(0, 64);
+          updateSlugWarn(); markDirty();
+          closeOverlay($('pages-drawer'));
+          toast('Duplicated — rename the slug and Publish', 'ok');
+        });
+        row.querySelector('[data-del]').addEventListener('click', function () {
+          if (!confirm('Delete /page/' + p.slug + '?')) return;
+          api('DELETE', '/api/pages/' + p.slug)
+            .then(function () {
+              delete knownSlugs[p.slug];
+              allPages = allPages.filter(function (x) { return x.slug !== p.slug; });
+              toast('Deleted /page/' + escapeText(p.slug), 'ok');
+              renderPagesList(); updateSlugWarn();
+            })
+            .catch(function (e) { toast(escapeText(e.message), 'err'); });
+        });
+        $('pages').appendChild(row);
       });
     }
 
@@ -640,11 +772,12 @@
     $('submit').addEventListener('click', function () {
       var slug = $('f-slug').value.trim();
       if (!current) return;
-      if (!/^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$/.test(slug)) { return toast('Invalid slug', 'err'); }
+      if (!SLUG_RE.test(slug)) { return toast('Invalid slug (lowercase letters, digits, hyphens)', 'err'); }
+      if (knownSlugs[slug] && slug !== editingSlug && !confirm('A page already exists at /page/' + slug + '. Overwrite it?')) return;
       api('POST', '/api/pages', { slug: slug, template: current.id, values: readValues() })
         .then(function (data) {
-          clearDraft();
-          toast('Published', 'ok');
+          knownSlugs[slug] = true; editingSlug = slug;
+          clearDraft(); saveState('Published', true); updateSlugWarn();
           openShare(data.url);
         })
         .catch(function (e) { toast(escapeText(e.message), 'err'); });
@@ -652,7 +785,7 @@
 
     /* ---------- wiring ---------- */
 
-    $('f-slug').addEventListener('input', function () { slugTouched = true; markDirty(); });
+    $('f-slug').addEventListener('input', function () { slugTouched = true; markDirty(); updateSlugWarn(); });
 
     fetch('/api/templates')
       .then(function (res) { return res.json(); })
@@ -662,6 +795,12 @@
         else { $('tpl-name').textContent = 'No templates'; $('form').innerHTML = '<p class="empty">No templates available.</p>'; }
       })
       .catch(function () { $('tpl-name').textContent = 'Error'; $('form').innerHTML = '<p class="empty">Couldn\'t load templates — is the server up? Refresh to retry.</p>'; });
+
+    // Prime the known-slug set so the overwrite warning works before opening Pages.
+    api('GET', '/api/pages').then(function (d) {
+      (d.pages || []).forEach(function (p) { knownSlugs[p.slug] = true; });
+      updateSlugWarn();
+    }).catch(function () {});
   })();
   </script>
 </body>

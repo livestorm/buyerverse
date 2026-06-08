@@ -52,6 +52,20 @@ const ASSET_TYPES = {
 
 /* ---------- helpers ---------- */
 
+/** First IP from x-forwarded-for, or empty string. */
+function firstForwardedIp(req) {
+  return (req.headers['x-forwarded-for'] || '').split(',')[0].trim();
+}
+
+/** One-way hash of the visitor's IP (privacy-preserving analytics). */
+function visitorHash(req) {
+  const ip = firstForwardedIp(req) || req.socket.remoteAddress || '';
+  return crypto.createHash('sha256')
+    .update(ip + '|' + (process.env.ADMIN_TOKEN || 'salt'))
+    .digest('hex')
+    .slice(0, 16);
+}
+
 function sendJSON(res, status, data) {
   const body = JSON.stringify(data);
   res.writeHead(status, { 'Content-Type': 'application/json; charset=utf-8', 'Content-Length': Buffer.byteLength(body) });
@@ -272,7 +286,7 @@ async function handle(req, res) {
     const t = engine.getTemplate(row.config.template);
     if (!t) return sendHTML(res, 404, NOT_FOUND_PAGE, false); // template removed from repo
     // Count prospect visits only — don't inflate analytics with the AM's own previews.
-    if (!authed(req)) store.recordView(slug).catch(() => {});
+    if (!authed(req)) store.recordView(slug, visitorHash(req)).catch(() => {});
     return sendHTML(res, 200, engine.renderTemplate(t, row.config.values), true);
   }
 
@@ -295,7 +309,14 @@ async function handle(req, res) {
   if (pathname === '/api/pages' && req.method === 'GET') {
     if (!requireAuth(req, res)) return;
     const pages = await store.list();
-    return sendJSON(res, 200, { pages });
+    const s = await store.stats();
+    return sendJSON(res, 200, {
+      pages: pages.map(p => ({
+        ...p,
+        unique: (s[p.slug] && s[p.slug].unique) || 0,
+        last7: (s[p.slug] && s[p.slug].last7) || 0
+      }))
+    });
   }
 
   if (pathname === '/api/pages' && req.method === 'POST') {

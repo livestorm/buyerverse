@@ -43,6 +43,16 @@ test('validateManifest rejects a default that violates the field constraints', (
   assert.throws(() => validateManifest('demo', { name: 'x', fields }), /default/);
 });
 
+test('validateManifest passes unit through for string values, undefined otherwise', () => {
+  const fields = [
+    { id: 'p', label: 'Price', type: 'number', unit: '€' },
+    { id: 'q', label: 'Qty',   type: 'number' }
+  ];
+  const m = validateManifest('demo', { name: 'x', fields });
+  assert.equal(m.fields.find(f => f.id === 'p').unit, '€');
+  assert.equal(m.fields.find(f => f.id === 'q').unit, undefined);
+});
+
 const path = require('node:path');
 const fs = require('node:fs');
 const os = require('node:os');
@@ -168,4 +178,7 @@ test('the renewal template loads and renders its defaults with no stale tokens',
   assert.equal(stale, null, `unreplaced tokens: ${stale}`);
   assert.match(html, /<title>Acme × Livestorm/);
   assert.match(html, /\/templates\/renewal\/page\.js/);
+  // unit adornments on money/percent fields
+  assert.equal(t.manifest.fields.find(f => f.id === 'price_current').unit, '€');
+  assert.equal(t.manifest.fields.find(f => f.id === 'kpi_rate').unit, '%');
 });

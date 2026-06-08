@@ -212,12 +212,19 @@ test('page views count visitors but not the logged-in admin', async () => {
     method: 'POST', headers: JSON_HEADERS,
     body: JSON.stringify({ slug: 'viewed', template: 'renewal', values: sampleValues() })
   });
-  await fetch(`${base}/page/viewed`);                  // visitor → +1
-  await fetch(`${base}/page/viewed`);                  // visitor → +1
-  await fetch(`${base}/page/viewed`, { headers: COOKIE }); // admin → not counted
+  // visitor 1.1.1.1 visits twice (same unique visitor)
+  await fetch(`${base}/page/viewed`, { headers: { 'x-forwarded-for': '1.1.1.1' } });
+  await fetch(`${base}/page/viewed`, { headers: { 'x-forwarded-for': '1.1.1.1' } });
+  // visitor 2.2.2.2 visits once (second unique visitor)
+  await fetch(`${base}/page/viewed`, { headers: { 'x-forwarded-for': '2.2.2.2' } });
+  // admin visit via cookie — must not be counted
+  await fetch(`${base}/page/viewed`, { headers: COOKIE });
+
   const { pages } = await (await fetch(`${base}/api/pages`, { headers: AUTH })).json();
   const row = pages.find(p => p.slug === 'viewed');
-  assert.equal(Number(row.views), 2);
+  assert.equal(Number(row.views), 3);   // total: 3 prospect views
+  assert.equal(row.unique, 2);          // 2 distinct IP hashes
+  assert.equal(row.last7, 3);           // all 3 within the last 7 days
   assert.ok(row.last_viewed);
   await fetch(`${base}/api/pages/viewed`, { method: 'DELETE', headers: AUTH });
 });

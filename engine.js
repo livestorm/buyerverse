@@ -78,7 +78,8 @@ function validateManifest(id, raw) {
       required: !!f.required, int: !!f.int,
       min: f.min, max: f.max, step: f.step,
       placeholder: f.placeholder, hint: f.hint, group: f.group,
-      default: f.default
+      default: f.default,
+      unit: typeof f.unit === 'string' ? f.unit : undefined
     };
     if (field.default !== undefined) {
       const r = checkValue(field, field.default);
