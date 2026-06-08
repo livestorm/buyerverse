@@ -703,6 +703,13 @@ body { --row-gap: 16px; --field-mb: 16px; --card-pad: 24px; }
 .share-url input { flex: 1 1 auto; min-width: 0; font: inherit; font-size: 14px; padding: 11px 13px; border: 1px solid var(--grey-blue-300); border-radius: var(--radius-default); background: var(--grey-blue-100); color: var(--fg-default); }
 .share-qr { display: block; margin: 0 auto 16px; width: 168px; height: 168px; border-radius: var(--radius-default); border: 1px solid var(--grey-blue-200); }
 .share-actions { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+.share-lemlist { margin-top: 20px; padding-top: 18px; border-top: 1px solid var(--grey-blue-200); }
+.share-lemlist label { display: block; font-size: 13px; font-weight: 600; color: var(--fg-default); }
+.share-lemlist .ll-hint { margin: 2px 0 10px; font-size: 12px; color: var(--fg-muted); }
+.share-lemlist .ll-hint code { font-family: ui-monospace, monospace; font-size: 11px; background: var(--grey-blue-100); padding: 1px 5px; border-radius: 5px; }
+.share-lemlist .ll-row { display: flex; gap: 8px; }
+.share-lemlist .ll-row input { flex: 1 1 auto; min-width: 0; font: inherit; font-size: 13px; padding: 9px 11px; border: 1px solid var(--grey-blue-300); border-radius: var(--radius-default); background: var(--bg-surface); color: var(--fg-default); }
+.share-lemlist .ll-row input:focus { outline: none; border-color: var(--livestorm-blue-700); }
 
 /* toasts */
 .toasts { position: fixed; right: 22px; bottom: 22px; display: flex; flex-direction: column; gap: 10px; z-index: 1000; max-width: 360px; }
@@ -857,6 +864,15 @@ body { --row-gap: 16px; --field-mb: 16px; --card-pad: 24px; }
         <a class="mini-btn" id="share-email">Email…</a>
         <button class="mini-btn" id="share-regen" type="button" title="Generate a new link and disable the current one">Regenerate link</button>
         <button class="mini-btn" data-close-share type="button">Close</button>
+      </div>
+      <div class="share-lemlist" id="share-lemlist">
+        <label>Send to a lemlist campaign</label>
+        <p class="ll-hint">Adds the recipient to the campaign with this link as <code>{{proposalUrl}}</code>.</p>
+        <div class="ll-row">
+          <input id="ll-campaign" type="text" placeholder="Campaign ID" autocomplete="off">
+          <input id="ll-email" type="email" placeholder="Recipient email" autocomplete="off">
+          <button class="mini-btn" id="ll-send" type="button">Add</button>
+        </div>
       </div>
     </div>
   </div>
@@ -1372,6 +1388,7 @@ body { --row-gap: 16px; --field-mb: 16px; --card-pad: 24px; }
         '&body=' + encodeURIComponent('Here is your personalized proposal:\n' + url);
       try { if (window.QR) QR.toCanvas(url, $('share-qr'), { scale: 5, margin: 3 }); } catch (e) {}
       $('share-regen').hidden = !currentShareSlug; // can only rotate when we know which proposal
+      $('share-lemlist').hidden = !currentShareSlug;
       openOverlay($('share'));
     }
     $('share-copy').addEventListener('click', function () {
@@ -1385,6 +1402,16 @@ body { --row-gap: 16px; --field-mb: 16px; --card-pad: 24px; }
       api('POST', '/api/pages/' + encodeURIComponent(currentShareSlug) + '/rotate')
         .then(function (data) { openShare(data.url, currentShareSlug); toast('New link generated — the old one no longer works', 'ok'); })
         .catch(function (e) { toast('Regenerate: ' + escapeText(e.message), 'err'); });
+    });
+    $('ll-send').addEventListener('click', function () {
+      if (!currentShareSlug) return;
+      var campaignId = $('ll-campaign').value.trim(), email = $('ll-email').value.trim();
+      if (!campaignId || !email) { toast('Enter a campaign ID and recipient email', 'err'); return; }
+      $('ll-send').disabled = true;
+      api('POST', '/api/crm/lemlist', { slug: currentShareSlug, campaignId: campaignId, email: email })
+        .then(function () { toast('Added to lemlist — use {{proposalUrl}} in your sequence', 'ok'); $('ll-email').value = ''; })
+        .catch(function (e) { toast('lemlist: ' + escapeText(e.message), 'err'); })
+        .then(function () { $('ll-send').disabled = false; });
     });
     $('share').addEventListener('click', function (e) { if (e.target.hasAttribute('data-close-share')) closeOverlay($('share')); });
 

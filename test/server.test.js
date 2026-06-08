@@ -358,6 +358,28 @@ test('repeated bad page guesses are rate-limited', async () => {
   assert.ok(blocked, 'expected a 429 once an IP exceeds the miss budget');
 });
 
+test('lemlist push route: requires auth, a published proposal, and reports when unconfigured', async () => {
+  assert.equal((await fetch(`${base}/api/crm/lemlist`, { method: 'POST' })).status, 401); // no auth
+  // unknown proposal → 404
+  const unknown = await fetch(`${base}/api/crm/lemlist`, {
+    method: 'POST', headers: JSON_HEADERS,
+    body: JSON.stringify({ slug: 'ghost', campaignId: 'c1', email: 'a@b.co' })
+  });
+  assert.equal(unknown.status, 404);
+  // a real published proposal, but LEMLIST_API_KEY isn't set in tests → graceful 503
+  await fetch(`${base}/api/pages`, {
+    method: 'POST', headers: JSON_HEADERS,
+    body: JSON.stringify({ slug: 'llp', template: 'renewal', values: sampleValues(), status: 'published' })
+  });
+  const res = await fetch(`${base}/api/crm/lemlist`, {
+    method: 'POST', headers: JSON_HEADERS,
+    body: JSON.stringify({ slug: 'llp', campaignId: 'c1', email: 'jane@acme.com' })
+  });
+  assert.equal(res.status, 503);
+  assert.match((await res.json()).error, /not configured/);
+  await fetch(`${base}/api/pages/llp`, { method: 'DELETE', headers: AUTH });
+});
+
 test('Salesforce route requires auth and reports when unconfigured', async () => {
   const noAuth = await fetch(`${base}/api/crm/salesforce/0011234567890ABCDE`);
   assert.equal(noAuth.status, 401);

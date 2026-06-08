@@ -28,6 +28,7 @@ const store = require('./store');
 const engine = require('./engine');
 const salesforce = require('./salesforce');
 const notify = require('./notify');
+const lemlist = require('./lemlist');
 
 const ROOT = __dirname;
 const PORT = process.env.PORT || 3000;
@@ -180,6 +181,12 @@ function isSecureContext(req) {
   if (proto) return proto === 'https';
   const host = (req.headers.host || '').split(':')[0];
   return !(host === 'localhost' || host === '127.0.0.1' || host === '[::1]');
+}
+
+/** Absolute origin of the current request (for building shareable links). */
+function requestOrigin(req) {
+  const proto = (req.headers['x-forwarded-proto'] || '').split(',')[0].trim() || (isSecureContext(req) ? 'https' : 'http');
+  return proto + '://' + (req.headers.host || 'localhost');
 }
 
 /** Set-Cookie value for the session cookie; clear=true expires it immediately. */
@@ -475,6 +482,25 @@ async function handle(req, res) {
     const token = randomToken();
     await store.setToken(slug, token);
     return sendJSON(res, 200, { ok: true, slug, url: '/page/' + slug + '/' + token });
+  }
+
+  // Push a proposal's share link into a lemlist campaign as the {{proposalUrl}} variable.
+  if (pathname === '/api/crm/lemlist' && req.method === 'POST') {
+    if (!requireAuth(req, res)) return;
+    let body;
+    try { body = await readBody(req); }
+    catch (e) { return sendJSON(res, e.status || 400, { error: e.message }); }
+    if (!engine.validSlug(body.slug)) return sendJSON(res, 400, { error: 'invalid slug' });
+    const row = await store.get(body.slug);
+    if (!row || !row.config.token) return sendJSON(res, 404, { error: 'proposal not found' });
+    if (row.status !== 'published') return sendJSON(res, 400, { error: 'publish the proposal before sending its link' });
+    const proposalUrl = requestOrigin(req) + '/page/' + body.slug + '/' + row.config.token;
+    try {
+      const r = await lemlist.pushProposalLink({ campaignId: body.campaignId, email: body.email, proposalUrl });
+      return sendJSON(res, 200, { ok: true, leadId: r.leadId });
+    } catch (e) {
+      return sendJSON(res, e.status || 502, { error: e.message });
+    }
   }
 
   // Salesforce autofill — paste an Account/Contact ID to prefill prospect + AM

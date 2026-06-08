@@ -28,6 +28,7 @@ from a template and serve them at `/page/<slug>`.
 | `SF_CLIENT_ID` | Salesforce connected-app consumer key (OAuth2 client-credentials)  |
 | `SF_CLIENT_SECRET` | Salesforce connected-app consumer secret                       |
 | `SLACK_WEBHOOK_URL` | Slack Incoming Webhook — optional; when set, the AM gets a ping the first time a prospect opens a proposal. No-op if unset |
+| `LEMLIST_API_KEY` | lemlist API key — optional; enables "Send to lemlist" in the share panel (pushes the proposal link onto a campaign lead as `{{proposalUrl}}`). No-op if unset |
 
 Salesforce autofill (paste an Account/Contact ID to prefill prospect + account
 manager) is active only when all three `SF_*` vars are set; otherwise the
