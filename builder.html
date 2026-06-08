@@ -422,10 +422,15 @@ body { --row-gap: 16px; --field-mb: 16px; --card-pad: 24px; }
 .btn.disabled, .btn:disabled { opacity: .4; cursor: not-allowed; }
 
 /* ---------- Workspace ---------- */
-.workspace { flex: 1 1 auto; display: grid; grid-template-columns: minmax(440px, 540px) 1fr; min-height: 0; }
+.workspace { flex: 1 1 auto; display: grid; grid-template-columns: minmax(440px, 540px) 1fr; min-height: 0;
+  transition: grid-template-columns var(--dur-base) var(--ease-out); }
+/* Collapse the editor column to give the live preview the full width. */
+.workspace.editor-collapsed { grid-template-columns: 0px 1fr; }
+.workspace.editor-collapsed .form-col { overflow: hidden; border-right: 0; padding: 0; }
+.workspace.editor-collapsed #toggle-editor svg { transform: scaleX(-1); }
 
 /* ===== Form column ===== */
-.form-col { position: relative; overflow-y: auto; background: var(--grey-blue-100);
+.form-col { position: relative; min-width: 0; overflow-y: auto; background: var(--grey-blue-100);
   border-right: 1px solid var(--grey-blue-200); padding: 0 24px 140px; }
 .form-head { position: sticky; top: 0; z-index: 6; background: var(--grey-blue-100);
   padding: 20px 24px 14px; margin: 0 -24px 18px; border-bottom: 1px solid var(--grey-blue-200); }
@@ -682,6 +687,8 @@ body { --row-gap: 16px; --field-mb: 16px; --card-pad: 24px; }
   border: 1px solid var(--grey-blue-300); background: var(--bg-surface); color: var(--fg-muted); text-decoration: none; display: inline-flex; align-items: center; gap: 6px;
   transition: border-color var(--dur-base) var(--ease-out), color var(--dur-base) var(--ease-out); }
 .mini-btn:hover { border-color: var(--livestorm-blue-700); color: var(--livestorm-blue-700); }
+.mini-btn.icon-only { padding: 6px; display: inline-flex; align-items: center; }
+.mini-btn.icon-only svg { transition: transform var(--dur-base) var(--ease-out); }
 .mini-btn.danger:hover { border-color: var(--live-red-600); color: var(--live-red-600); }
 .empty { color: var(--fg-subtle); font-size: 14px; text-align: center; padding: 30px 0; }
 
@@ -805,6 +812,9 @@ body { --row-gap: 16px; --field-mb: 16px; --card-pad: 24px; }
 
     <section class="preview-pane">
       <div class="preview-toolbar">
+        <button class="mini-btn icon-only" id="toggle-editor" type="button" aria-pressed="false" aria-label="Collapse editor" title="Collapse editor">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16"/><path d="m14 9-3 3 3 3"/></svg>
+        </button>
         <p class="status" id="preview-status">Preview</p>
         <div class="seg" role="group" aria-label="Preview size">
           <button type="button" data-device="desktop" class="is-active">Desktop</button>
@@ -1253,6 +1263,28 @@ body { --row-gap: 16px; --field-mb: 16px; --card-pad: 24px; }
     // reintroduce parent scroll-chaining (the wheel "blocks then works on direction change").
     function fitPreview() {}
     $('preview').addEventListener('load', fitPreview);
+
+    // Collapse the form column so the live preview takes the full width. The toggle lives in
+    // the preview toolbar (always visible), so it can expand the editor back even when collapsed.
+    (function () {
+      var ws = document.querySelector('.workspace');
+      var tb = $('toggle-editor');
+      var KEY = 'bv_editor_collapsed';
+      function apply(collapsed) {
+        ws.classList.toggle('editor-collapsed', collapsed);
+        tb.setAttribute('aria-pressed', collapsed ? 'true' : 'false');
+        tb.title = collapsed ? 'Show editor' : 'Collapse editor';
+        tb.setAttribute('aria-label', tb.title);
+      }
+      var start = false;
+      try { start = localStorage.getItem(KEY) === '1'; } catch (e) {}
+      apply(start);
+      tb.addEventListener('click', function () {
+        var collapsed = !ws.classList.contains('editor-collapsed');
+        apply(collapsed);
+        try { localStorage.setItem(KEY, collapsed ? '1' : '0'); } catch (e) {}
+      });
+    })();
 
     $('preview-open').addEventListener('click', function () {
       if (!lastPreviewHtml) return;
