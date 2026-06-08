@@ -66,6 +66,12 @@ function visitorHash(req) {
     .slice(0, 16);
 }
 
+/** Sanitized UTM attribution params from a page-view request URL. */
+function utmParams(url) {
+  const pick = (k) => (url.searchParams.get(k) || '').trim().slice(0, 80);
+  return { source: pick('utm_source'), medium: pick('utm_medium'), campaign: pick('utm_campaign') };
+}
+
 function sendJSON(res, status, data) {
   const body = JSON.stringify(data);
   res.writeHead(status, { 'Content-Type': 'application/json; charset=utf-8', 'Content-Length': Buffer.byteLength(body) });
@@ -286,7 +292,7 @@ async function handle(req, res) {
     const t = engine.getTemplate(row.config.template);
     if (!t) return sendHTML(res, 404, NOT_FOUND_PAGE, false); // template removed from repo
     // Count prospect visits only — don't inflate analytics with the AM's own previews.
-    if (!authed(req)) store.recordView(slug, visitorHash(req)).catch(() => {});
+    if (!authed(req)) store.recordView(slug, visitorHash(req), utmParams(url)).catch(() => {});
     return sendHTML(res, 200, engine.renderTemplate(t, row.config.values), true);
   }
 
@@ -314,7 +320,8 @@ async function handle(req, res) {
       pages: pages.map(p => ({
         ...p,
         unique: (s[p.slug] && s[p.slug].unique) || 0,
-        last7: (s[p.slug] && s[p.slug].last7) || 0
+        last7: (s[p.slug] && s[p.slug].last7) || 0,
+        sources: (s[p.slug] && s[p.slug].sources) || {}
       }))
     });
   }

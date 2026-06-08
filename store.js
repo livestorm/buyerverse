@@ -36,12 +36,19 @@ if (DATABASE_URL) {
       await pool.query('ALTER TABLE pages ADD COLUMN IF NOT EXISTS last_viewed TIMESTAMPTZ');
       await pool.query(`
         CREATE TABLE IF NOT EXISTS page_views (
-          slug       TEXT NOT NULL,
-          visitor    TEXT NOT NULL,
-          viewed_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+          slug         TEXT NOT NULL,
+          visitor      TEXT NOT NULL,
+          utm_source   TEXT,
+          utm_medium   TEXT,
+          utm_campaign TEXT,
+          viewed_at    TIMESTAMPTZ NOT NULL DEFAULT now()
         )
       `);
       await pool.query('CREATE INDEX IF NOT EXISTS page_views_slug_idx ON page_views (slug)');
+      // UTM columns added after page_views shipped.
+      await pool.query('ALTER TABLE page_views ADD COLUMN IF NOT EXISTS utm_source TEXT');
+      await pool.query('ALTER TABLE page_views ADD COLUMN IF NOT EXISTS utm_medium TEXT');
+      await pool.query('ALTER TABLE page_views ADD COLUMN IF NOT EXISTS utm_campaign TEXT');
     },
 
     async get(slug) {
@@ -62,9 +69,13 @@ if (DATABASE_URL) {
       );
     },
 
-    async recordView(slug, visitor) {
+    async recordView(slug, visitor, utm) {
+      utm = utm || {};
       await pool.query('UPDATE pages SET views = views + 1, last_viewed = now() WHERE slug = $1', [slug]);
-      await pool.query('INSERT INTO page_views (slug, visitor) VALUES ($1, $2)', [slug, visitor]);
+      await pool.query(
+        'INSERT INTO page_views (slug, visitor, utm_source, utm_medium, utm_campaign) VALUES ($1, $2, $3, $4, $5)',
+        [slug, visitor, utm.source || null, utm.medium || null, utm.campaign || null]
+      );
     },
 
     async stats() {
@@ -76,7 +87,16 @@ if (DATABASE_URL) {
          GROUP BY slug`
       );
       const map = {};
-      for (const r of rows) map[r.slug] = { unique: r.unique, last7: r.last7 };
+      for (const r of rows) map[r.slug] = { unique: r.unique, last7: r.last7, sources: {} };
+      // Per-source breakdown (utm_source; blank/absent → "(direct)").
+      const src = await pool.query(
+        `SELECT slug, COALESCE(NULLIF(utm_source, ''), '(direct)') AS src, COUNT(*)::int AS c
+         FROM page_views GROUP BY slug, src`
+      );
+      for (const r of src.rows) {
+        if (!map[r.slug]) map[r.slug] = { unique: 0, last7: 0, sources: {} };
+        map[r.slug].sources[r.src] = r.c;
+      }
       return map;
     },
 
@@ -114,12 +134,12 @@ if (DATABASE_URL) {
       });
     },
 
-    async recordView(slug, visitor) {
+    async recordView(slug, visitor, utm) {
       const row = pages.get(slug);
       if (row) {
         row.views = (row.views || 0) + 1;
         row.last_viewed = new Date();
-        events.push({ slug, visitor, viewed_at: new Date() });
+        events.push({ slug, visitor, viewed_at: new Date(), utm: utm || {} });
       }
     },
 
@@ -128,13 +148,15 @@ if (DATABASE_URL) {
       const now = new Date();
       const cutoff = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
       for (const e of events) {
-        if (!map[e.slug]) map[e.slug] = { visitors: new Set(), last7: 0 };
+        if (!map[e.slug]) map[e.slug] = { visitors: new Set(), last7: 0, sources: {} };
         map[e.slug].visitors.add(e.visitor);
         if (e.viewed_at > cutoff) map[e.slug].last7++;
+        const src = (e.utm && e.utm.source) || '(direct)';
+        map[e.slug].sources[src] = (map[e.slug].sources[src] || 0) + 1;
       }
       const result = {};
       for (const [slug, data] of Object.entries(map)) {
-        result[slug] = { unique: data.visitors.size, last7: data.last7 };
+        result[slug] = { unique: data.visitors.size, last7: data.last7, sources: data.sources };
       }
       return result;
     },

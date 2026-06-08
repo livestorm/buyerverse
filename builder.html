@@ -705,6 +705,14 @@
       return (t && t.nameField && p.config.values && p.config.values[t.nameField]) ? String(p.config.values[t.nameField]) : p.slug;
     }
 
+    // Top UTM sources for a page, "email 12 · linkedin 5 · (direct) 3".
+    function sourcesSummary(p) {
+      var s = p.sources || {};
+      var entries = Object.keys(s).map(function (k) { return [k, s[k]]; }).sort(function (a, b) { return b[1] - a[1]; });
+      if (!entries.length) return '';
+      return entries.slice(0, 4).map(function (e) { return escapeText(e[0]) + ' ' + e[1]; }).join(' · ');
+    }
+
     function loadPages() {
       $('pages').innerHTML = '<p class="empty">Loading…</p>';
       api('GET', '/api/pages').then(function (data) {
@@ -737,6 +745,7 @@
           '<span class="slug">/page/' + p.slug + '</span>' +
           '<span class="meta">' + escapeText(pageName(p)) + (t ? ' · ' + escapeText(t.name) : '') + (date ? ' · ' + date : '') +
             ' · ' + total + ' views · ' + uniq + ' unique · ' + last7 + ' last 7d</span>' +
+          (sourcesSummary(p) ? '<span class="meta">Sources: ' + sourcesSummary(p) + '</span>' : '') +
           '<span class="ops">' +
             '<a class="mini-btn" href="/page/' + p.slug + '" target="_blank" rel="noopener">View</a>' +
             '<button class="mini-btn" data-share type="button">Share</button>' +

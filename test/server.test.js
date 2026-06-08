@@ -212,11 +212,11 @@ test('page views count visitors but not the logged-in admin', async () => {
     method: 'POST', headers: JSON_HEADERS,
     body: JSON.stringify({ slug: 'viewed', template: 'renewal', values: sampleValues() })
   });
-  // visitor 1.1.1.1 visits twice (same unique visitor)
-  await fetch(`${base}/page/viewed`, { headers: { 'x-forwarded-for': '1.1.1.1' } });
-  await fetch(`${base}/page/viewed`, { headers: { 'x-forwarded-for': '1.1.1.1' } });
-  // visitor 2.2.2.2 visits once (second unique visitor)
-  await fetch(`${base}/page/viewed`, { headers: { 'x-forwarded-for': '2.2.2.2' } });
+  // visitor 1.1.1.1 visits twice from email (same unique visitor)
+  await fetch(`${base}/page/viewed?utm_source=email`, { headers: { 'x-forwarded-for': '1.1.1.1' } });
+  await fetch(`${base}/page/viewed?utm_source=email`, { headers: { 'x-forwarded-for': '1.1.1.1' } });
+  // visitor 2.2.2.2 visits once from linkedin (second unique visitor)
+  await fetch(`${base}/page/viewed?utm_source=linkedin`, { headers: { 'x-forwarded-for': '2.2.2.2' } });
   // admin visit via cookie — must not be counted
   await fetch(`${base}/page/viewed`, { headers: COOKIE });
 
@@ -225,6 +225,7 @@ test('page views count visitors but not the logged-in admin', async () => {
   assert.equal(Number(row.views), 3);   // total: 3 prospect views
   assert.equal(row.unique, 2);          // 2 distinct IP hashes
   assert.equal(row.last7, 3);           // all 3 within the last 7 days
+  assert.deepEqual(row.sources, { email: 2, linkedin: 1 }); // UTM source breakdown
   assert.ok(row.last_viewed);
   await fetch(`${base}/api/pages/viewed`, { method: 'DELETE', headers: AUTH });
 });
