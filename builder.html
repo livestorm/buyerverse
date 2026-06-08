@@ -42,7 +42,7 @@
     .workspace { flex: 1 1 auto; display: grid; grid-template-columns: minmax(420px, 600px) 1fr; min-height: 0; }
 
     .form-col { position: relative; overflow-y: auto; background: #fbfcfe; border-right: 1px solid var(--line); padding: 0 22px 120px; }
-    .form-head { position: sticky; top: 0; z-index: 6; background: #fbfcfe; padding: 18px 0 12px; margin-bottom: 14px; border-bottom: 1px solid var(--line); }
+    .form-head { position: sticky; top: 0; z-index: 6; background: #fbfcfe; padding: 18px 0 12px; margin-bottom: 14px; border-bottom: 1px solid var(--line); box-shadow: 0 10px 16px -12px rgba(15, 31, 61, .35); }
     .form-head .kicker { margin: 0; }
     .form-head h1 { font-size: 1.15rem; margin: 2px 0 12px; }
     .stepper { display: flex; flex-wrap: wrap; gap: 6px; }
@@ -58,6 +58,7 @@
     .field label { font-size: .8rem; font-weight: 700; color: var(--ink-soft); }
     .field input, .field textarea {
       font: inherit; font-size: .92rem; color: var(--ink);
+      width: 100%; box-sizing: border-box;
       padding: 9px 12px; border: 1px solid var(--line); border-radius: 9px; background: #fff;
       transition: border-color .15s, box-shadow .15s;
     }
