@@ -38,7 +38,9 @@ const STATIC_FILES = {
   '/qr.js': 'text/javascript; charset=utf-8',
   '/fonts/object-sans/regular.woff2': 'font/woff2',
   '/fonts/object-sans/medium.woff2': 'font/woff2',
-  '/fonts/object-sans/bold.woff2': 'font/woff2'
+  '/fonts/object-sans/bold.woff2': 'font/woff2',
+  '/assets/livestorm-mark.svg': 'image/svg+xml',
+  '/assets/livestorm-black.svg': 'image/svg+xml'
 };
 
 const ASSET_TYPES = {

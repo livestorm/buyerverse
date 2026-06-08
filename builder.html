@@ -39,7 +39,7 @@
     /* left icon rail: global navigation + account */
     .railnav { flex: 0 0 60px; width: 60px; height: 100vh; background: #fff; border-right: 1px solid var(--line); display: flex; flex-direction: column; align-items: center; padding: 12px 0; gap: 4px; }
     .rail-brand { display: flex; align-items: center; justify-content: center; margin-bottom: 12px; }
-    .brand-mark.brand-b { color: #fff; font-family: var(--font-display); font-weight: 800; font-size: 1.05rem; line-height: 1; }
+    .rail-logo { width: 30px; height: 30px; display: block; }
     .rail-btn { width: 42px; height: 42px; display: inline-flex; align-items: center; justify-content: center; border: 0; background: transparent; color: var(--ink-soft); border-radius: 11px; cursor: pointer; text-decoration: none; transition: background .15s, color .15s; }
     .rail-btn:hover { background: var(--blue-pale); color: var(--blue); }
     .rail-btn svg { width: 20px; height: 20px; }
@@ -219,8 +219,8 @@
 </head>
 <body class="app">
   <nav class="railnav" aria-label="Sections">
-    <a class="rail-brand" href="/" aria-label="Buyerverse" title="Buyerverse">
-      <span class="brand-mark brand-b" aria-hidden="true">B</span>
+    <a class="rail-brand" href="/" aria-label="Livestorm · Buyerverse" title="Livestorm · Buyerverse">
+      <img class="rail-logo" src="/assets/livestorm-mark.svg" alt="" width="30" height="30">
     </a>
     <button class="rail-btn" id="new-proposal" type="button" title="New proposal" aria-label="New proposal">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
