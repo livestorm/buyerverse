@@ -66,12 +66,15 @@ test('publish -> render -> delete round-trip with the new payload', async () => 
     body: JSON.stringify({ slug: 'acme', template: 'renewal', values: sampleValues(), status: 'published' })
   });
   assert.equal(post.status, 200);
-  const page = await fetch(`${base}/page/acme`);
+  const { url } = await post.json();          // /page/acme/<token>
+  assert.match(url, /^\/page\/acme\/[A-Za-z0-9_-]{16,}$/);
+  const page = await fetch(`${base}${url}`);
   assert.equal(page.status, 200);
   assert.match(await page.text(), /<title>Acme × Livestorm/);
+  assert.equal((await fetch(`${base}/page/acme`)).status, 404);      // bare slug is no longer accessible
   const del = await fetch(`${base}/api/pages/acme`, { method: 'DELETE', headers: AUTH });
   assert.equal(del.status, 200);
-  assert.equal((await fetch(`${base}/page/acme`)).status, 404);
+  assert.equal((await fetch(`${base}${url}`)).status, 404);
 });
 
 test('POST /api/pages strict-validates and rejects unknown templates', async () => {
@@ -120,13 +123,16 @@ test('malformed percent-encoding in the path is a 404, not a 500', async () => {
   assert.equal(status, 404);
 });
 
-test('rendered pages are cacheable for five minutes', async () => {
-  await fetch(`${base}/api/pages`, {
+test('rendered pages are cacheable, noindex, and no-referrer', async () => {
+  const post = await fetch(`${base}/api/pages`, {
     method: 'POST', headers: JSON_HEADERS,
     body: JSON.stringify({ slug: 'cacheable', template: 'renewal', values: sampleValues(), status: 'published' })
   });
-  const res = await fetch(`${base}/page/cacheable`);
+  const { url } = await post.json();
+  const res = await fetch(`${base}${url}`);
   assert.equal(res.headers.get('cache-control'), 'public, max-age=300');
+  assert.match(res.headers.get('x-robots-tag') || '', /noindex/);          // keep proposals out of search
+  assert.equal(res.headers.get('referrer-policy'), 'no-referrer');         // don't leak the capability URL
   await fetch(`${base}/api/pages/cacheable`, { method: 'DELETE', headers: AUTH });
 });
 
@@ -208,17 +214,18 @@ test('GET /logout clears the cookie and then / redirects again', async () => {
 /* ---------- analytics + salesforce ---------- */
 
 test('page views count visitors but not the logged-in admin', async () => {
-  await fetch(`${base}/api/pages`, {
+  const post = await fetch(`${base}/api/pages`, {
     method: 'POST', headers: JSON_HEADERS,
     body: JSON.stringify({ slug: 'viewed', template: 'renewal', values: sampleValues(), status: 'published' })
   });
+  const pageUrl = `${base}${(await post.json()).url}`; // /page/viewed/<token>
   // visitor 1.1.1.1 visits twice from email (same unique visitor)
-  await fetch(`${base}/page/viewed?utm_source=email`, { headers: { 'x-forwarded-for': '1.1.1.1' } });
-  await fetch(`${base}/page/viewed?utm_source=email`, { headers: { 'x-forwarded-for': '1.1.1.1' } });
+  await fetch(`${pageUrl}?utm_source=email`, { headers: { 'x-forwarded-for': '1.1.1.1' } });
+  await fetch(`${pageUrl}?utm_source=email`, { headers: { 'x-forwarded-for': '1.1.1.1' } });
   // visitor 2.2.2.2 visits once from linkedin (second unique visitor)
-  await fetch(`${base}/page/viewed?utm_source=linkedin`, { headers: { 'x-forwarded-for': '2.2.2.2' } });
+  await fetch(`${pageUrl}?utm_source=linkedin`, { headers: { 'x-forwarded-for': '2.2.2.2' } });
   // admin visit via cookie — must not be counted
-  await fetch(`${base}/page/viewed`, { headers: COOKIE });
+  await fetch(pageUrl, { headers: COOKIE });
 
   const { pages } = await (await fetch(`${base}/api/pages`, { headers: AUTH })).json();
   const row = pages.find(p => p.slug === 'viewed');
@@ -231,12 +238,12 @@ test('page views count visitors but not the logged-in admin', async () => {
 });
 
 test('engagement beacon: /api/track records sections + dwell/depth and surfaces in analytics', async () => {
-  await fetch(`${base}/api/pages`, {
+  const post = await fetch(`${base}/api/pages`, {
     method: 'POST', headers: JSON_HEADERS,
     body: JSON.stringify({ slug: 'eng', template: 'renewal', values: sampleValues(), status: 'published' })
   });
   // The public page carries the engagement beacon with its slug baked in.
-  const html = await (await fetch(`${base}/page/eng`)).text();
+  const html = await (await fetch(`${base}${(await post.json()).url}`)).text();
   assert.match(html, /navigator\.sendBeacon\('\/api\/track'/);
   assert.match(html, /var slug="eng"/);
 
@@ -282,26 +289,53 @@ test('drafts save server-side, are not served, and go live on publish', async ()
     body: JSON.stringify({ slug: 'wip', template: 'renewal', values: sampleValues({ prospect: '' }), status: 'draft' })
   });
   assert.equal(draft.status, 200);
-  assert.equal((await draft.json()).status, 'draft');
-  assert.equal((await fetch(`${base}/page/wip`)).status, 404);          // draft not live
+  const draftJson = await draft.json();
+  assert.equal(draftJson.status, 'draft');
+  assert.equal((await fetch(`${base}${draftJson.url}`)).status, 404); // draft not live (even with the token)
   const list = await (await fetch(`${base}/api/pages`, { headers: AUTH })).json();
   assert.equal(list.pages.find(p => p.slug === 'wip').status, 'draft'); // listed as draft
 
-  // Publish it → now live.
+  // Publish it → now live. The capability token is preserved across the change.
   const pub = await fetch(`${base}/api/pages`, {
     method: 'POST', headers: JSON_HEADERS,
     body: JSON.stringify({ slug: 'wip', template: 'renewal', values: sampleValues(), status: 'published' })
   });
-  assert.equal((await pub.json()).status, 'published');
-  assert.equal((await fetch(`${base}/page/wip`)).status, 200);          // live now
+  const pubJson = await pub.json();
+  assert.equal(pubJson.status, 'published');
+  assert.equal(pubJson.url, draftJson.url);                            // stable token
+  assert.equal((await fetch(`${base}${pubJson.url}`)).status, 200);    // live now
 
   // Save as draft again → unpublished, back to 404.
   await fetch(`${base}/api/pages`, {
     method: 'POST', headers: JSON_HEADERS,
     body: JSON.stringify({ slug: 'wip', template: 'renewal', values: sampleValues(), status: 'draft' })
   });
-  assert.equal((await fetch(`${base}/page/wip`)).status, 404);
+  assert.equal((await fetch(`${base}${pubJson.url}`)).status, 404);
   await fetch(`${base}/api/pages/wip`, { method: 'DELETE', headers: AUTH });
+});
+
+test('proposal pages require the capability token in the URL', async () => {
+  const post = await fetch(`${base}/api/pages`, {
+    method: 'POST', headers: JSON_HEADERS,
+    body: JSON.stringify({ slug: 'secret', template: 'renewal', values: sampleValues(), status: 'published' })
+  });
+  const { url } = await post.json();
+  const token = url.split('/').pop();
+  assert.ok(token.length >= 16, 'token has real entropy');
+  assert.equal((await fetch(`${base}${url}`)).status, 200);                                    // right token
+  assert.equal((await fetch(`${base}/page/secret`)).status, 404);                              // no token
+  assert.equal((await fetch(`${base}/page/secret/totally-wrong-token-1234`)).status, 404);     // wrong token
+  await fetch(`${base}/api/pages/secret`, { method: 'DELETE', headers: AUTH });
+});
+
+test('repeated bad page guesses are rate-limited', async () => {
+  const headers = { 'x-forwarded-for': '9.9.9.9' };
+  let blocked = false;
+  for (let i = 0; i < 40 && !blocked; i++) {
+    const r = await fetch(`${base}/page/guess-${i}/wrongtokenwrongtoken`, { headers });
+    if (r.status === 429) blocked = true;
+  }
+  assert.ok(blocked, 'expected a 429 once an IP exceeds the miss budget');
 });
 
 test('Salesforce route requires auth and reports when unconfigured', async () => {

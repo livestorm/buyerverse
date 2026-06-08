@@ -85,6 +85,11 @@ if (DATABASE_URL) {
       );
     },
 
+    // Backfill: set the capability token without touching updated_at.
+    async setToken(slug, token) {
+      await pool.query("UPDATE pages SET config = jsonb_set(config, '{token}', to_jsonb($2::text)) WHERE slug = $1", [slug, token]);
+    },
+
     async recordView(slug, visitor, utm) {
       utm = utm || {};
       const seen = await pool.query('SELECT 1 FROM page_views WHERE slug = $1 AND visitor = $2 LIMIT 1', [slug, visitor]);
@@ -177,6 +182,11 @@ if (DATABASE_URL) {
         views: prev ? prev.views : 0,
         last_viewed: prev ? prev.last_viewed : null
       });
+    },
+
+    async setToken(slug, token) {
+      const row = pages.get(slug);
+      if (row) row.config = Object.assign({}, row.config, { token });
     },
 
     async recordView(slug, visitor, utm) {

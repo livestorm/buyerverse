@@ -1414,6 +1414,11 @@ body { --row-gap: 16px; --field-mb: 16px; --card-pad: 24px; }
       var t = findTemplate(p.config.template);
       return (t && t.nameField && p.config.values && p.config.values[t.nameField]) ? String(p.config.values[t.nameField]) : p.slug;
     }
+    // Public link includes the per-proposal capability token (unguessable URL).
+    function pagePath(p) {
+      var tok = p && p.config && p.config.token;
+      return '/page/' + p.slug + (tok ? '/' + tok : '');
+    }
 
     // Top UTM sources for a page, "email 12 · linkedin 5 · (direct) 3".
     function sourcesSummary(p) {
@@ -1461,13 +1466,13 @@ body { --row-gap: 16px; --field-mb: 16px; --card-pad: 24px; }
             (published ? ' · ' + total + ' views · ' + uniq + ' unique · ' + last7 + ' last 7d' : '') + '</span>' +
           (published && sourcesSummary(p) ? '<span class="meta">Sources: ' + sourcesSummary(p) + '</span>' : '') +
           '<span class="ops">' +
-            (published ? '<a class="mini-btn" href="/page/' + p.slug + '" target="_blank" rel="noopener">View</a>' +
+            (published ? '<a class="mini-btn" href="' + pagePath(p) + '" target="_blank" rel="noopener">View</a>' +
               '<button class="mini-btn" data-share type="button">Share</button>' : '') +
             '<button class="mini-btn" data-edit type="button">Edit</button>' +
             '<button class="mini-btn" data-dup type="button">Duplicate</button>' +
             '<button class="mini-btn danger" data-del type="button">Delete</button>' +
           '</span>';
-        if (published) row.querySelector('[data-share]').addEventListener('click', function () { openShare('/page/' + p.slug); });
+        if (published) row.querySelector('[data-share]').addEventListener('click', function () { openShare(pagePath(p)); });
         row.querySelector('[data-edit]').addEventListener('click', function () {
           if (!t) { toast('Template "' + escapeText(p.config.template) + '" no longer exists.', 'err'); return; }
           slugTouched = true; editingSlug = p.slug; currentStatus = p.status || 'published'; dirty = false;
@@ -1542,7 +1547,7 @@ body { --row-gap: 16px; --field-mb: 16px; --card-pad: 24px; }
           return '<div class="an-row"><span class="nm">' + escapeText(pageName(p)) + '</span>' +
             '<span class="st">' + Number(p.views || 0) + ' views · ' + Number(p.unique || 0) + ' unique · ' + Number(p.last7 || 0) + ' last 7d' +
             (eng.length ? ' · ' + eng.join(' · ') : '') + '</span>' +
-            '<a class="mini-btn" href="/page/' + p.slug + '" target="_blank" rel="noopener">View</a></div>';
+            '<a class="mini-btn" href="' + pagePath(p) + '" target="_blank" rel="noopener">View</a></div>';
         }).join('') : '<p class="an-empty">No pages yet.</p>';
 
         var maxs = secEntries.length ? secEntries[0][1] : 1;

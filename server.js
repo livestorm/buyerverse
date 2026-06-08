@@ -5,7 +5,7 @@
  *   GET    /login                     login page (admin token → session cookie)
  *   POST   /login                     validate token, set bv_session cookie
  *   GET    /logout                    clear the session cookie
- *   GET    /page/<slug>               rendered proposal page (public, carries the engagement beacon)
+ *   GET    /page/<slug>/<token>       rendered proposal page (public, capability-token gated; carries the engagement beacon)
  *   GET    /templates/<id>/<asset>    template assets (public)
  *   GET    /api/templates             list template manifests (public)
  *   POST   /api/track                 engagement beacon: sections/dwell/depth (public, 204)
@@ -118,6 +118,21 @@ function sendHTML(res, status, html, cacheable, extraHeaders) {
 // Auth pages must not be framable (clickjacking of the login form).
 const NO_FRAME = { 'X-Frame-Options': 'DENY' };
 
+// Proposal pages: keep them out of search indexes and don't leak the
+// capability URL via the Referer header when a prospect clicks outward.
+const PAGE_HEADERS = { 'X-Robots-Tag': 'noindex, nofollow', 'Referrer-Policy': 'no-referrer' };
+const NOINDEX = { 'X-Robots-Tag': 'noindex' };
+
+/** URL-safe capability token (128 bits) embedded in a proposal's share link. */
+function randomToken() { return crypto.randomBytes(16).toString('base64url'); }
+
+/** Constant-time compare (hash both to equal length, then timingSafeEqual). */
+function constantTimeEqual(a, b) {
+  const ha = crypto.createHash('sha256').update(String(a)).digest();
+  const hb = crypto.createHash('sha256').update(String(b)).digest();
+  return crypto.timingSafeEqual(ha, hb);
+}
+
 const SESSION_COOKIE = 'bv_session';
 
 /** Timing-safe compare of a candidate string against ADMIN_TOKEN. */
@@ -191,6 +206,29 @@ function loginRateLimited(req) {
   if (!rec || now > rec.resetAt) { rec = { count: 0, resetAt: now + LOGIN_WINDOW_MS }; loginAttempts.set(ip, rec); }
   rec.count++;
   return rec.count > LOGIN_MAX;
+}
+
+/* ---------- proposal-page probing limiter ---------- */
+
+// Throttle slug/token guessing: legitimate prospects never miss (their link
+// works), so only enumeration accrues misses and gets blocked.
+const PAGE_MISS_WINDOW_MS = 10 * 60 * 1000;
+const PAGE_MISS_MAX = 30;
+const pageMisses = new Map(); // ip -> { count, resetAt }
+
+function pageProbingBlocked(req) {
+  const ip = firstForwardedIp(req) || req.socket.remoteAddress || 'unknown';
+  const rec = pageMisses.get(ip);
+  return Boolean(rec && Date.now() < rec.resetAt && rec.count > PAGE_MISS_MAX);
+}
+
+function notePageMiss(req) {
+  if (pageMisses.size > 10000) pageMisses.clear(); // unbounded-growth guard
+  const ip = firstForwardedIp(req) || req.socket.remoteAddress || 'unknown';
+  const now = Date.now();
+  let rec = pageMisses.get(ip);
+  if (!rec || now > rec.resetAt) { rec = { count: 0, resetAt: now + PAGE_MISS_WINDOW_MS }; pageMisses.set(ip, rec); }
+  rec.count++;
 }
 
 function redirect(res, location, status) {
@@ -311,16 +349,21 @@ async function handle(req, res) {
     return res.end(fs.readFileSync(full));
   }
 
-  // Rendered proposal pages
-  const pageMatch = /^\/page\/([^/]+)\/?$/.exec(pathname);
+  // Rendered proposal pages. Access is gated by a per-proposal capability
+  // token in the URL (/page/<slug>/<token>) so slugs can't be guessed. Any
+  // failure returns an identical 404 — never reveal whether a slug exists.
+  const pageMatch = /^\/page\/([^/]+)\/([^/]+)\/?$/.exec(pathname);
   if (req.method === 'GET' && pageMatch) {
+    if (pageProbingBlocked(req)) return sendHTML(res, 429, NOT_FOUND_PAGE, false, NOINDEX);
     const slug = pageMatch[1];
-    if (!engine.validSlug(slug)) return sendHTML(res, 404, NOT_FOUND_PAGE, false);
+    const token = pageMatch[2];
+    const miss = () => { notePageMiss(req); return sendHTML(res, 404, NOT_FOUND_PAGE, false, NOINDEX); };
+    if (!engine.validSlug(slug)) return miss();
     const row = await store.get(slug);
-    if (!row) return sendHTML(res, 404, NOT_FOUND_PAGE, false);
-    if (row.status === 'draft') return sendHTML(res, 404, NOT_FOUND_PAGE, false); // drafts aren't live
+    if (!row || row.status === 'draft') return miss();              // unknown or not live
+    if (!row.config.token || !constantTimeEqual(token, row.config.token)) return miss(); // wrong link
     const t = engine.getTemplate(row.config.template);
-    if (!t) return sendHTML(res, 404, NOT_FOUND_PAGE, false); // template removed from repo
+    if (!t) return miss();                                          // template removed from repo
     // Count prospect visits only — don't inflate analytics with the AM's own previews.
     if (!authed(req)) {
       const prospect = row.config.values && row.config.values.prospect;
@@ -328,7 +371,7 @@ async function handle(req, res) {
         .then((r) => { if (r && r.firstView && notify.configured()) notify.proposalOpened(slug, prospect).catch(() => {}); })
         .catch(() => {});
     }
-    return sendHTML(res, 200, injectBeacon(engine.renderTemplate(t, row.config.values), slug), true);
+    return sendHTML(res, 200, injectBeacon(engine.renderTemplate(t, row.config.values), slug), true, PAGE_HEADERS);
   }
 
   // API
@@ -407,8 +450,12 @@ async function handle(req, res) {
       values = engine.validateValues(t.manifest, body.values, { lenient: true }).values;
     }
 
-    await store.upsert(body.slug, { template: t.manifest.id, values }, status);
-    return sendJSON(res, 200, { ok: true, slug: body.slug, status: status, url: '/page/' + body.slug });
+    // Capability token: stable for the life of the proposal (preserve it across
+    // edits/re-publish so a shared link keeps working), generate on first save.
+    const existing = await store.get(body.slug);
+    const token = (existing && existing.config && existing.config.token) || randomToken();
+    await store.upsert(body.slug, { template: t.manifest.id, values, token }, status);
+    return sendJSON(res, 200, { ok: true, slug: body.slug, status: status, url: '/page/' + body.slug + '/' + token });
   }
 
   const apiMatch = /^\/api\/pages\/([^/]+)$/.exec(pathname);
@@ -447,6 +494,11 @@ const server = http.createServer((req, res) => {
 async function start(port = PORT) {
   engine.loadTemplates(); // fail fast on malformed templates
   await store.init();
+  // Backfill capability tokens for proposals created before tokens existed,
+  // so their (re-shared) links work immediately. No-op once all have one.
+  for (const p of await store.list()) {
+    if (!p.config || !p.config.token) await store.setToken(p.slug, randomToken());
+  }
   return new Promise((resolve, reject) => {
     server.listen(port, '0.0.0.0', () => {
       const actual = server.address().port;
