@@ -56,13 +56,16 @@ function sendJSON(res, status, data) {
   res.end(body);
 }
 
-function sendHTML(res, status, html, cacheable) {
-  res.writeHead(status, {
+function sendHTML(res, status, html, cacheable, extraHeaders) {
+  res.writeHead(status, Object.assign({
     'Content-Type': 'text/html; charset=utf-8',
     'Cache-Control': cacheable ? 'public, max-age=300' : 'no-cache'
-  });
+  }, extraHeaders));
   res.end(html);
 }
+
+// Auth pages must not be framable (clickjacking of the login form).
+const NO_FRAME = { 'X-Frame-Options': 'DENY' };
 
 const SESSION_COOKIE = 'bv_session';
 
@@ -100,17 +103,43 @@ function authed(req) {
   return cookieTok !== null && tokenMatches(cookieTok);
 }
 
-/** Render TLS-terminating proxies (and local HTTPS) advertise the original scheme here. */
-function isHttps(req) {
-  return (req.headers['x-forwarded-proto'] || '').split(',')[0].trim() === 'https';
+/**
+ * Whether the cookie should carry Secure. Fails CLOSED: Secure is set unless
+ * we positively know the request is plaintext localhost dev. Render's proxy
+ * sets x-forwarded-proto (first value = real scheme); if it's ever absent we
+ * still default to Secure so the token-bearing cookie never leaks over http.
+ */
+function isSecureContext(req) {
+  const proto = (req.headers['x-forwarded-proto'] || '').split(',')[0].trim();
+  if (proto) return proto === 'https';
+  const host = (req.headers.host || '').split(':')[0];
+  return !(host === 'localhost' || host === '127.0.0.1' || host === '[::1]');
 }
 
 /** Set-Cookie value for the session cookie; clear=true expires it immediately. */
 function sessionCookie(req, value, clear) {
   const attrs = [`${SESSION_COOKIE}=${value}`, 'HttpOnly', 'SameSite=Strict', 'Path=/'];
-  if (isHttps(req)) attrs.push('Secure');
+  if (isSecureContext(req)) attrs.push('Secure');
   if (clear) attrs.push('Max-Age=0');
   return attrs.join('; ');
+}
+
+/* ---------- login rate limiting ---------- */
+
+const LOGIN_WINDOW_MS = 15 * 60 * 1000;
+const LOGIN_MAX = 10;
+const loginAttempts = new Map(); // ip -> { count, resetAt }
+
+/** Fixed-window limiter on login attempts, keyed by first-hop client IP. */
+function loginRateLimited(req) {
+  if (loginAttempts.size > 10000) loginAttempts.clear(); // crude unbounded-growth guard
+  const ip = (req.headers['x-forwarded-for'] || '').split(',')[0].trim()
+    || req.socket.remoteAddress || 'unknown';
+  const now = Date.now();
+  let rec = loginAttempts.get(ip);
+  if (!rec || now > rec.resetAt) { rec = { count: 0, resetAt: now + LOGIN_WINDOW_MS }; loginAttempts.set(ip, rec); }
+  rec.count++;
+  return rec.count > LOGIN_MAX;
 }
 
 function redirect(res, location, status) {
@@ -214,17 +243,18 @@ async function handle(req, res) {
 
   // Login
   if (pathname === '/login' && req.method === 'GET') {
-    if (!ADMIN_TOKEN) return sendHTML(res, 200, renderLogin('This server has no ADMIN_TOKEN configured.'), false);
+    if (!ADMIN_TOKEN) return sendHTML(res, 200, renderLogin('This server has no ADMIN_TOKEN configured.'), false, NO_FRAME);
     if (authed(req)) return redirect(res, '/');
-    return sendHTML(res, 200, renderLogin(''), false);
+    return sendHTML(res, 200, renderLogin(''), false, NO_FRAME);
   }
   if (pathname === '/login' && req.method === 'POST') {
-    if (!ADMIN_TOKEN) return sendHTML(res, 503, renderLogin('This server has no ADMIN_TOKEN configured.'), false);
+    if (!ADMIN_TOKEN) return sendHTML(res, 503, renderLogin('This server has no ADMIN_TOKEN configured.'), false, NO_FRAME);
+    if (loginRateLimited(req)) return sendHTML(res, 429, renderLogin('Too many attempts. Wait a few minutes and try again.'), false, NO_FRAME);
     let raw;
     try { raw = await readRaw(req); }
-    catch (e) { return sendHTML(res, e.status || 400, renderLogin('Could not read the request.'), false); }
+    catch (e) { return sendHTML(res, e.status || 400, renderLogin('Could not read the request.'), false, NO_FRAME); }
     const token = new URLSearchParams(raw).get('token') || '';
-    if (!tokenMatches(token)) return sendHTML(res, 401, renderLogin('Invalid token. Try again.'), false);
+    if (!tokenMatches(token)) return sendHTML(res, 401, renderLogin('Invalid token. Try again.'), false, NO_FRAME);
     res.writeHead(303, { 'Set-Cookie': sessionCookie(req, encodeURIComponent(token), false), Location: '/' });
     return res.end();
   }
@@ -236,7 +266,7 @@ async function handle(req, res) {
   // Builder UI (gated — the only page behind auth; proposal pages stay public)
   if (req.method === 'GET' && (pathname === '/' || pathname === '/index.html')) {
     if (!authed(req)) return redirect(res, '/login');
-    return sendHTML(res, 200, fs.readFileSync(path.join(ROOT, 'builder.html'), 'utf8'), false);
+    return sendHTML(res, 200, fs.readFileSync(path.join(ROOT, 'builder.html'), 'utf8'), false, NO_FRAME);
   }
 
   // Builder static assets (whitelist)

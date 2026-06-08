@@ -175,6 +175,20 @@ test('POST /login with the correct token sets an HttpOnly cookie and redirects',
   assert.match(cookie, /SameSite=Strict/);
 });
 
+test('the session cookie is Secure behind HTTPS and plain on localhost', async () => {
+  const https = await fetch(`${base}/login`, {
+    method: 'POST', redirect: 'manual',
+    headers: { 'x-forwarded-proto': 'https' },
+    body: new URLSearchParams({ token: 'test-token' })
+  });
+  assert.match(https.headers.get('set-cookie'), /Secure/);
+  const local = await fetch(`${base}/login`, {
+    method: 'POST', redirect: 'manual',
+    body: new URLSearchParams({ token: 'test-token' })
+  });
+  assert.doesNotMatch(local.headers.get('set-cookie'), /Secure/); // 127.0.0.1, no forwarded proto
+});
+
 test('POST /login with a wrong token is 401 and sets no cookie', async () => {
   const res = await fetch(`${base}/login`, {
     method: 'POST', redirect: 'manual',
