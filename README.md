@@ -23,6 +23,7 @@ from a template and serve them at `/page/<slug>`.
 | `ADMIN_TOKEN`  | Shared secret for the builder/API (required to publish pages)     |
 | `DATABASE_URL` | Postgres connection string; without it pages are stored in memory |
 | `PORT`         | Injected by Render                                                |
+| `NODE_ENV`     | Set to `production` to cache the template registry (otherwise it re-scans `templates/` per request) |
 
 A `galileo` page is seeded on first boot, so the original proposal lives at
 `/page/galileo`.
