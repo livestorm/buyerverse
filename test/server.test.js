@@ -63,7 +63,7 @@ test('POST /api/preview requires auth and a known template', async () => {
 test('publish -> render -> delete round-trip with the new payload', async () => {
   const post = await fetch(`${base}/api/pages`, {
     method: 'POST', headers: JSON_HEADERS,
-    body: JSON.stringify({ slug: 'acme', template: 'renewal', values: sampleValues() })
+    body: JSON.stringify({ slug: 'acme', template: 'renewal', values: sampleValues(), status: 'published' })
   });
   assert.equal(post.status, 200);
   const page = await fetch(`${base}/page/acme`);
@@ -77,7 +77,7 @@ test('publish -> render -> delete round-trip with the new payload', async () => 
 test('POST /api/pages strict-validates and rejects unknown templates', async () => {
   const bad = await fetch(`${base}/api/pages`, {
     method: 'POST', headers: JSON_HEADERS,
-    body: JSON.stringify({ slug: 'bad', template: 'renewal', values: sampleValues({ am_email: 'nope' }) })
+    body: JSON.stringify({ slug: 'bad', template: 'renewal', values: sampleValues({ am_email: 'nope' }), status: 'published' })
   });
   assert.equal(bad.status, 400);
   assert.match((await bad.json()).error, /am_email/);
@@ -123,7 +123,7 @@ test('malformed percent-encoding in the path is a 404, not a 500', async () => {
 test('rendered pages are cacheable for five minutes', async () => {
   await fetch(`${base}/api/pages`, {
     method: 'POST', headers: JSON_HEADERS,
-    body: JSON.stringify({ slug: 'cacheable', template: 'renewal', values: sampleValues() })
+    body: JSON.stringify({ slug: 'cacheable', template: 'renewal', values: sampleValues(), status: 'published' })
   });
   const res = await fetch(`${base}/page/cacheable`);
   assert.equal(res.headers.get('cache-control'), 'public, max-age=300');
@@ -210,7 +210,7 @@ test('GET /logout clears the cookie and then / redirects again', async () => {
 test('page views count visitors but not the logged-in admin', async () => {
   await fetch(`${base}/api/pages`, {
     method: 'POST', headers: JSON_HEADERS,
-    body: JSON.stringify({ slug: 'viewed', template: 'renewal', values: sampleValues() })
+    body: JSON.stringify({ slug: 'viewed', template: 'renewal', values: sampleValues(), status: 'published' })
   });
   // visitor 1.1.1.1 visits twice from email (same unique visitor)
   await fetch(`${base}/page/viewed?utm_source=email`, { headers: { 'x-forwarded-for': '1.1.1.1' } });
@@ -228,6 +228,35 @@ test('page views count visitors but not the logged-in admin', async () => {
   assert.deepEqual(row.sources, { email: 2, linkedin: 1 }); // UTM source breakdown
   assert.ok(row.last_viewed);
   await fetch(`${base}/api/pages/viewed`, { method: 'DELETE', headers: AUTH });
+});
+
+test('drafts save server-side, are not served, and go live on publish', async () => {
+  // Save as draft (incomplete values allowed) — not live.
+  const draft = await fetch(`${base}/api/pages`, {
+    method: 'POST', headers: JSON_HEADERS,
+    body: JSON.stringify({ slug: 'wip', template: 'renewal', values: sampleValues({ prospect: '' }), status: 'draft' })
+  });
+  assert.equal(draft.status, 200);
+  assert.equal((await draft.json()).status, 'draft');
+  assert.equal((await fetch(`${base}/page/wip`)).status, 404);          // draft not live
+  const list = await (await fetch(`${base}/api/pages`, { headers: AUTH })).json();
+  assert.equal(list.pages.find(p => p.slug === 'wip').status, 'draft'); // listed as draft
+
+  // Publish it → now live.
+  const pub = await fetch(`${base}/api/pages`, {
+    method: 'POST', headers: JSON_HEADERS,
+    body: JSON.stringify({ slug: 'wip', template: 'renewal', values: sampleValues(), status: 'published' })
+  });
+  assert.equal((await pub.json()).status, 'published');
+  assert.equal((await fetch(`${base}/page/wip`)).status, 200);          // live now
+
+  // Save as draft again → unpublished, back to 404.
+  await fetch(`${base}/api/pages`, {
+    method: 'POST', headers: JSON_HEADERS,
+    body: JSON.stringify({ slug: 'wip', template: 'renewal', values: sampleValues(), status: 'draft' })
+  });
+  assert.equal((await fetch(`${base}/page/wip`)).status, 404);
+  await fetch(`${base}/api/pages/wip`, { method: 'DELETE', headers: AUTH });
 });
 
 test('Salesforce route requires auth and reports when unconfigured', async () => {

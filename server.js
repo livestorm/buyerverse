@@ -289,6 +289,7 @@ async function handle(req, res) {
     if (!engine.validSlug(slug)) return sendHTML(res, 404, NOT_FOUND_PAGE, false);
     const row = await store.get(slug);
     if (!row) return sendHTML(res, 404, NOT_FOUND_PAGE, false);
+    if (row.status === 'draft') return sendHTML(res, 404, NOT_FOUND_PAGE, false); // drafts aren't live
     const t = engine.getTemplate(row.config.template);
     if (!t) return sendHTML(res, 404, NOT_FOUND_PAGE, false); // template removed from repo
     // Count prospect visits only — don't inflate analytics with the AM's own previews.
@@ -335,11 +336,20 @@ async function handle(req, res) {
     if (!engine.validSlug(body.slug)) return sendJSON(res, 400, { error: 'slug: lowercase letters, digits and hyphens only' });
     const t = engine.getTemplate(body.template);
     if (!t) return sendJSON(res, 400, { error: 'unknown template' });
-    const { values, error } = engine.validateValues(t.manifest, body.values);
-    if (error) return sendJSON(res, 400, { error });
+    const status = body.status === 'published' ? 'published' : 'draft';
+    let values;
+    if (status === 'published') {
+      // A live proposal must be complete and valid.
+      const r = engine.validateValues(t.manifest, body.values);
+      if (r.error) return sendJSON(res, 400, { error: r.error });
+      values = r.values;
+    } else {
+      // Drafts can be incomplete — store the normalized/fallback values.
+      values = engine.validateValues(t.manifest, body.values, { lenient: true }).values;
+    }
 
-    await store.upsert(body.slug, { template: t.manifest.id, values });
-    return sendJSON(res, 200, { ok: true, slug: body.slug, url: '/page/' + body.slug });
+    await store.upsert(body.slug, { template: t.manifest.id, values }, status);
+    return sendJSON(res, 200, { ok: true, slug: body.slug, status: status, url: '/page/' + body.slug });
   }
 
   const apiMatch = /^\/api\/pages\/([^/]+)$/.exec(pathname);

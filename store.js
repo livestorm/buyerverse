@@ -25,6 +25,7 @@ if (DATABASE_URL) {
         CREATE TABLE IF NOT EXISTS pages (
           slug       TEXT PRIMARY KEY,
           config     JSONB NOT NULL,
+          status     TEXT,
           views      BIGINT NOT NULL DEFAULT 0,
           last_viewed TIMESTAMPTZ,
           created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
@@ -34,6 +35,7 @@ if (DATABASE_URL) {
       // Columns added after the initial release.
       await pool.query('ALTER TABLE pages ADD COLUMN IF NOT EXISTS views BIGINT NOT NULL DEFAULT 0');
       await pool.query('ALTER TABLE pages ADD COLUMN IF NOT EXISTS last_viewed TIMESTAMPTZ');
+      await pool.query('ALTER TABLE pages ADD COLUMN IF NOT EXISTS status TEXT');
       await pool.query(`
         CREATE TABLE IF NOT EXISTS page_views (
           slug         TEXT NOT NULL,
@@ -52,20 +54,21 @@ if (DATABASE_URL) {
     },
 
     async get(slug) {
-      const { rows } = await pool.query('SELECT slug, config, views, last_viewed, updated_at FROM pages WHERE slug = $1', [slug]);
+      // Rows from before the status column existed were already live → 'published'.
+      const { rows } = await pool.query("SELECT slug, config, COALESCE(status, 'published') AS status, views, last_viewed, updated_at FROM pages WHERE slug = $1", [slug]);
       return rows[0] || null;
     },
 
     async list() {
-      const { rows } = await pool.query('SELECT slug, config, views, last_viewed, updated_at FROM pages ORDER BY updated_at DESC');
+      const { rows } = await pool.query("SELECT slug, config, COALESCE(status, 'published') AS status, views, last_viewed, updated_at FROM pages ORDER BY updated_at DESC");
       return rows;
     },
 
-    async upsert(slug, config) {
+    async upsert(slug, config, status) {
       await pool.query(
-        `INSERT INTO pages (slug, config) VALUES ($1, $2)
-         ON CONFLICT (slug) DO UPDATE SET config = EXCLUDED.config, updated_at = now()`,
-        [slug, JSON.stringify(config)]
+        `INSERT INTO pages (slug, config, status) VALUES ($1, $2, $3)
+         ON CONFLICT (slug) DO UPDATE SET config = EXCLUDED.config, status = EXCLUDED.status, updated_at = now()`,
+        [slug, JSON.stringify(config), status || 'draft']
       );
     },
 
@@ -125,10 +128,10 @@ if (DATABASE_URL) {
       return Array.from(pages.values()).sort((a, b) => b.updated_at - a.updated_at);
     },
 
-    async upsert(slug, config) {
+    async upsert(slug, config, status) {
       const prev = pages.get(slug);
       pages.set(slug, {
-        slug, config, updated_at: new Date(),
+        slug, config, status: status || 'draft', updated_at: new Date(),
         views: prev ? prev.views : 0,
         last_viewed: prev ? prev.last_viewed : null
       });

@@ -37,6 +37,15 @@
     .slug-wrap.warn { border-color: #f59e0b; background: #fffbeb; }
     .save-state { font-size: .76rem; font-weight: 700; color: var(--muted); white-space: nowrap; }
     .save-state.saved { color: var(--mint-deep); }
+    .status-pill { font-size: .72rem; font-weight: 800; text-transform: uppercase; letter-spacing: .03em; padding: 5px 11px; border-radius: 999px; white-space: nowrap; border: 1px solid transparent; }
+    .status-pill.draft { background: #fffbeb; color: #92400e; border-color: #fde68a; }
+    .status-pill.published { background: #ecfdf3; color: var(--mint-deep); border-color: #abefc6; }
+    .slug-wrap.locked { background: var(--blue-pale); }
+    .slug-wrap.locked .slug-input { color: var(--ink-soft); cursor: not-allowed; }
+    .slug-wrap .lock { font-size: .8rem; color: var(--muted); padding: 0 10px 0 0; }
+    .badge { flex: 0 0 auto; font-size: .64rem; font-weight: 800; text-transform: uppercase; letter-spacing: .03em; padding: 3px 8px; border-radius: 999px; border: 1px solid transparent; }
+    .badge.draft { background: #fffbeb; color: #92400e; border-color: #fde68a; }
+    .badge.published { background: #ecfdf3; color: var(--mint-deep); border-color: #abefc6; }
 
     /* ---------- workspace: form | preview ---------- */
     .workspace { flex: 1 1 auto; display: grid; grid-template-columns: minmax(420px, 600px) 1fr; min-height: 0; }
@@ -186,16 +195,19 @@
         <span class="tpl-btn-name" id="tpl-name">—</span>
         <span class="caret" aria-hidden="true">▾</span>
       </button>
-      <div class="slug-wrap" title="Proposal URL">
+      <div class="slug-wrap" id="slug-wrap" title="Proposal URL">
         <span class="prefix">/page/</span>
         <input class="slug-input" id="f-slug" type="text" maxlength="64" pattern="[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?" placeholder="acme-corp" required>
+        <span class="lock" id="slug-lock" aria-hidden="true" hidden>🔒</span>
       </div>
     </div>
 
     <div class="tb-actions">
-      <span class="save-state" id="save-state" aria-live="polite"></span>
+      <span class="status-pill draft" id="status-pill" aria-live="polite">Draft · new</span>
+      <button class="icon-btn" id="new-proposal" type="button">New</button>
       <button class="icon-btn" id="open-analytics" type="button">Analytics</button>
       <button class="icon-btn" id="open-pages" type="button">Proposals</button>
+      <button class="icon-btn" id="save-draft" type="button">Save draft</button>
       <button class="btn btn-primary" id="submit" type="button">Publish</button>
       <a class="mini-btn" href="/logout">Log out</a>
     </div>
@@ -205,7 +217,7 @@
     <div class="form-col" id="form-col">
       <div class="form-head">
         <p class="kicker">Proposal builder</p>
-        <h1>Build a proposal</h1>
+        <h1 id="form-head-title">Build a proposal</h1>
         <div class="stepper" id="stepper" role="tablist" aria-label="Form sections"></div>
       </div>
       <div class="restore-bar" id="restore-bar" hidden>
@@ -297,6 +309,11 @@
           <option value="views">Most views</option>
           <option value="name">Name A–Z</option>
         </select>
+        <select id="pages-status" aria-label="Filter by status">
+          <option value="all">All</option>
+          <option value="published">Published</option>
+          <option value="draft">Drafts</option>
+        </select>
       </div>
       <div class="pages-list" id="pages"><p class="empty">Loading…</p></div>
     </div>
@@ -315,7 +332,8 @@
     var current = null;        // selected manifest
     var sections = [];         // [{ group, el, fields }]
     var slugTouched = false;
-    var editingSlug = null;    // slug loaded via Edit (so re-publishing it isn't an "overwrite")
+    var editingSlug = null;    // slug of the proposal being edited (null = new); locks the slug field
+    var currentStatus = null;  // 'draft' | 'published' | null (new, never saved)
     var knownSlugs = {};       // slugs that already exist (overwrite warning)
     var allPages = [];         // last fetched pages (for search/sort in the drawer)
     var previewTimer = null;
@@ -341,7 +359,23 @@
     }
 
     function setStatus(el, msg, ok) { el.className = 'status ' + (ok ? 'ok' : 'err'); el.innerHTML = msg; }
-    function saveState(text, ok) { var el = $('save-state'); el.textContent = text || ''; el.className = 'save-state' + (ok ? ' saved' : ''); }
+    // Reflect the proposal's saved status + unsaved edits in the topbar pill.
+    function renderStatus() {
+      var pill = $('status-pill');
+      var st = currentStatus || 'draft';
+      pill.className = 'status-pill ' + st;
+      pill.textContent = (st === 'published' ? 'Published' : 'Draft') + (dirty ? ' · unsaved' : (currentStatus ? '' : ' · new'));
+    }
+
+    // Lock the slug + show "Edit" mode while editing an existing proposal.
+    function applyEditState() {
+      var editing = editingSlug !== null;
+      $('f-slug').readOnly = editing;
+      $('slug-wrap').classList.toggle('locked', editing);
+      $('slug-lock').hidden = !editing;
+      $('form-head-title').textContent = editing ? 'Edit proposal' : 'Build a proposal';
+      renderStatus();
+    }
     function escapeText(s) { var d = document.createElement('div'); d.textContent = String(s == null ? '' : s); return d.innerHTML; }
 
     function slugify(s) {
@@ -607,7 +641,7 @@
 
     /* ---------- drafts (local autosave + unload guard) ---------- */
 
-    function markDirty() { dirty = true; saveDraft(); saveState('Draft saved', true); }
+    function markDirty() { dirty = true; saveDraft(); renderStatus(); }
     function saveDraft() {
       if (!current) return;
       try { localStorage.setItem(DRAFT_KEY, JSON.stringify({ template: current.id, slug: $('f-slug').value, values: readValues(), at: Date.now() })); } catch (e) {}
@@ -622,14 +656,14 @@
       $('restore-text').textContent = 'Unsaved draft for /page/' + (d.slug || '…') + '.';
       $('restore-bar').hidden = false;
       $('restore-yes').onclick = function () {
-        slugTouched = true; editingSlug = null;
+        slugTouched = true; editingSlug = null; currentStatus = null;
         buildForm(findTemplate(d.template), d.values);
         $('f-slug').value = d.slug || '';
-        updateSlugWarn();
+        updateSlugWarn(); applyEditState();
         $('restore-bar').hidden = true;
-        dirty = true; saveState('Draft restored', true);
+        dirty = true; renderStatus();
       };
-      $('restore-no').onclick = function () { clearDraft(); saveState(''); $('restore-bar').hidden = true; };
+      $('restore-no').onclick = function () { clearDraft(); $('restore-bar').hidden = true; };
     }
 
     /* ---------- salesforce autofill ---------- */
@@ -715,7 +749,7 @@
         card.innerHTML = '<span class="tpl-card-name">' + escapeText(t.name) + '</span>' +
           '<span class="tpl-card-desc">' + escapeText(t.description || '') + '</span>';
         card.addEventListener('click', function () {
-          if (!current || current.id !== t.id) { slugTouched = false; editingSlug = null; buildForm(t); }
+          if (!current || current.id !== t.id) { slugTouched = false; editingSlug = null; currentStatus = null; dirty = false; buildForm(t); applyEditState(); }
           closeOverlay($('gallery'));
         });
         c.appendChild(card);
@@ -731,6 +765,7 @@
     $('pages-drawer').addEventListener('click', function (e) { if (e.target.hasAttribute('data-close-pages')) closeOverlay($('pages-drawer')); });
     $('pages-search').addEventListener('input', renderPagesList);
     $('pages-sort').addEventListener('change', renderPagesList);
+    $('pages-status').addEventListener('change', renderPagesList);
 
     function pageName(p) {
       var t = findTemplate(p.config.template);
@@ -757,7 +792,9 @@
     function renderPagesList() {
       var q = $('pages-search').value.trim().toLowerCase();
       var sort = $('pages-sort').value;
+      var statusFilter = $('pages-status').value;
       var rows = allPages.filter(function (p) {
+        if (statusFilter !== 'all' && (p.status || 'published') !== statusFilter) return false;
         return !q || p.slug.toLowerCase().indexOf(q) >= 0 || pageName(p).toLowerCase().indexOf(q) >= 0;
       });
       rows.sort(function (a, b) {
@@ -769,39 +806,41 @@
       $('pages').innerHTML = '';
       rows.forEach(function (p) {
         var t = findTemplate(p.config.template);
+        var published = (p.status || 'published') === 'published';
         var row = document.createElement('div');
         row.className = 'page-row';
         var date = p.updated_at ? new Date(p.updated_at).toLocaleDateString() : '';
         var total = Number(p.views || 0), uniq = Number(p.unique || 0), last7 = Number(p.last7 || 0);
         row.innerHTML =
+          '<span class="badge ' + (published ? 'published' : 'draft') + '">' + (published ? 'Published' : 'Draft') + '</span>' +
           '<span class="slug">/page/' + p.slug + '</span>' +
           '<span class="meta">' + escapeText(pageName(p)) + (t ? ' · ' + escapeText(t.name) : '') + (date ? ' · ' + date : '') +
-            ' · ' + total + ' views · ' + uniq + ' unique · ' + last7 + ' last 7d</span>' +
-          (sourcesSummary(p) ? '<span class="meta">Sources: ' + sourcesSummary(p) + '</span>' : '') +
+            (published ? ' · ' + total + ' views · ' + uniq + ' unique · ' + last7 + ' last 7d' : '') + '</span>' +
+          (published && sourcesSummary(p) ? '<span class="meta">Sources: ' + sourcesSummary(p) + '</span>' : '') +
           '<span class="ops">' +
-            '<a class="mini-btn" href="/page/' + p.slug + '" target="_blank" rel="noopener">View</a>' +
-            '<button class="mini-btn" data-share type="button">Share</button>' +
+            (published ? '<a class="mini-btn" href="/page/' + p.slug + '" target="_blank" rel="noopener">View</a>' +
+              '<button class="mini-btn" data-share type="button">Share</button>' : '') +
             '<button class="mini-btn" data-edit type="button">Edit</button>' +
             '<button class="mini-btn" data-dup type="button">Duplicate</button>' +
             '<button class="mini-btn danger" data-del type="button">Delete</button>' +
           '</span>';
-        row.querySelector('[data-share]').addEventListener('click', function () { openShare('/page/' + p.slug); });
+        if (published) row.querySelector('[data-share]').addEventListener('click', function () { openShare('/page/' + p.slug); });
         row.querySelector('[data-edit]').addEventListener('click', function () {
           if (!t) { toast('Template "' + escapeText(p.config.template) + '" no longer exists.', 'err'); return; }
-          slugTouched = true; editingSlug = p.slug;
+          slugTouched = true; editingSlug = p.slug; currentStatus = p.status || 'published'; dirty = false;
           buildForm(t, p.config.values);
           $('f-slug').value = p.slug;
-          updateSlugWarn();
+          updateSlugWarn(); applyEditState();
           closeOverlay($('pages-drawer'));
         });
         row.querySelector('[data-dup]').addEventListener('click', function () {
           if (!t) { toast('Template "' + escapeText(p.config.template) + '" no longer exists.', 'err'); return; }
-          slugTouched = true; editingSlug = null;
+          slugTouched = true; editingSlug = null; currentStatus = null;
           buildForm(t, p.config.values);
           $('f-slug').value = (p.slug + '-copy').slice(0, 64);
-          updateSlugWarn(); markDirty();
+          updateSlugWarn(); applyEditState(); markDirty();
           closeOverlay($('pages-drawer'));
-          toast('Duplicated — rename the slug and Publish', 'ok');
+          toast('Duplicated — rename the slug and save', 'ok');
         });
         row.querySelector('[data-del]').addEventListener('click', function () {
           if (!confirm('Delete /page/' + p.slug + '?')) return;
@@ -862,21 +901,40 @@
     $('open-analytics').addEventListener('click', openAnalytics);
     $('analytics').addEventListener('click', function (e) { if (e.target.hasAttribute('data-close-analytics')) closeOverlay($('analytics')); });
 
-    /* ---------- publish ---------- */
+    /* ---------- save draft / publish ---------- */
 
-    $('submit').addEventListener('click', function () {
+    function persist(status) {
       var slug = $('f-slug').value.trim();
       if (!current) return;
-      if (!SLUG_RE.test(slug)) { return toast('Invalid slug (lowercase letters, digits, hyphens)', 'err'); }
-      if (knownSlugs[slug] && slug !== editingSlug && !confirm('A page already exists at /page/' + slug + '. Overwrite it?')) return;
-      api('POST', '/api/pages', { slug: slug, template: current.id, values: readValues() })
+      if (!SLUG_RE.test(slug)) { return toast('Add a slug (lowercase letters, digits, hyphens) to save', 'err'); }
+      // Only warn about clobbering when creating a NEW proposal onto an existing slug.
+      if (status === 'published' && knownSlugs[slug] && slug !== editingSlug &&
+          !confirm('A proposal already exists at /page/' + slug + '. Overwrite it?')) return;
+      if (status === 'draft' && currentStatus === 'published' &&
+          !confirm('This will unpublish the live proposal and save it as a draft. Continue?')) return;
+      api('POST', '/api/pages', { slug: slug, template: current.id, values: readValues(), status: status })
         .then(function (data) {
-          knownSlugs[slug] = true; editingSlug = slug;
-          clearDraft(); saveState('Published', true); updateSlugWarn();
-          openShare(data.url);
+          knownSlugs[slug] = true; editingSlug = slug; currentStatus = data.status; dirty = false;
+          clearDraft(); applyEditState(); updateSlugWarn();
+          if (status === 'published') { toast('Published', 'ok'); openShare(data.url); }
+          else { toast(currentStatus === 'draft' ? 'Draft saved' : 'Saved', 'ok'); }
         })
         .catch(function (e) { toast(escapeText(e.message), 'err'); });
-    });
+    }
+    $('submit').addEventListener('click', function () { persist('published'); });
+    $('save-draft').addEventListener('click', function () { persist('draft'); });
+
+    /* ---------- new proposal ---------- */
+
+    function newProposal() {
+      if (dirty && !confirm('Discard unsaved changes and start a new proposal?')) return;
+      slugTouched = false; editingSlug = null; currentStatus = null; dirty = false;
+      clearDraft();
+      buildForm(current || templates[0]);
+      $('f-slug').value = current && current.nameField ? slugify($('f-' + current.nameField).value) : '';
+      applyEditState(); updateSlugWarn();
+    }
+    $('new-proposal').addEventListener('click', newProposal);
 
     /* ---------- wiring ---------- */
 
@@ -886,7 +944,7 @@
       .then(function (res) { return res.json(); })
       .then(function (data) {
         templates = data.templates || [];
-        if (templates.length) { buildForm(templates[0]); maybeOfferRestore(); }
+        if (templates.length) { buildForm(templates[0]); applyEditState(); maybeOfferRestore(); }
         else { $('tpl-name').textContent = 'No templates'; $('form').innerHTML = '<p class="empty">No templates available.</p>'; }
       })
       .catch(function () { $('tpl-name').textContent = 'Error'; $('form').innerHTML = '<p class="empty">Couldn\'t load templates — is the server up? Refresh to retry.</p>'; });
