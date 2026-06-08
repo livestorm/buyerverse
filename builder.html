@@ -375,8 +375,14 @@
 
     $('preview-open').addEventListener('click', function () {
       if (!lastPreviewHtml) return;
+      // A blob: document has no origin to anchor root-relative asset URLs
+      // (/templates/<id>/…) against, so inject a <base> so CSS/JS resolve.
+      var base = '<base href="' + location.origin + '/">';
+      var html = /<head[^>]*>/i.test(lastPreviewHtml)
+        ? lastPreviewHtml.replace(/<head[^>]*>/i, function (m) { return m + base; })
+        : base + lastPreviewHtml;
       if (lastBlobUrl) URL.revokeObjectURL(lastBlobUrl);
-      lastBlobUrl = URL.createObjectURL(new Blob([lastPreviewHtml], { type: 'text/html' }));
+      lastBlobUrl = URL.createObjectURL(new Blob([html], { type: 'text/html' }));
       window.open(lastBlobUrl, '_blank', 'noopener');
     });
 
