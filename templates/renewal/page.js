@@ -314,10 +314,25 @@
   var amInitialsEl = document.querySelector('[data-am-initials]');
   if (amInitialsEl) amInitialsEl.textContent = CFG.am.initials;
 
+  /* ---------- per-touch overrides (message-match) ----------
+     The variant link carries utm_content=<touch id>; if the proposal defines
+     overrides for that touch, they replace the matching nodes (plain text). */
+  var TOUCH = '';
+  try { TOUCH = new URLSearchParams(window.location.search).get('utm_content') || ''; } catch (e) {}
+  var OVERRIDES = (window.PAGE_CONFIG && window.PAGE_CONFIG.variantOverrides && window.PAGE_CONFIG.variantOverrides[TOUCH]) || {};
+  function applyOverrides() {
+    if (!TOUCH) return;
+    document.querySelectorAll('[data-i18n]').forEach(function (el) {
+      var key = el.getAttribute('data-i18n');
+      if (Object.prototype.hasOwnProperty.call(OVERRIDES, key)) el.textContent = OVERRIDES[key];
+    });
+  }
+
   /* ---------- i18n engine ---------- */
   var nodes = document.querySelectorAll('[data-i18n]');
   var frSource = new Map(); // element -> original FR innerHTML
   nodes.forEach(function (el) { frSource.set(el, el.innerHTML); });
+  applyOverrides(); // initial (FR) render
 
   var currentLang = 'fr';
 
@@ -331,6 +346,7 @@
         if (EN[key] !== undefined) el.innerHTML = EN[key];
       }
     });
+    applyOverrides(); // override wins in both languages
     document.documentElement.lang = lang;
     document.querySelectorAll('.lang-btn').forEach(function (btn) {
       btn.classList.toggle('is-active', btn.getAttribute('data-lang') === lang);

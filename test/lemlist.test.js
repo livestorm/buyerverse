@@ -45,6 +45,24 @@ test('pushProposalLink: creates the lead then sets proposalUrl, with Basic auth'
   } finally { delete process.env.LEMLIST_API_KEY; }
 });
 
+test('pushProposalLinks sets multiple variables in a single call', async () => {
+  process.env.LEMLIST_API_KEY = 'k';
+  try {
+    const calls = [];
+    const fakeFetch = async (url) => {
+      calls.push(url);
+      if (/\/campaigns\/.+\/leads\/$/.test(url)) return { ok: true, status: 200, text: async () => JSON.stringify({ _id: 'L1' }) };
+      return { ok: true, status: 200, text: async () => '' };
+    };
+    const res = await lemlist.pushProposalLinks(
+      { campaignId: 'c', email: 'a@b.co', links: { proposalUrlEmail1: 'https://x/1', proposalUrlLi1: 'https://x/2' } },
+      fakeFetch
+    );
+    assert.equal(res.count, 2);
+    assert.match(calls[1], /\/leads\/L1\/variables\?proposalUrlEmail1=https%3A%2F%2Fx%2F1&proposalUrlLi1=https%3A%2F%2Fx%2F2/);
+  } finally { delete process.env.LEMLIST_API_KEY; }
+});
+
 test('pushProposalLink maps auth/not-found errors', async () => {
   process.env.LEMLIST_API_KEY = 'k';
   try {

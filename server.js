@@ -77,7 +77,7 @@ function visitorHash(req) {
 /** Sanitized UTM attribution params from a page-view request URL. */
 function utmParams(url) {
   const pick = (k) => (url.searchParams.get(k) || '').trim().slice(0, 80);
-  return { source: pick('utm_source'), medium: pick('utm_medium'), campaign: pick('utm_campaign') };
+  return { source: pick('utm_source'), medium: pick('utm_medium'), campaign: pick('utm_campaign'), content: pick('utm_content') };
 }
 
 /*
@@ -187,6 +187,58 @@ function isSecureContext(req) {
 function requestOrigin(req) {
   const proto = (req.headers['x-forwarded-proto'] || '').split(',')[0].trim() || (isSecureContext(req) ? 'https' : 'http');
   return proto + '://' + (req.headers.host || 'localhost');
+}
+
+/* ---------- outreach variants (per-touch UTM links + content overrides) ---------- */
+
+const VARIANT_CHANNELS = new Set(['email', 'linkedin']);
+
+/** Normalize a raw variants array; override keys limited to the template's touchFields. */
+function sanitizeVariants(raw, manifest) {
+  if (!Array.isArray(raw)) return undefined; // not provided → leave existing untouched
+  const allowed = new Set((manifest.touchFields || []).map((f) => f.key));
+  const out = [];
+  const seen = new Set();
+  for (const v of raw.slice(0, 30)) {
+    if (!v || typeof v !== 'object') continue;
+    const channel = VARIANT_CHANNELS.has(v.channel) ? v.channel : 'email';
+    let step = Math.round(Number(v.step));
+    if (!Number.isFinite(step) || step < 1) step = 1;
+    step = Math.min(step, 99);
+    let id = typeof v.id === 'string' && /^[a-z0-9-]{1,24}$/.test(v.id) ? v.id : (channel === 'linkedin' ? 'li' : 'email') + step;
+    while (seen.has(id)) id += 'x';
+    seen.add(id);
+    const label = typeof v.label === 'string' ? v.label.trim().slice(0, 40) : '';
+    const overrides = {};
+    if (v.overrides && typeof v.overrides === 'object') {
+      for (const k of Object.keys(v.overrides)) {
+        const val = v.overrides[k];
+        if (allowed.has(k) && typeof val === 'string' && val.trim()) overrides[k] = val.trim().slice(0, 400);
+      }
+    }
+    out.push({ id, channel, step, label, overrides });
+  }
+  return out;
+}
+
+/** Lemlist custom-variable name for a variant, e.g. {{proposalUrlEmail1}}. */
+function variantVarName(v) {
+  return 'proposalUrl' + v.id.charAt(0).toUpperCase() + v.id.slice(1).replace(/[^A-Za-z0-9]/g, '');
+}
+
+/** A variant's UTM-tagged link (utm_content = the variant id → the touch). */
+function variantLink(origin, slug, token, v, campaign) {
+  const qs = new URLSearchParams({ utm_source: v.channel, utm_medium: 'outreach', utm_campaign: campaign, utm_content: v.id }).toString();
+  return origin + '/page/' + slug + '/' + token + '?' + qs;
+}
+
+/** { variantId: {i18nKey: text} } for the page renderer — only variants with overrides. */
+function variantOverridesMap(variants) {
+  const map = {};
+  for (const v of variants || []) {
+    if (v.overrides && Object.keys(v.overrides).length) map[v.id] = v.overrides;
+  }
+  return map;
 }
 
 /** Set-Cookie value for the session cookie; clear=true expires it immediately. */
@@ -378,7 +430,8 @@ async function handle(req, res) {
         .then((r) => { if (r && r.firstView && notify.configured()) notify.proposalOpened(slug, prospect).catch(() => {}); })
         .catch(() => {});
     }
-    return sendHTML(res, 200, injectBeacon(engine.renderTemplate(t, row.config.values), slug), true, PAGE_HEADERS);
+    const overrides = variantOverridesMap(row.config.variants);
+    return sendHTML(res, 200, injectBeacon(engine.renderTemplate(t, row.config.values, { variantOverrides: overrides }), slug), true, PAGE_HEADERS);
   }
 
   // API
@@ -429,6 +482,7 @@ async function handle(req, res) {
         unique: (s[p.slug] && s[p.slug].unique) || 0,
         last7: (s[p.slug] && s[p.slug].last7) || 0,
         sources: (s[p.slug] && s[p.slug].sources) || {},
+        touches: (s[p.slug] && s[p.slug].touches) || {},
         dwell: (s[p.slug] && s[p.slug].dwell) || 0,
         depth: (s[p.slug] && s[p.slug].depth) || 0,
         sections: (s[p.slug] && s[p.slug].sections) || {}
@@ -461,7 +515,13 @@ async function handle(req, res) {
     // edits/re-publish so a shared link keeps working), generate on first save.
     const existing = await store.get(body.slug);
     const token = (existing && existing.config && existing.config.token) || randomToken();
-    await store.upsert(body.slug, { template: t.manifest.id, values, token }, status);
+    const config = { template: t.manifest.id, values, token };
+    // Outreach variants: store what's sent (normalized), else keep what's there.
+    const variants = body.variants !== undefined
+      ? sanitizeVariants(body.variants, t.manifest)
+      : (existing && existing.config && existing.config.variants);
+    if (variants !== undefined) config.variants = variants;
+    await store.upsert(body.slug, config, status);
     return sendJSON(res, 200, { ok: true, slug: body.slug, status: status, url: '/page/' + body.slug + '/' + token });
   }
 
@@ -494,10 +554,17 @@ async function handle(req, res) {
     const row = await store.get(body.slug);
     if (!row || !row.config.token) return sendJSON(res, 404, { error: 'proposal not found' });
     if (row.status !== 'published') return sendJSON(res, 400, { error: 'publish the proposal before sending its link' });
-    const proposalUrl = requestOrigin(req) + '/page/' + body.slug + '/' + row.config.token;
+    const origin = requestOrigin(req);
+    const base = origin + '/page/' + body.slug + '/' + row.config.token;
+    const campaign = (typeof body.campaignTag === 'string' && body.campaignTag.trim())
+      ? body.campaignTag.trim().slice(0, 80)
+      : String(body.campaignId || '');
+    // One {{proposalUrl<Variant>}} per configured touch, plus the bare link.
+    const links = { proposalUrl: base };
+    for (const v of (row.config.variants || [])) links[variantVarName(v)] = variantLink(origin, body.slug, row.config.token, v, campaign);
     try {
-      const r = await lemlist.pushProposalLink({ campaignId: body.campaignId, email: body.email, proposalUrl });
-      return sendJSON(res, 200, { ok: true, leadId: r.leadId });
+      const r = await lemlist.pushProposalLinks({ campaignId: body.campaignId, email: body.email, links });
+      return sendJSON(res, 200, { ok: true, leadId: r.leadId, variables: Object.keys(links) });
     } catch (e) {
       return sendJSON(res, e.status || 502, { error: e.message });
     }

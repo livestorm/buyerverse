@@ -51,6 +51,7 @@ if (DATABASE_URL) {
       await pool.query('ALTER TABLE page_views ADD COLUMN IF NOT EXISTS utm_source TEXT');
       await pool.query('ALTER TABLE page_views ADD COLUMN IF NOT EXISTS utm_medium TEXT');
       await pool.query('ALTER TABLE page_views ADD COLUMN IF NOT EXISTS utm_campaign TEXT');
+      await pool.query('ALTER TABLE page_views ADD COLUMN IF NOT EXISTS utm_content TEXT'); // outreach touch (utm_content)
       // Engagement events reported by the public page beacon:
       //   kind='section' (section=id reached), 'dwell' (value=seconds), 'depth' (value=percent)
       await pool.query(`
@@ -96,8 +97,8 @@ if (DATABASE_URL) {
       const firstView = seen.rowCount === 0;
       await pool.query('UPDATE pages SET views = views + 1, last_viewed = now() WHERE slug = $1', [slug]);
       await pool.query(
-        'INSERT INTO page_views (slug, visitor, utm_source, utm_medium, utm_campaign) VALUES ($1, $2, $3, $4, $5)',
-        [slug, visitor, utm.source || null, utm.medium || null, utm.campaign || null]
+        'INSERT INTO page_views (slug, visitor, utm_source, utm_medium, utm_campaign, utm_content) VALUES ($1, $2, $3, $4, $5, $6)',
+        [slug, visitor, utm.source || null, utm.medium || null, utm.campaign || null, utm.content || null]
       );
       return { firstView };
     },
@@ -122,7 +123,7 @@ if (DATABASE_URL) {
     },
 
     async stats() {
-      const blank = () => ({ unique: 0, last7: 0, sources: {}, dwell: 0, depth: 0, sections: {} });
+      const blank = () => ({ unique: 0, last7: 0, sources: {}, touches: {}, dwell: 0, depth: 0, sections: {} });
       const map = {};
       const { rows } = await pool.query(
         `SELECT slug,
@@ -138,6 +139,11 @@ if (DATABASE_URL) {
          FROM page_views GROUP BY slug, src`
       );
       for (const r of src.rows) { (map[r.slug] || (map[r.slug] = blank())).sources[r.src] = r.c; }
+      // Per-touch breakdown (utm_content → variant id).
+      const touch = await pool.query(
+        "SELECT slug, utm_content AS t, COUNT(*)::int AS c FROM page_views WHERE COALESCE(utm_content,'') <> '' GROUP BY slug, utm_content"
+      );
+      for (const r of touch.rows) { (map[r.slug] || (map[r.slug] = blank())).touches[r.t] = r.c; }
       // Engagement: distinct visitors per section + avg of per-visitor max dwell/depth.
       const sec = await pool.query("SELECT slug, section, COUNT(DISTINCT visitor)::int AS c FROM page_events WHERE kind = 'section' AND section IS NOT NULL GROUP BY slug, section");
       for (const r of sec.rows) { (map[r.slug] || (map[r.slug] = blank())).sections[r.section] = r.c; }
@@ -215,18 +221,20 @@ if (DATABASE_URL) {
       const now = new Date();
       const cutoff = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
       for (const e of events) {
-        if (!map[e.slug]) map[e.slug] = { visitors: new Set(), last7: 0, sources: {} };
+        if (!map[e.slug]) map[e.slug] = { visitors: new Set(), last7: 0, sources: {}, touches: {} };
         map[e.slug].visitors.add(e.visitor);
         if (e.viewed_at > cutoff) map[e.slug].last7++;
         const src = (e.utm && e.utm.source) || '(direct)';
         map[e.slug].sources[src] = (map[e.slug].sources[src] || 0) + 1;
+        const t = e.utm && e.utm.content;
+        if (t) map[e.slug].touches[t] = (map[e.slug].touches[t] || 0) + 1;
       }
       const result = {};
       for (const [slug, data] of Object.entries(map)) {
-        result[slug] = { unique: data.visitors.size, last7: data.last7, sources: data.sources, dwell: 0, depth: 0, sections: {} };
+        result[slug] = { unique: data.visitors.size, last7: data.last7, sources: data.sources, touches: data.touches, dwell: 0, depth: 0, sections: {} };
       }
       // Engagement: distinct visitors per section + avg of per-visitor max dwell/depth.
-      const ensure = (slug) => (result[slug] || (result[slug] = { unique: 0, last7: 0, sources: {}, dwell: 0, depth: 0, sections: {} }));
+      const ensure = (slug) => (result[slug] || (result[slug] = { unique: 0, last7: 0, sources: {}, touches: {}, dwell: 0, depth: 0, sections: {} }));
       const secVisitors = {};       // slug -> section -> Set(visitor)
       const maxByVisitor = {};      // kind -> slug -> visitor -> max value
       for (const e of engagementEvents) {

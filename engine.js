@@ -93,12 +93,20 @@ function validateManifest(id, raw) {
     fail(`${id}: nameField "${raw.nameField}" does not match any field id`);
   }
 
+  // Optional: which i18n keys a per-touch variant may override (message-match).
+  const touchFields = Array.isArray(raw.touchFields)
+    ? raw.touchFields
+        .filter((f) => f && typeof f.key === 'string' && typeof f.label === 'string')
+        .map((f) => ({ key: f.key, label: f.label.trim() }))
+    : [];
+
   return {
     id,
     name: raw.name.trim(),
     description: typeof raw.description === 'string' ? raw.description.trim() : '',
     nameField: raw.nameField,
-    fields
+    fields,
+    touchFields
   };
 }
 
@@ -197,8 +205,12 @@ function listTemplates() {
  * values. {{field_id}} -> escaped value; {{PAGE_CONFIG_JSON}} -> config JSON.
  * Unknown tokens are left as-is so template-authoring mistakes stay visible.
  */
-function renderTemplate(template, values) {
-  const tokens = { PAGE_CONFIG_JSON: JSON.stringify({ template: template.manifest.id, values }).replace(/</g, '\\u003c').replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029') };
+function renderTemplate(template, values, opts = {}) {
+  const cfg = { template: template.manifest.id, values };
+  // Per-touch content overrides keyed by utm_content \u2192 { i18nKey: text }. page.js
+  // applies the set matching the URL's utm_content (message-match per outreach touch).
+  if (opts.variantOverrides && Object.keys(opts.variantOverrides).length) cfg.variantOverrides = opts.variantOverrides;
+  const tokens = { PAGE_CONFIG_JSON: JSON.stringify(cfg).replace(/</g, '\\u003c').replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029') };
   for (const field of template.manifest.fields) {
     tokens[field.id] = escapeHtml(values[field.id] == null ? '' : values[field.id]);
   }

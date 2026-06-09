@@ -358,6 +358,39 @@ test('repeated bad page guesses are rate-limited', async () => {
   assert.ok(blocked, 'expected a 429 once an IP exceeds the miss budget');
 });
 
+test('outreach variants: stored + normalized, rendered per utm_content, tracked by touch', async () => {
+  const post = await fetch(`${base}/api/pages`, {
+    method: 'POST', headers: JSON_HEADERS,
+    body: JSON.stringify({
+      slug: 'var', template: 'renewal', status: 'published', values: sampleValues(),
+      variants: [
+        { id: 'email1', channel: 'email', step: 1, label: 'cold', overrides: { 'hero.title': 'Cold open', 'nope.key': 'dropped' } },
+        { channel: 'linkedin', step: 2 } // id derived, no overrides
+      ]
+    })
+  });
+  const { url } = await post.json();
+
+  // stored + normalized: bad override key dropped, second id derived from channel+step
+  const list = await (await fetch(`${base}/api/pages`, { headers: AUTH })).json();
+  const vs = list.pages.find(p => p.slug === 'var').config.variants;
+  assert.equal(vs.length, 2);
+  assert.equal(vs[0].overrides['hero.title'], 'Cold open');
+  assert.equal(vs[0].overrides['nope.key'], undefined); // not a declared touchField
+  assert.equal(vs[1].id, 'li2');
+
+  // the rendered page carries the per-touch overrides for page.js to apply
+  const html = await (await fetch(`${base}${url}`)).text();
+  assert.match(html, /variantOverrides/);
+  assert.match(html, /Cold open/);
+
+  // a view tagged with utm_content is attributed to that touch
+  await fetch(`${base}${url}?utm_source=email&utm_content=email1`, { headers: { 'x-forwarded-for': '7.7.7.7' } });
+  const list2 = await (await fetch(`${base}/api/pages`, { headers: AUTH })).json();
+  assert.equal(list2.pages.find(p => p.slug === 'var').touches.email1, 1);
+  await fetch(`${base}/api/pages/var`, { method: 'DELETE', headers: AUTH });
+});
+
 test('lemlist push route: requires auth, a published proposal, and reports when unconfigured', async () => {
   assert.equal((await fetch(`${base}/api/crm/lemlist`, { method: 'POST' })).status, 401); // no auth
   // unknown proposal → 404

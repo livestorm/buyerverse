@@ -711,6 +711,33 @@ body { --row-gap: 16px; --field-mb: 16px; --card-pad: 24px; }
 .share-lemlist .ll-row input { flex: 1 1 auto; min-width: 0; font: inherit; font-size: 13px; padding: 9px 11px; border: 1px solid var(--grey-blue-300); border-radius: var(--radius-default); background: var(--bg-surface); color: var(--fg-default); }
 .share-lemlist .ll-row input:focus { outline: none; border-color: var(--livestorm-blue-700); }
 
+/* outreach variants */
+.modal-card .sub code, .var-lemlist code { font-family: ui-monospace, monospace; font-size: 11px; background: var(--grey-blue-100); padding: 1px 5px; border-radius: 5px; }
+.var-campaign { margin: 18px 0 12px; }
+.var-campaign label { font-size: 13px; font-weight: 600; color: var(--fg-default); }
+.var-campaign label span { color: var(--fg-muted); font-weight: 400; }
+.var-campaign input { display: block; width: 100%; box-sizing: border-box; margin-top: 6px; font: inherit; font-size: 13px; padding: 9px 11px; border: 1px solid var(--grey-blue-300); border-radius: var(--radius-default); background: var(--bg-surface); color: var(--fg-default); }
+.var-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 10px; max-height: 44vh; overflow: auto; }
+.var-row { border: 1px solid var(--grey-blue-200); border-radius: var(--radius-default); padding: 12px 14px; background: var(--grey-blue-100); }
+.var-row .var-head { display: flex; gap: 8px; align-items: center; }
+.var-row select, .var-row input { font: inherit; font-size: 13px; padding: 7px 9px; border: 1px solid var(--grey-blue-300); border-radius: var(--radius-default); background: var(--bg-surface); color: var(--fg-default); }
+.var-row select:focus, .var-row input:focus { outline: none; border-color: var(--livestorm-blue-700); }
+.var-row .var-step { width: 60px; }
+.var-row .var-label { flex: 1 1 auto; min-width: 0; }
+.var-row .var-id { font-family: ui-monospace, monospace; font-size: 11px; color: var(--fg-subtle); white-space: nowrap; }
+.var-row .var-rm { margin-left: 4px; border: 0; background: transparent; color: var(--fg-muted); cursor: pointer; font-size: 18px; line-height: 1; padding: 2px 6px; border-radius: 6px; }
+.var-row .var-rm:hover { background: var(--live-red-100); color: var(--live-red-600); }
+.var-ov { margin-top: 10px; display: grid; gap: 6px; }
+.var-ov .ov-field label { font-size: 11px; font-weight: 600; color: var(--fg-muted); display: block; margin-bottom: 3px; }
+.var-ov .ov-field input { width: 100%; box-sizing: border-box; }
+.var-lemlist { margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--grey-blue-200); }
+.var-lemlist > label { font-size: 13px; font-weight: 600; display: block; margin-bottom: 8px; }
+.var-lemlist .ll-row { display: flex; gap: 8px; }
+.var-lemlist .ll-row input { flex: 1 1 auto; min-width: 0; font: inherit; font-size: 13px; padding: 9px 11px; border: 1px solid var(--grey-blue-300); border-radius: var(--radius-default); background: var(--bg-surface); color: var(--fg-default); }
+.var-lemlist .ll-row input:focus { outline: none; border-color: var(--livestorm-blue-700); }
+.var-lemlist #ll-send { background: var(--livestorm-blue-700); border-color: var(--livestorm-blue-700); color: #fff; }
+.var-lemlist .ll-note { margin: 8px 0 0; font-size: 12px; color: var(--fg-muted); min-height: 1em; }
+
 /* toasts */
 .toasts { position: fixed; right: 22px; bottom: 22px; display: flex; flex-direction: column; gap: 10px; z-index: 1000; max-width: 360px; }
 .toast { background: var(--bg-surface); border: 1px solid var(--grey-blue-200); border-left: 4px solid var(--livestorm-blue-700);
@@ -777,6 +804,7 @@ body { --row-gap: 16px; --field-mb: 16px; --card-pad: 24px; }
 
       <div class="tb-actions">
         <span class="save-state" id="save-state" style="font-size:12px;font-weight:500;color:var(--fg-subtle);white-space:nowrap;">Not saved yet</span>
+        <button class="mini-btn" id="open-variants" type="button" title="Outreach variants — per-touch links & message-match">Variants</button>
         <button class="btn btn-secondary" id="save-draft" type="button">Save draft</button>
         <button class="btn btn-primary" id="submit" type="button">Publish</button>
       </div>
@@ -865,14 +893,31 @@ body { --row-gap: 16px; --field-mb: 16px; --card-pad: 24px; }
         <button class="mini-btn" id="share-regen" type="button" title="Generate a new link and disable the current one">Regenerate link</button>
         <button class="mini-btn" data-close-share type="button">Close</button>
       </div>
-      <div class="share-lemlist" id="share-lemlist">
+    </div>
+  </div>
+
+  <!-- outreach variants modal -->
+  <div class="modal" id="variants" hidden>
+    <div class="modal-backdrop" data-close-variants></div>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-label="Outreach variants" style="width:min(820px,95vw)">
+      <button class="modal-close" id="variants-close" type="button" aria-label="Close">×</button>
+      <p class="kicker">Outreach</p>
+      <h2>Variants &amp; sequence</h2>
+      <p class="sub">One link per touch — each carries <code>utm_content=&lt;id&gt;</code> and can re-write the hero for message-match. Push them to a lemlist campaign as <code>{{proposalUrlEmail1}}</code>-style variables.</p>
+      <div class="var-campaign">
+        <label for="var-campaign-tag">Campaign tag <span>(utm_campaign)</span></label>
+        <input id="var-campaign-tag" type="text" placeholder="sales-outbound-2026-q3" autocomplete="off">
+      </div>
+      <div class="var-list" id="var-list"></div>
+      <button class="mini-btn" id="var-add" type="button">+ Add touch</button>
+      <div class="var-lemlist">
         <label>Send to a lemlist campaign</label>
-        <p class="ll-hint">Adds the recipient to the campaign with this link as <code>{{proposalUrl}}</code>.</p>
         <div class="ll-row">
-          <input id="ll-campaign" type="text" placeholder="Campaign ID" autocomplete="off">
+          <input id="ll-campaign" type="text" placeholder="lemlist campaign ID" autocomplete="off">
           <input id="ll-email" type="email" placeholder="Recipient email" autocomplete="off">
-          <button class="mini-btn" id="ll-send" type="button">Add</button>
+          <button class="mini-btn" id="ll-send" type="button">Push all</button>
         </div>
+        <p class="ll-note" id="ll-note"></p>
       </div>
     </div>
   </div>
@@ -886,6 +931,8 @@ body { --row-gap: 16px; --field-mb: 16px; --card-pad: 24px; }
       <div class="stat-cards" id="an-cards"></div>
       <h3 class="an-h">Top proposals</h3>
       <div class="an-table" id="an-top"></div>
+      <h3 class="an-h">By touch</h3>
+      <div id="an-touches"></div>
       <h3 class="an-h">Section engagement</h3>
       <div id="an-sections"></div>
       <h3 class="an-h">Sources</h3>
@@ -934,6 +981,21 @@ body { --row-gap: 16px; --field-mb: 16px; --card-pad: 24px; }
     var currentStatus = null;  // 'draft' | 'published' | null (new, never saved)
     var knownSlugs = {};       // slugs that already exist (overwrite warning)
     var allPages = [];         // last fetched pages (for search/sort in the drawer)
+    var currentVariants = [];  // outreach touches for the proposal being edited
+
+    // Seeded outreach sequence for a new proposal (mirrors a typical cadence).
+    function defaultVariants() {
+      return [
+        { id: 'email1', channel: 'email', step: 1, label: 'cold', overrides: {} },
+        { id: 'email3', channel: 'email', step: 3, label: 'nudge', overrides: {} },
+        { id: 'email5', channel: 'email', step: 5, label: 'last try', overrides: {} },
+        { id: 'email7', channel: 'email', step: 7, label: 'long-tail', overrides: {} },
+        { id: 'li1', channel: 'linkedin', step: 1, label: '', overrides: {} },
+        { id: 'li3', channel: 'linkedin', step: 3, label: '', overrides: {} },
+        { id: 'li5', channel: 'linkedin', step: 5, label: '', overrides: {} }
+      ];
+    }
+    function cloneVariants(arr) { return (arr && arr.length) ? JSON.parse(JSON.stringify(arr)) : defaultVariants(); }
     var previewTimer = null;
     var previewSeq = 0;
     var lastPreviewHtml = '';
@@ -1038,8 +1100,9 @@ body { --row-gap: 16px; --field-mb: 16px; --card-pad: 24px; }
 
     /* ---------- schema-driven form ---------- */
 
-    function buildForm(manifest, values) {
+    function buildForm(manifest, values, variants) {
       current = manifest;
+      currentVariants = cloneVariants(variants);
       $('tpl-name').textContent = manifest.name;
       var groups = [], byGroup = {};
       manifest.fields.forEach(function (f) {
@@ -1360,7 +1423,7 @@ body { --row-gap: 16px; --field-mb: 16px; --card-pad: 24px; }
       if (f && f.focus) f.focus();
     }
     function closeOverlay(el) { el.hidden = true; if (lastFocus && lastFocus.focus) lastFocus.focus(); }
-    function topOverlay() { return [$('pages-drawer'), $('gallery'), $('share'), $('analytics')].filter(function (o) { return !o.hidden; }).pop(); }
+    function topOverlay() { return [$('pages-drawer'), $('gallery'), $('share'), $('analytics'), $('variants')].filter(function (o) { return !o.hidden; }).pop(); }
 
     document.addEventListener('keydown', function (e) {
       if ((e.metaKey || e.ctrlKey) && (e.key === 's' || e.key === 'S')) { e.preventDefault(); (currentStatus === 'published' ? $('submit') : $('save-draft')).click(); return; }
@@ -1388,7 +1451,6 @@ body { --row-gap: 16px; --field-mb: 16px; --card-pad: 24px; }
         '&body=' + encodeURIComponent('Here is your personalized proposal:\n' + url);
       try { if (window.QR) QR.toCanvas(url, $('share-qr'), { scale: 5, margin: 3 }); } catch (e) {}
       $('share-regen').hidden = !currentShareSlug; // can only rotate when we know which proposal
-      $('share-lemlist').hidden = !currentShareSlug;
       openOverlay($('share'));
     }
     $('share-copy').addEventListener('click', function () {
@@ -1403,17 +1465,73 @@ body { --row-gap: 16px; --field-mb: 16px; --card-pad: 24px; }
         .then(function (data) { openShare(data.url, currentShareSlug); toast('New link generated — the old one no longer works', 'ok'); })
         .catch(function (e) { toast('Regenerate: ' + escapeText(e.message), 'err'); });
     });
+    $('share').addEventListener('click', function (e) { if (e.target.hasAttribute('data-close-share')) closeOverlay($('share')); });
+
+    /* ---------- outreach variants ---------- */
+    function renderVariants() {
+      var host = $('var-list'); host.innerHTML = '';
+      var touchFields = (current && current.touchFields) || [];
+      currentVariants.forEach(function (v, idx) {
+        var row = document.createElement('div'); row.className = 'var-row';
+        var head = document.createElement('div'); head.className = 'var-head';
+        var sel = document.createElement('select'); sel.className = 'var-ch';
+        [['email', 'Email'], ['linkedin', 'LinkedIn']].forEach(function (o) {
+          var op = document.createElement('option'); op.value = o[0]; op.textContent = o[1]; if (v.channel === o[0]) op.selected = true; sel.appendChild(op);
+        });
+        var step = document.createElement('input'); step.className = 'var-step'; step.type = 'number'; step.min = '1'; step.max = '99'; step.value = v.step || 1;
+        var label = document.createElement('input'); label.className = 'var-label'; label.type = 'text'; label.placeholder = 'label (e.g. nudge)'; label.value = v.label || '';
+        var idEl = document.createElement('span'); idEl.className = 'var-id'; idEl.textContent = v.id;
+        var rm = document.createElement('button'); rm.className = 'var-rm'; rm.type = 'button'; rm.title = 'Remove touch'; rm.textContent = '×';
+        head.appendChild(sel); head.appendChild(step); head.appendChild(label); head.appendChild(idEl); head.appendChild(rm);
+        row.appendChild(head);
+        if (touchFields.length) {
+          var ov = document.createElement('div'); ov.className = 'var-ov';
+          touchFields.forEach(function (f) {
+            var fld = document.createElement('div'); fld.className = 'ov-field';
+            var lab = document.createElement('label'); lab.textContent = f.label + ' override';
+            var inp = document.createElement('input'); inp.type = 'text'; inp.placeholder = '(use the proposal default)'; inp.value = (v.overrides && v.overrides[f.key]) || '';
+            inp.addEventListener('input', function () {
+              v.overrides = v.overrides || {};
+              var val = inp.value.trim();
+              if (val) v.overrides[f.key] = val; else delete v.overrides[f.key];
+              markDirty();
+            });
+            fld.appendChild(lab); fld.appendChild(inp); ov.appendChild(fld);
+          });
+          row.appendChild(ov);
+        }
+        sel.addEventListener('change', function () { v.channel = sel.value; markDirty(); });
+        step.addEventListener('input', function () { v.step = Math.max(1, Math.min(99, parseInt(step.value, 10) || 1)); markDirty(); });
+        label.addEventListener('input', function () { v.label = label.value; markDirty(); });
+        rm.addEventListener('click', function () { currentVariants.splice(idx, 1); markDirty(); renderVariants(); });
+        host.appendChild(row);
+      });
+    }
+    function nextVariantId() { var n = 1, id; do { id = 'v' + n++; } while (currentVariants.some(function (v) { return v.id === id; })); return id; }
+    function openVariants() {
+      if (!current) { toast('Pick a template first', 'err'); return; }
+      renderVariants();
+      $('ll-note').textContent = currentStatus === 'published' ? '' : 'Publish the proposal to push its links to lemlist.';
+      openOverlay($('variants'));
+    }
+    $('open-variants').addEventListener('click', openVariants);
+    $('variants-close').addEventListener('click', function () { closeOverlay($('variants')); });
+    $('variants').addEventListener('click', function (e) { if (e.target.hasAttribute('data-close-variants')) closeOverlay($('variants')); });
+    $('var-add').addEventListener('click', function () {
+      currentVariants.push({ id: nextVariantId(), channel: 'email', step: currentVariants.length + 1, label: '', overrides: {} });
+      markDirty(); renderVariants();
+    });
     $('ll-send').addEventListener('click', function () {
-      if (!currentShareSlug) return;
+      if (currentStatus !== 'published' || !editingSlug) { toast('Publish the proposal first', 'err'); return; }
+      if (dirty) { toast('Save your changes first, then push', 'err'); return; }
       var campaignId = $('ll-campaign').value.trim(), email = $('ll-email').value.trim();
-      if (!campaignId || !email) { toast('Enter a campaign ID and recipient email', 'err'); return; }
+      if (!campaignId || !email) { toast('Enter a lemlist campaign ID and recipient email', 'err'); return; }
       $('ll-send').disabled = true;
-      api('POST', '/api/crm/lemlist', { slug: currentShareSlug, campaignId: campaignId, email: email })
-        .then(function () { toast('Added to lemlist — use {{proposalUrl}} in your sequence', 'ok'); $('ll-email').value = ''; })
+      api('POST', '/api/crm/lemlist', { slug: editingSlug, campaignId: campaignId, email: email, campaignTag: $('var-campaign-tag').value.trim() })
+        .then(function (data) { toast('Pushed ' + ((data.variables || []).length) + ' link variables to lemlist', 'ok'); $('ll-email').value = ''; })
         .catch(function (e) { toast('lemlist: ' + escapeText(e.message), 'err'); })
         .then(function () { $('ll-send').disabled = false; });
     });
-    $('share').addEventListener('click', function (e) { if (e.target.hasAttribute('data-close-share')) closeOverlay($('share')); });
 
     /* ---------- template gallery ---------- */
 
@@ -1514,7 +1632,7 @@ body { --row-gap: 16px; --field-mb: 16px; --card-pad: 24px; }
         row.querySelector('[data-edit]').addEventListener('click', function () {
           if (!t) { toast('Template "' + escapeText(p.config.template) + '" no longer exists.', 'err'); return; }
           slugTouched = true; editingSlug = p.slug; currentStatus = p.status || 'published'; dirty = false;
-          buildForm(t, p.config.values);
+          buildForm(t, p.config.values, p.config.variants);
           $('f-slug').value = p.slug;
           updateSlugWarn(); applyEditState();
           closeOverlay($('pages-drawer'));
@@ -1522,7 +1640,7 @@ body { --row-gap: 16px; --field-mb: 16px; --card-pad: 24px; }
         row.querySelector('[data-dup]').addEventListener('click', function () {
           if (!t) { toast('Template "' + escapeText(p.config.template) + '" no longer exists.', 'err'); return; }
           slugTouched = true; editingSlug = null; currentStatus = null;
-          buildForm(t, p.config.values);
+          buildForm(t, p.config.values, p.config.variants);
           $('f-slug').value = (p.slug + '-copy').slice(0, 64);
           updateSlugWarn(); applyEditState(); markDirty();
           closeOverlay($('pages-drawer'));
@@ -1558,17 +1676,20 @@ body { --row-gap: 16px; --field-mb: 16px; --card-pad: 24px; }
         var pages = data.pages || [];
         var totalViews = pages.reduce(function (a, p) { return a + Number(p.views || 0); }, 0);
         var last7 = pages.reduce(function (a, p) { return a + Number(p.last7 || 0); }, 0);
-        var srcAgg = {}, secAgg = {}, dwellNum = 0, dwellDen = 0;
+        var srcAgg = {}, secAgg = {}, touchAgg = {}, dwellNum = 0, dwellDen = 0;
         pages.forEach(function (p) {
           var s = p.sources || {};
           Object.keys(s).forEach(function (k) { srcAgg[k] = (srcAgg[k] || 0) + s[k]; });
           var sec = p.sections || {};
           Object.keys(sec).forEach(function (k) { secAgg[k] = (secAgg[k] || 0) + sec[k]; });
+          var tch = p.touches || {};
+          Object.keys(tch).forEach(function (k) { touchAgg[k] = (touchAgg[k] || 0) + tch[k]; });
           var u = Number(p.unique || 0);
           if (Number(p.dwell || 0) > 0 && u > 0) { dwellNum += Number(p.dwell) * u; dwellDen += u; }
         });
         var srcEntries = Object.keys(srcAgg).map(function (k) { return [k, srcAgg[k]]; }).sort(function (a, b) { return b[1] - a[1]; });
         var secEntries = Object.keys(secAgg).map(function (k) { return [k, secAgg[k]]; }).sort(function (a, b) { return b[1] - a[1]; });
+        var touchEntries = Object.keys(touchAgg).map(function (k) { return [k, touchAgg[k]]; }).sort(function (a, b) { return b[1] - a[1]; });
         var avgDwell = dwellDen ? Math.round(dwellNum / dwellDen) : 0;
 
         $('an-cards').innerHTML =
@@ -1587,6 +1708,13 @@ body { --row-gap: 16px; --field-mb: 16px; --card-pad: 24px; }
             (eng.length ? ' · ' + eng.join(' · ') : '') + '</span>' +
             '<a class="mini-btn" href="' + pagePath(p) + '" target="_blank" rel="noopener">View</a></div>';
         }).join('') : '<p class="an-empty">No pages yet.</p>';
+
+        var maxt = touchEntries.length ? touchEntries[0][1] : 1;
+        $('an-touches').innerHTML = touchEntries.length ? touchEntries.map(function (e) {
+          return '<div class="src-row"><span class="nm">' + escapeText(e[0]) + '</span>' +
+            '<span class="bar"><i style="width:' + Math.round(e[1] / maxt * 100) + '%"></i></span>' +
+            '<span class="ct">' + e[1] + '</span></div>';
+        }).join('') : '<p class="an-empty">No tagged touches yet. Push variant links to lemlist and views will attribute here.</p>';
 
         var maxs = secEntries.length ? secEntries[0][1] : 1;
         $('an-sections').innerHTML = secEntries.length ? secEntries.map(function (e) {
@@ -1621,7 +1749,7 @@ body { --row-gap: 16px; --field-mb: 16px; --card-pad: 24px; }
       if (status === 'draft' && currentStatus === 'published' &&
           !confirm('This will unpublish the live proposal and save it as a draft. Continue?')) return;
       var wasPublished = currentStatus === 'published';
-      api('POST', '/api/pages', { slug: slug, template: current.id, values: readValues(), status: status })
+      api('POST', '/api/pages', { slug: slug, template: current.id, values: readValues(), variants: currentVariants, status: status })
         .then(function (data) {
           knownSlugs[slug] = true; editingSlug = slug; currentStatus = data.status; dirty = false;
           clearDraft(); applyEditState(); updateSlugWarn();

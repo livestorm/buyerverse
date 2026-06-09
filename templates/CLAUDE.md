@@ -88,6 +88,12 @@ Default string-length caps when `max` is omitted: `text` 1000, `textarea` 5000,
   **`<section id="…">`** the prospect reached. Wrap each major content block in a
   `<section id="…">` with a meaningful id — those ids appear verbatim in the
   builder's analytics "Section engagement" funnel. No script needed in the template.
+- **Per-touch message-match (optional).** Declare `touchFields` in `template.json`
+  (an array of `{ "key": "<data-i18n key>", "label": "…" }`) to let an outreach
+  variant override those copy nodes per touch. The page receives
+  `window.PAGE_CONFIG.variantOverrides[<utm_content>]` and your `page.js` should,
+  after applying the dictionary, set `el.textContent` for any matching `data-i18n`
+  key (see renewal's `applyOverrides`). Keep the set small — the hero is enough.
 
 ## Client-side JS (derived values, formatting, i18n)
 

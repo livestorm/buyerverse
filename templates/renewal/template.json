@@ -2,6 +2,11 @@
   "name": "Renewal proposal",
   "description": "Bilingual FR/EN renewal proposal microsite",
   "nameField": "prospect",
+  "touchFields": [
+    { "key": "hero.eyebrow", "label": "Hero eyebrow" },
+    { "key": "hero.title", "label": "Hero headline" },
+    { "key": "hero.sub", "label": "Hero sub-headline" }
+  ],
   "fields": [
     { "id": "prospect", "label": "Prospect name", "type": "text", "required": true, "max": 80, "group": "Prospect", "default": "Acme" },
     { "id": "am_name", "label": "Name", "type": "text", "required": true, "max": 80, "group": "Account manager", "default": "Alex Martin" },

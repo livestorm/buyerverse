@@ -44,24 +44,33 @@ async function request(method, path, fetchImpl, body) {
 }
 
 /**
- * Add (or insert) a lead into a campaign and set its proposalUrl variable.
- * @param {{campaignId:string,email:string,proposalUrl:string}} args
+ * Add (or insert) a lead into a campaign and set one or more custom variables
+ * (each an outreach-touch link) in a single variables call.
+ * @param {{campaignId:string,email:string,links:Record<string,string>}} args
  * @param {typeof fetch} [fetchImpl=fetch]
- * @returns {Promise<{leadId:string}>}
+ * @returns {Promise<{leadId:string,count:number}>}
  */
-async function pushProposalLink({ campaignId, email, proposalUrl }, fetchImpl = fetch) {
+async function pushProposalLinks({ campaignId, email, links }, fetchImpl = fetch) {
   if (!configured()) throw Object.assign(new Error('lemlist is not configured'), { status: 503 });
   if (!campaignId || typeof campaignId !== 'string') throw Object.assign(new Error('A lemlist campaign ID is required'), { status: 400 });
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email || '')) throw Object.assign(new Error('A valid recipient email is required'), { status: 400 });
+  const names = Object.keys(links || {});
+  if (!names.length) throw Object.assign(new Error('No links to push'), { status: 400 });
 
   // 1) create/insert the lead in the campaign (returns its id)
   const lead = await request('POST', `/campaigns/${encodeURIComponent(campaignId)}/leads/`, fetchImpl, { email });
   const leadId = lead._id || lead.id;
   if (!leadId) throw Object.assign(new Error('lemlist did not return a lead id'), { status: 502 });
 
-  // 2) set the proposalUrl custom variable (query params per the lemlist API)
-  await request('POST', `/leads/${encodeURIComponent(leadId)}/variables?proposalUrl=${encodeURIComponent(proposalUrl)}`, fetchImpl);
-  return { leadId };
+  // 2) set every custom variable in one call (query params per the lemlist API)
+  const qs = names.map((k) => encodeURIComponent(k) + '=' + encodeURIComponent(links[k])).join('&');
+  await request('POST', `/leads/${encodeURIComponent(leadId)}/variables?${qs}`, fetchImpl);
+  return { leadId, count: names.length };
 }
 
-module.exports = { configured, pushProposalLink };
+/** Convenience: push a single proposalUrl variable. */
+function pushProposalLink({ campaignId, email, proposalUrl }, fetchImpl = fetch) {
+  return pushProposalLinks({ campaignId, email, links: { proposalUrl } }, fetchImpl);
+}
+
+module.exports = { configured, pushProposalLink, pushProposalLinks };
