@@ -535,6 +535,8 @@ body { --row-gap: 16px; --field-mb: 16px; --card-pad: 24px; }
 .seg button:first-child { border-left: 0; }
 .seg button:hover { color: var(--fg-default); }
 .seg button.is-active { background: var(--livestorm-blue-700); color: #fff; }
+/* Match the "Open" action to the device toggle's height in the preview toolbar. */
+#preview-open { font-size: 13px; padding: 7px 14px; }
 
 .preview-stage { flex: 1 1 auto; min-height: 0; overflow: hidden; display: flex; justify-content: center; align-items: flex-start; padding: 24px; }
 .device { width: 100%; max-width: 100%; align-self: flex-start; transition: max-width var(--dur-base) var(--ease-out); }
@@ -804,7 +806,7 @@ body { --row-gap: 16px; --field-mb: 16px; --card-pad: 24px; }
 
       <div class="tb-actions">
         <span class="save-state" id="save-state" style="font-size:12px;font-weight:500;color:var(--fg-subtle);white-space:nowrap;">Not saved yet</span>
-        <button class="mini-btn" id="open-variants" type="button" title="Outreach variants — per-touch links & message-match">Variants</button>
+        <button class="btn btn-outline" id="open-variants" type="button" title="Outreach variants — per-touch links & message-match">Variants</button>
         <button class="btn btn-secondary" id="save-draft" type="button">Save draft</button>
         <button class="btn btn-primary" id="submit" type="button">Publish</button>
       </div>
