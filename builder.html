@@ -732,6 +732,10 @@ body { --row-gap: 16px; --field-mb: 16px; --card-pad: 24px; }
 .var-ov { margin-top: 10px; display: grid; gap: 6px; }
 .var-ov .ov-field label { font-size: 11px; font-weight: 600; color: var(--fg-muted); display: block; margin-bottom: 3px; }
 .var-ov .ov-field input { width: 100%; box-sizing: border-box; }
+.var-row .var-link { display: flex; align-items: center; gap: 8px; margin-top: 10px; }
+.var-row .var-link-url { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: ui-monospace, monospace; font-size: 11px; color: var(--fg-muted); background: var(--bg-surface); border: 1px solid var(--grey-blue-200); border-radius: var(--radius-default); padding: 6px 10px; }
+.var-row .var-copy { flex: 0 0 auto; }
+.var-row .var-link-hint { font-size: 11px; color: var(--fg-subtle); font-style: italic; }
 .var-lemlist { margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--grey-blue-200); }
 .var-lemlist > label { font-size: 13px; font-weight: 600; display: block; margin-bottom: 8px; }
 .var-lemlist .ll-row { display: flex; gap: 8px; }
@@ -984,6 +988,7 @@ body { --row-gap: 16px; --field-mb: 16px; --card-pad: 24px; }
     var knownSlugs = {};       // slugs that already exist (overwrite warning)
     var allPages = [];         // last fetched pages (for search/sort in the drawer)
     var currentVariants = [];  // outreach touches for the proposal being edited
+    var currentToken = null;   // capability token of the saved proposal (for building variant links)
 
     // Seeded outreach sequence for a new proposal (mirrors a typical cadence).
     function defaultVariants() {
@@ -1502,12 +1507,43 @@ body { --row-gap: 16px; --field-mb: 16px; --card-pad: 24px; }
           });
           row.appendChild(ov);
         }
-        sel.addEventListener('change', function () { v.channel = sel.value; markDirty(); });
+        sel.addEventListener('change', function () { v.channel = sel.value; markDirty(); refreshVariantLinks(); });
         step.addEventListener('input', function () { v.step = Math.max(1, Math.min(99, parseInt(step.value, 10) || 1)); markDirty(); });
         label.addEventListener('input', function () { v.label = label.value; markDirty(); });
         rm.addEventListener('click', function () { currentVariants.splice(idx, 1); markDirty(); renderVariants(); });
+        // The final UTM-tagged link for this touch (only resolvable once published).
+        var link = document.createElement('div'); link.className = 'var-link';
+        if (currentStatus === 'published' && currentToken) {
+          var code = document.createElement('code'); code.className = 'var-link-url';
+          var cp = document.createElement('button'); cp.className = 'mini-btn var-copy'; cp.type = 'button'; cp.textContent = 'Copy';
+          var url = variantUrl(v); code.textContent = url; code.title = url;
+          cp.addEventListener('click', function () { copyText(variantUrl(v), cp); });
+          link.appendChild(code); link.appendChild(cp);
+        } else {
+          link.innerHTML = '<span class="var-link-hint">Publish to generate this link</span>';
+        }
+        row.appendChild(link);
         host.appendChild(row);
       });
+    }
+    // The per-touch link mirrors the server: /page/<slug>/<token>?utm_source=…&utm_content=<id>.
+    function variantUrl(v) {
+      var campaign = $('var-campaign-tag').value.trim();
+      return location.origin + '/page/' + editingSlug + '/' + currentToken +
+        '?utm_source=' + encodeURIComponent(v.channel) + '&utm_medium=outreach' +
+        '&utm_campaign=' + encodeURIComponent(campaign) + '&utm_content=' + encodeURIComponent(v.id);
+    }
+    function refreshVariantLinks() {
+      if (!(currentStatus === 'published' && currentToken)) return;
+      var rows = $('var-list').querySelectorAll('.var-row');
+      currentVariants.forEach(function (v, i) {
+        var code = rows[i] && rows[i].querySelector('.var-link-url');
+        if (code) { var u = variantUrl(v); code.textContent = u; code.title = u; }
+      });
+    }
+    function copyText(text, btn) {
+      function done() { if (!btn) return; var t = btn.textContent; btn.textContent = 'Copied'; setTimeout(function () { btn.textContent = t; }, 1200); }
+      if (navigator.clipboard) navigator.clipboard.writeText(text).then(done, function () {}); else done();
     }
     function nextVariantId() { var n = 1, id; do { id = 'v' + n++; } while (currentVariants.some(function (v) { return v.id === id; })); return id; }
     function openVariants() {
@@ -1523,6 +1559,7 @@ body { --row-gap: 16px; --field-mb: 16px; --card-pad: 24px; }
       currentVariants.push({ id: nextVariantId(), channel: 'email', step: currentVariants.length + 1, label: '', overrides: {} });
       markDirty(); renderVariants();
     });
+    $('var-campaign-tag').addEventListener('input', refreshVariantLinks);
     $('ll-send').addEventListener('click', function () {
       if (currentStatus !== 'published' || !editingSlug) { toast('Publish the proposal first', 'err'); return; }
       if (dirty) { toast('Save your changes first, then push', 'err'); return; }
@@ -1550,7 +1587,7 @@ body { --row-gap: 16px; --field-mb: 16px; --card-pad: 24px; }
         card.innerHTML = '<span class="tpl-card-name">' + escapeText(t.name) + '</span>' +
           '<span class="tpl-card-desc">' + escapeText(t.description || '') + '</span>';
         card.addEventListener('click', function () {
-          if (!current || current.id !== t.id) { slugTouched = false; editingSlug = null; currentStatus = null; dirty = false; buildForm(t); applyEditState(); }
+          if (!current || current.id !== t.id) { slugTouched = false; editingSlug = null; currentStatus = null; currentToken = null; dirty = false; buildForm(t); applyEditState(); }
           closeOverlay($('gallery'));
         });
         c.appendChild(card);
@@ -1634,6 +1671,7 @@ body { --row-gap: 16px; --field-mb: 16px; --card-pad: 24px; }
         row.querySelector('[data-edit]').addEventListener('click', function () {
           if (!t) { toast('Template "' + escapeText(p.config.template) + '" no longer exists.', 'err'); return; }
           slugTouched = true; editingSlug = p.slug; currentStatus = p.status || 'published'; dirty = false;
+          currentToken = (p.config && p.config.token) || null;
           buildForm(t, p.config.values, p.config.variants);
           $('f-slug').value = p.slug;
           updateSlugWarn(); applyEditState();
@@ -1641,7 +1679,7 @@ body { --row-gap: 16px; --field-mb: 16px; --card-pad: 24px; }
         });
         row.querySelector('[data-dup]').addEventListener('click', function () {
           if (!t) { toast('Template "' + escapeText(p.config.template) + '" no longer exists.', 'err'); return; }
-          slugTouched = true; editingSlug = null; currentStatus = null;
+          slugTouched = true; editingSlug = null; currentStatus = null; currentToken = null; // a clone gets its own token on save
           buildForm(t, p.config.values, p.config.variants);
           $('f-slug').value = (p.slug + '-copy').slice(0, 64);
           updateSlugWarn(); applyEditState(); markDirty();
@@ -1754,6 +1792,7 @@ body { --row-gap: 16px; --field-mb: 16px; --card-pad: 24px; }
       api('POST', '/api/pages', { slug: slug, template: current.id, values: readValues(), variants: currentVariants, status: status })
         .then(function (data) {
           knownSlugs[slug] = true; editingSlug = slug; currentStatus = data.status; dirty = false;
+          currentToken = (data.url || '').split('?')[0].split('/').pop() || currentToken; // /page/<slug>/<token>
           clearDraft(); applyEditState(); updateSlugWarn();
           if (status === 'published') {
             if (wasPublished) { toast('Updated → <a href="' + data.url + '" target="_blank" rel="noopener">' + data.url + '</a>', 'ok'); }
@@ -1771,7 +1810,7 @@ body { --row-gap: 16px; --field-mb: 16px; --card-pad: 24px; }
 
     function newProposal() {
       if (dirty && !confirm('Discard unsaved changes and start a new proposal?')) return;
-      slugTouched = false; editingSlug = null; currentStatus = null; dirty = false;
+      slugTouched = false; editingSlug = null; currentStatus = null; currentToken = null; dirty = false;
       clearDraft();
       buildForm(current || templates[0]);
       $('f-slug').value = current && current.nameField ? slugify($('f-' + current.nameField).value) : '';
