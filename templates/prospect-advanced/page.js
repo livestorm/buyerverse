@@ -38,9 +38,9 @@
   function normUseCase(s) {
     s = (s || '').toLowerCase();
     if (/showcase|valoris|offre|catalog/.test(s)) return 'product showcase';
+    if (/customer.educ|client.educ|patient|hcp|kol|clinical/.test(s)) return 'customer education';
     if (/train|formation|educat|onboard|learn/.test(s)) return 'training';
     if (/thought.?lead|expertise/.test(s)) return 'thought leadership';
-    if (/customer.educ|client.educ|patient|hcp|kol|clinical/.test(s)) return 'customer education';
     if (/partner|resell|distribut|channel/.test(s)) return 'partner enablement';
     if (/pipeline|demand.gen|lead.gen|revenue/.test(s)) return 'pipeline generation';
     return s;
