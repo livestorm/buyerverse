@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{company}} — From events to pipeline</title>
+  <meta name="description" content="A brief on turning {{company}}'s mature events program into a measurable revenue channel.">
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/templates/prospect-advanced/styles.css">
+</head>
+<body>
+
+  <header class="site-header" id="top">
+    <div class="container header-inner">
+      <a class="brand" href="#top">
+        <span class="brand-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span>Livestorm</span>
+        <span class="brand-x">×</span>
+        <span class="brand-co">{{company}}</span>
+      </a>
+      <nav class="site-nav" aria-label="Page navigation">
+        <a href="#attribution">Attribution</a>
+        <a href="#data">Engagement data</a>
+        <a href="#scale">Scale</a>
+        <a href="#contact">Let's talk</a>
+      </nav>
+      <a class="btn btn-primary btn-sm" href="#contact">Let's talk</a>
+    </div>
+  </header>
+
+  <main>
+
+    <!-- ===== HERO ===== -->
+    <section class="hero" id="hero">
+      <div class="container">
+        <div class="reveal">
+          <div class="hero-from">
+            <span class="hero-from-dot" id="hero-avatar" aria-hidden="true"></span>
+            <span>A note from <strong id="hero-am-name">{{am_name}}</strong> at Livestorm</span>
+          </div>
+
+          <h1 class="hero-title"><span class="grad">{{company}}</span>'s events program is clearly working. The question teams at your stage start asking is: how much pipeline is it actually generating?</h1>
+
+          <p class="hero-sub" id="hero-sub-text">You've solved the production problem — you're running events, repurposing content, building an audience. The next conversation is about revenue attribution. What specifically did your events program contribute to pipeline last quarter? Most teams at this stage can't answer that precisely. That's usually a data and integration problem, not a measurement problem.</p>
+
+          <!-- Observation callout — hidden by JS if blank -->
+          <div class="observation" id="observation-block">
+            <span class="observation-icon" aria-hidden="true">→</span>
+            <p class="observation-text" id="observation-text">{{observation}}</p>
+          </div>
+
+          <!-- Pain points -->
+          <ul class="pain-list" aria-label="Challenges this addresses">
+            <li class="pain-item" id="pain-item-1">
+              <span class="pain-bullet" aria-hidden="true">✗</span>
+              <span id="pain-text-1">{{pain_1}}</span>
+            </li>
+            <li class="pain-item" id="pain-item-2">
+              <span class="pain-bullet" aria-hidden="true">✗</span>
+              <span id="pain-text-2">{{pain_2}}</span>
+            </li>
+          </ul>
+
+          <div class="hero-actions">
+            <a class="btn btn-primary btn-lg" href="#contact" id="hero-cta">Talk to {{am_name}}</a>
+            <a class="btn btn-ghost btn-lg" href="#attribution">Walk me through it ↓</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== STATS ===== -->
+    <section class="stats-band" id="attribution" aria-label="Pipeline attribution data">
+      <div class="container">
+        <p style="text-align:center; color:rgba(255,255,255,.4); font-size:.8rem; text-transform:uppercase; letter-spacing:.08em; margin-bottom:40px;">What mature event programs produce</p>
+        <div class="stats-grid">
+          <div class="stat-block reveal">
+            <div class="stat-number"><em>14.2%</em></div>
+            <p class="stat-desc">webinar-to-opportunity conversion rate, versus 4.1% for paid social — the intent gap is real when you measure it right</p>
+            <p class="stat-source">Demand Gen Report</p>
+          </div>
+          <div class="stat-block reveal reveal-d1">
+            <div class="stat-number"><em>30%</em></div>
+            <p class="stat-desc">higher conversion for attendees who engaged with Q&amp;A, polls, or CTAs — engagement data predicts pipeline better than attendance alone</p>
+            <p class="stat-source">Multiple sources</p>
+          </div>
+          <div class="stat-block reveal reveal-d2">
+            <div class="stat-number"><em>20–40%</em></div>
+            <p class="stat-desc">post-event lead-to-opportunity conversion for high-engagement events — the variance is almost entirely explained by follow-up quality</p>
+            <p class="stat-source">Demand Gen Report</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== ENGAGEMENT DATA ===== -->
+    <section class="section" id="data" style="background: var(--surf);">
+      <div class="container">
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: start;">
+          <div class="reveal">
+            <p class="eyebrow">The data gap</p>
+            <h2 class="section-title">Most teams know who attended. Very few know what it was worth.</h2>
+            <p class="section-sub" style="margin-bottom:20px;">An "attended: yes" field in your CRM is a starting point, not an answer. The difference between an attendee record and an event-qualified lead record is what happened during the session.</p>
+            <p class="section-sub" style="margin-bottom:20px;">The most revenue-attributable events programs sync a score, not a boolean. Every interaction — questions asked, polls answered, CTA clicks, replay views — is a signal. Together they produce a lead quality signal your sales team can actually act on.</p>
+            <p id="crm-note" style="font-size:.875rem; color:var(--ink-3); display:none;">The <span id="crm-name-inline"></span> integration is where most of this lives or dies. If the field mapping is shallow, the data never gets used.</p>
+          </div>
+          <div class="reveal reveal-d1">
+            <div style="background:var(--bg); border:1px solid var(--border); border-radius:var(--r-lg); padding:28px 24px;">
+              <p style="font-size:.75rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-3); margin-bottom:20px;">What a good CRM sync looks like</p>
+              <div style="display:flex; flex-direction:column; gap:8px;">
+                <div style="display:flex; align-items:center; gap:12px; padding:12px 14px; background:var(--surf); border-radius:var(--r-sm); border:1px solid var(--border);">
+                  <span style="color:var(--accent); font-weight:700; font-size:.85rem; flex-shrink:0;">✓</span>
+                  <span style="font-size:.875rem;">Attendance duration (not just "attended")</span>
+                </div>
+                <div style="display:flex; align-items:center; gap:12px; padding:12px 14px; background:var(--accent-l); border-radius:var(--r-sm); border:1px solid rgba(99,102,241,.2);">
+                  <span style="color:var(--accent); font-weight:700; font-size:.85rem; flex-shrink:0;">✓</span>
+                  <span style="font-size:.875rem; font-weight:500;">Questions asked in Q&amp;A <em style="font-style:normal; color:var(--ink-3); font-size:.8rem;">(intent signal)</em></span>
+                </div>
+                <div style="display:flex; align-items:center; gap:12px; padding:12px 14px; background:var(--accent-l); border-radius:var(--r-sm); border:1px solid rgba(99,102,241,.2);">
+                  <span style="color:var(--accent); font-weight:700; font-size:.85rem; flex-shrink:0;">✓</span>
+                  <span style="font-size:.875rem; font-weight:500;">Poll responses <em style="font-style:normal; color:var(--ink-3); font-size:.8rem;">(interest profiling)</em></span>
+                </div>
+                <div style="display:flex; align-items:center; gap:12px; padding:12px 14px; background:var(--accent-l); border-radius:var(--r-sm); border:1px solid rgba(99,102,241,.2);">
+                  <span style="color:var(--accent); font-weight:700; font-size:.85rem; flex-shrink:0;">✓</span>
+                  <span style="font-size:.875rem; font-weight:500;">CTA clicks <em style="font-style:normal; color:var(--ink-3); font-size:.8rem;">(action signal)</em></span>
+                </div>
+                <div style="display:flex; align-items:center; gap:12px; padding:12px 14px; background:var(--surf); border-radius:var(--r-sm); border:1px solid var(--border);">
+                  <span style="color:var(--accent); font-weight:700; font-size:.85rem; flex-shrink:0;">✓</span>
+                  <span style="font-size:.875rem;">Replay views + watch depth</span>
+                </div>
+                <div style="display:flex; align-items:center; gap:12px; padding:12px 14px; background:var(--surf); border-radius:var(--r-sm); border:1px solid var(--border);">
+                  <span style="color:var(--ink-3); font-weight:700; font-size:.85rem; flex-shrink:0;">→</span>
+                  <span style="font-size:.875rem; color:var(--ink-2);">Composite engagement score → lead routing</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== SCALE ===== -->
+    <section class="section usecases" id="scale">
+      <div class="container">
+        <div class="section-header reveal" style="max-width:560px; margin-bottom:52px;">
+          <p class="eyebrow">Scale without adding headcount</p>
+          <h2 class="section-title">At a certain point, the constraint is production, not ideas.</h2>
+          <p class="section-sub">When teams want to run more events, the first instinct is to hire. The second, better instinct is to build a repeatable system. Here's what that looks like.</p>
+        </div>
+        <div class="usecase-grid">
+          <div class="uc-card reveal">
+            <div class="uc-icon" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 20h9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <h3 class="uc-title">Template-driven production</h3>
+            <p class="uc-desc">Your team runs from a repeatable playbook — registration page, reminder sequence, session structure, follow-up emails. Every event improves the template, not the effort required to run it.</p>
+          </div>
+          <div class="uc-card reveal reveal-d1">
+            <div class="uc-icon" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="2"/><line x1="23" y1="11" x2="17" y2="11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            </div>
+            <h3 class="uc-title">Sales self-serve for demos</h3>
+            <p class="uc-desc">Your AEs run their own product demos and targeted roundtables without touching marketing. Same platform, same analytics, same CRM sync — without the bottleneck.</p>
+          </div>
+          <div class="uc-card reveal reveal-d2">
+            <div class="uc-icon" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><polyline points="12 6 12 12 16 14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            </div>
+            <h3 class="uc-title">Multi-format on one platform</h3>
+            <p class="uc-desc">Webinars, virtual roundtables, on-demand courses, product demos, internal training. One platform, one analytics layer, one CRM integration. Not four tools with four different data structures.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== CTA ===== -->
+    <section class="cta-section" id="contact">
+      <div class="container">
+        <div class="cta-inner">
+          <div class="reveal">
+            <p class="eyebrow cta-eyebrow">The conversation I want to have</p>
+            <h2 class="cta-title">An honest look at your current stack, <span style="color:#A78BFA">{{first_name}}</span>.</h2>
+            <p class="cta-body">I'm not coming in with a pitch. I'd like to do a 30-minute audit of what your events setup looks like today — what your CRM sync captures, what you can actually attribute, and where the gaps are. Some of that might be Livestorm. Some of it might be configuration choices that don't require switching anything. I'll tell you what I actually think.</p>
+            <div class="am-card">
+              <div class="am-avatar" id="am-avatar" aria-hidden="true"></div>
+              <div>
+                <p class="am-name" id="am-name-el">{{am_name}}</p>
+                <p class="am-role" id="am-role-el">{{am_title}}</p>
+                <a class="am-email-link" href="mailto:{{am_email}}" id="am-email-el">{{am_email}}</a>
+              </div>
+            </div>
+          </div>
+          <div class="cta-box reveal reveal-d1">
+            <div class="cta-btn-wrap">
+              <a class="btn btn-primary btn-xl" id="main-cta" href="mailto:{{am_email}}">Book a call ↗</a>
+            </div>
+            <p class="cta-fine">No commitment · 30 minutes · cancel any time</p>
+            <div class="no-pitch">
+              "If your current setup is actually doing everything well, I'll tell you that. I'd rather build a long-term relationship than close a deal that doesn't make sense."
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <div class="footer-brand">
+        <span aria-hidden="true" style="display:flex;gap:3px;"><i style="display:block;width:6px;height:6px;border-radius:50%;background:#5B34D4"></i><i style="display:block;width:6px;height:6px;border-radius:50%;background:#6366F1"></i><i style="display:block;width:6px;height:6px;border-radius:50%;background:#A78BFA"></i></span>
+        <span>Livestorm</span>
+      </div>
+      <p class="footer-legal">Prepared for <strong>{{first_name}} {{last_name}}</strong> at <strong>{{company}}</strong>. © Livestorm SAS · <a href="https://livestorm.co/privacy">Privacy</a></p>
+    </div>
+  </footer>
+
+  <script>window.PAGE_CONFIG = {{PAGE_CONFIG_JSON}};</script>
+  <script src="/templates/prospect-advanced/page.js"></script>
+</body>
+</html>

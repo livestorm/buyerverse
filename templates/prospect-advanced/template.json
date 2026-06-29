@@ -1,0 +1,21 @@
+{
+  "name": "Prospect — Mature events program",
+  "description": "For companies running webinars and repurposing content. Angle: you've solved production — let's talk pipeline attribution, CRM depth, and scale.",
+  "nameField": "company",
+  "fields": [
+    { "id": "first_name",        "label": "First name",   "type": "text",     "required": true,  "max": 60,  "group": "Prospect", "default": "Sarah",          "placeholder": "e.g. Sarah" },
+    { "id": "last_name",         "label": "Last name",    "type": "text",     "required": true,  "max": 60,  "group": "Prospect", "default": "Chen",           "placeholder": "e.g. Chen" },
+    { "id": "title",             "label": "Job title",    "type": "text",     "required": false, "max": 100, "group": "Prospect", "default": "VP of Marketing" },
+    { "id": "company",           "label": "Company",      "type": "text",     "required": true,  "max": 80,  "group": "Prospect", "default": "Acme Corp" },
+    { "id": "industry",          "label": "Industry",     "type": "text",     "required": false, "max": 80,  "group": "Prospect", "default": "SaaS",           "placeholder": "e.g. SaaS, Healthcare, Finance…" },
+    { "id": "current_platform",  "label": "Their current platform (optional)", "type": "text", "required": false, "max": 60, "group": "Context", "default": "", "placeholder": "e.g. ON24, Zoom Events, Hopin", "hint": "If filled, referenced naturally in the hero." },
+    { "id": "crm",               "label": "Their CRM (optional)", "type": "text", "required": false, "max": 60, "group": "Context", "default": "", "placeholder": "e.g. Salesforce, HubSpot", "hint": "Used in the attribution section if filled." },
+    { "id": "observation",       "label": "Your observation (optional)", "type": "textarea", "required": false, "max": 300, "group": "Context", "default": "", "placeholder": "I can see from your job postings that you're building out a demand gen function — suggests you're trying to scale events beyond a few people…", "hint": "1–2 sentences showing you've done your homework. Leave blank and it won't appear." },
+    { "id": "pain_1",            "label": "Their challenge 1", "type": "text", "required": true, "max": 110, "group": "Context", "default": "Hard to attribute revenue to specific events or sessions", "placeholder": "e.g. No way to prove events ROI to the CFO" },
+    { "id": "pain_2",            "label": "Their challenge 2 (optional)", "type": "text", "required": false, "max": 110, "group": "Context", "default": "", "placeholder": "e.g. Production overhead limits how many events they can run" },
+    { "id": "am_name",           "label": "Your name",    "type": "text",     "required": true,  "max": 80,  "group": "Your details", "default": "Alex Martin" },
+    { "id": "am_title",          "label": "Your title",   "type": "text",     "required": false, "max": 100, "group": "Your details", "default": "Account Executive, Livestorm" },
+    { "id": "am_email",          "label": "Your email",   "type": "email",    "required": true,              "group": "Your details", "default": "alex.martin@livestorm.co" },
+    { "id": "cal_link",          "label": "Booking link (optional)", "type": "text", "required": false, "max": 300, "group": "Your details", "default": "", "placeholder": "https://cal.com/… or https://calendly.com/…", "hint": "Replaces the email CTA with a direct booking link." }
+  ]
+}

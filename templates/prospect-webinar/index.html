@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{company}} — Making your webinars work harder</title>
+  <meta name="description" content="A personalised brief on what {{company}}'s webinar program could be producing but isn't yet.">
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/templates/prospect-webinar/styles.css">
+</head>
+<body>
+
+  <header class="site-header" id="top">
+    <div class="container header-inner">
+      <a class="brand" href="#top">
+        <span class="brand-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span>Livestorm</span>
+        <span class="brand-x">×</span>
+        <span class="brand-co">{{company}}</span>
+      </a>
+      <nav class="site-nav" aria-label="Page navigation">
+        <a href="#replay">The replay gap</a>
+        <a href="#assets">Content output</a>
+        <a href="#pipeline">Pipeline impact</a>
+        <a href="#contact">Let's talk</a>
+      </nav>
+      <a class="btn btn-primary btn-sm" href="#contact">Let's talk</a>
+    </div>
+  </header>
+
+  <main>
+
+    <!-- ===== HERO ===== -->
+    <section class="hero" id="hero">
+      <div class="container">
+        <div class="reveal">
+          <div class="hero-from">
+            <span class="hero-from-dot" id="hero-avatar" aria-hidden="true"></span>
+            <span>A note from <strong id="hero-am-name">{{am_name}}</strong> at Livestorm</span>
+          </div>
+
+          <h1 class="hero-title">You've built the webinar habit. That puts <span class="grad">{{company}}</span> ahead of most teams. Here's what the next level looks like.</h1>
+
+          <p class="hero-sub" id="hero-sub-text">The teams getting the most from their events programs figured out something important: the live session is just the beginning. What happens after go-live — replays, repurposed content, follow-up sequences — is where the real value compounds.</p>
+
+          <!-- Observation callout — hidden by JS if blank -->
+          <div class="observation" id="observation-block">
+            <span class="observation-icon" aria-hidden="true">→</span>
+            <p class="observation-text" id="observation-text">{{observation}}</p>
+          </div>
+
+          <!-- Pain points -->
+          <ul class="pain-list" aria-label="Challenges this addresses">
+            <li class="pain-item" id="pain-item-1">
+              <span class="pain-bullet" aria-hidden="true">✗</span>
+              <span id="pain-text-1">{{pain_1}}</span>
+            </li>
+            <li class="pain-item" id="pain-item-2">
+              <span class="pain-bullet" aria-hidden="true">✗</span>
+              <span id="pain-text-2">{{pain_2}}</span>
+            </li>
+          </ul>
+
+          <div class="hero-actions">
+            <a class="btn btn-primary btn-lg" href="#contact" id="hero-cta">Talk to {{am_name}}</a>
+            <a class="btn btn-ghost btn-lg" href="#replay">Show me the gap ↓</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== REPLAY GAP ===== -->
+    <section class="stats-band" id="replay" aria-label="Replay statistics">
+      <div class="container">
+        <p style="text-align:center; color:rgba(255,255,255,.4); font-size:.8rem; text-transform:uppercase; letter-spacing:.08em; margin-bottom:40px;">What the data says about on-demand webinars</p>
+        <div class="stats-grid">
+          <div class="stat-block reveal">
+            <div class="stat-number"><em>45%</em></div>
+            <p class="stat-desc">of registrants choose to watch on-demand rather than attend live — they just need a different time</p>
+            <p class="stat-source">ON24 Benchmark Report 2024</p>
+          </div>
+          <div class="stat-block reveal reveal-d1">
+            <div class="stat-number"><em>48%</em></div>
+            <p class="stat-desc">of all webinar views happen after the live session ends — the replay is half your audience</p>
+            <p class="stat-source">ON24, 2024</p>
+          </div>
+          <div class="stat-block reveal reveal-d2">
+            <div class="stat-number"><em>67%</em></div>
+            <p class="stat-desc">of replay viewers watch within the first 5 days post-event — the intent signal doesn't expire quickly</p>
+            <p class="stat-source">Contrast, 2026</p>
+          </div>
+        </div>
+        <p style="text-align:center; color:rgba(255,255,255,.4); font-size:.9rem; margin-top:48px; max-width:560px; margin-left:auto; margin-right:auto; line-height:1.6;">"If you're not actively driving to your replays, you're getting roughly half the value from every event you produce."</p>
+      </div>
+    </section>
+
+    <!-- ===== CONTENT OUTPUT ===== -->
+    <section class="section usecases" id="assets">
+      <div class="container">
+        <div class="section-header reveal" style="max-width:560px; margin-bottom:52px;">
+          <p class="eyebrow">One session, 20+ assets</p>
+          <h2 class="section-title">Your team already produced all of this. You just haven't extracted it yet.</h2>
+          <p class="section-sub">A 60-minute webinar contains enough raw material to feed your content pipeline for weeks. Most teams publish the recording and move on.</p>
+        </div>
+
+        <div class="usecase-grid">
+          <div class="uc-card reveal">
+            <div class="uc-icon" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><polygon points="23 7 16 12 23 17 23 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><rect x="1" y="5" width="15" height="14" rx="2" stroke="currentColor" stroke-width="2"/></svg>
+            </div>
+            <h3 class="uc-title">Short-form video clips</h3>
+            <p class="uc-desc">3–5 clipped moments per session. The sharp insight, the provocative question, the quotable stat. Native content for LinkedIn, YouTube Shorts, social. Your speakers become visible.</p>
+          </div>
+          <div class="uc-card reveal reveal-d1">
+            <div class="uc-icon" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" stroke="currentColor" stroke-width="2"/><polyline points="14 2 14 8 20 8" stroke="currentColor" stroke-width="2"/><line x1="16" y1="13" x2="8" y2="13" stroke="currentColor" stroke-width="2"/><line x1="16" y1="17" x2="8" y2="17" stroke="currentColor" stroke-width="2"/></svg>
+            </div>
+            <h3 class="uc-title">Long-form written content</h3>
+            <p class="uc-desc">The transcript becomes a blog post or article with minimal editing. The key moments become a PDF summary or SlideShare. The Q&amp;A becomes an FAQ resource. One session, multiple indexed pages.</p>
+          </div>
+          <div class="uc-card reveal reveal-d2">
+            <div class="uc-icon" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" stroke="currentColor" stroke-width="2"/><polyline points="22,6 12,13 2,6" stroke="currentColor" stroke-width="2"/></svg>
+            </div>
+            <h3 class="uc-title">Email nurture sequences</h3>
+            <p class="uc-desc">Key moments from the session become a 3–5 email sequence for attendees who didn't convert, and for replay viewers. Behaviour-based: what they engaged with determines what they receive next.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== PIPELINE ===== -->
+    <section class="section" id="pipeline" style="background: var(--surf);">
+      <div class="container">
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center;">
+          <div class="reveal">
+            <p class="eyebrow">On-demand as a lead channel</p>
+            <h2 class="section-title">Replay viewers convert. They just need the right follow-up.</h2>
+            <p class="section-sub" style="margin-bottom:24px;">The research is clear: replay-sourced leads convert to opportunity at nearly the same rate as live attendees (Contrast, 2026). The intent signal — choosing to watch your content — doesn't disappear because they missed the live session.</p>
+            <p class="section-sub" style="margin-bottom:24px;">The gap isn't in the audience. It's in the follow-up infrastructure. Most teams send the replay link once and never segment on what happened next.</p>
+            <p style="font-size:.875rem; color: var(--ink-3);">What good looks like: replay sent within 24 hours → segment by watch depth → different sequence for &gt;50% vs &lt;50% viewed → CRM sync on engagement score, not just "watched: yes".</p>
+          </div>
+          <div class="reveal reveal-d1">
+            <!-- Visual: the lifecycle -->
+            <div style="background: var(--bg); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 32px 28px;">
+              <p style="font-size:.75rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-3); margin-bottom:20px;">Your webinar lifecycle</p>
+              <div style="display:flex; flex-direction:column; gap:12px;">
+                <div style="display:flex; align-items:center; gap:12px; padding:14px 16px; background:var(--surf); border-radius:var(--r-sm); border:1px solid var(--border);">
+                  <span style="width:8px;height:8px;border-radius:50%;background:var(--accent);flex-shrink:0;"></span>
+                  <span style="font-size:.9rem; font-weight:500;">Live session</span>
+                  <span style="margin-left:auto; font-size:.8rem; color:var(--ink-3);">~55% of audience</span>
+                </div>
+                <div style="display:flex; align-items:center; gap:12px; padding:14px 16px; background:var(--accent-l); border-radius:var(--r-sm); border:1px solid rgba(22,163,74,.2);">
+                  <span style="width:8px;height:8px;border-radius:50%;background:var(--accent);flex-shrink:0;"></span>
+                  <span style="font-size:.9rem; font-weight:500;">On-demand replay</span>
+                  <span style="margin-left:auto; font-size:.8rem; color:var(--accent); font-weight:600;">+45% of audience</span>
+                </div>
+                <div style="display:flex; align-items:center; gap:12px; padding:14px 16px; background:var(--surf); border-radius:var(--r-sm); border:1px solid var(--border);">
+                  <span style="width:8px;height:8px;border-radius:50%;background:#A78BFA;flex-shrink:0;"></span>
+                  <span style="font-size:.9rem; font-weight:500;">Repurposed clips &amp; posts</span>
+                  <span style="margin-left:auto; font-size:.8rem; color:var(--ink-3);">new net audience</span>
+                </div>
+                <div style="display:flex; align-items:center; gap:12px; padding:14px 16px; background:var(--surf); border-radius:var(--r-sm); border:1px solid var(--border);">
+                  <span style="width:8px;height:8px;border-radius:50%;background:#F59E0B;flex-shrink:0;"></span>
+                  <span style="font-size:.9rem; font-weight:500;">Behaviour-based follow-up</span>
+                  <span style="margin-left:auto; font-size:.8rem; color:var(--ink-3);">→ pipeline</span>
+                </div>
+              </div>
+              <p style="font-size:.78rem; color:var(--ink-3); margin-top:16px;">Most teams today: live session only. The rest is untapped.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== CTA ===== -->
+    <section class="cta-section" id="contact">
+      <div class="container">
+        <div class="cta-inner">
+          <div class="reveal">
+            <p class="eyebrow cta-eyebrow">The conversation I want to have</p>
+            <h2 class="cta-title">Let me look at your current setup, <span style="color:#4ADE80">{{first_name}}</span>.</h2>
+            <p class="cta-body">I've talked to a lot of teams running webinars at different stages. The gap between "we run webinars" and "our webinars drive pipeline" is usually a few specific configuration choices — not a full platform switch. I'd like to understand what {{company}}'s current setup looks like and tell you honestly where the quick wins are.</p>
+            <div class="am-card">
+              <div class="am-avatar" id="am-avatar" aria-hidden="true"></div>
+              <div>
+                <p class="am-name" id="am-name-el">{{am_name}}</p>
+                <p class="am-role" id="am-role-el">{{am_title}}</p>
+                <a class="am-email-link" href="mailto:{{am_email}}" id="am-email-el">{{am_email}}</a>
+              </div>
+            </div>
+          </div>
+          <div class="cta-box reveal reveal-d1">
+            <div class="cta-btn-wrap">
+              <a class="btn btn-primary btn-xl" id="main-cta" href="mailto:{{am_email}}">Book a call ↗</a>
+            </div>
+            <p class="cta-fine">No commitment · 30 minutes · cancel any time</p>
+            <div class="no-pitch">
+              "I want to understand what your current stack does and doesn't do — and tell you honestly where switching would make a real difference, and where it wouldn't."
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <div class="footer-brand">
+        <span aria-hidden="true" style="display:flex;gap:3px;"><i style="display:block;width:6px;height:6px;border-radius:50%;background:#5B34D4"></i><i style="display:block;width:6px;height:6px;border-radius:50%;background:#16A34A"></i><i style="display:block;width:6px;height:6px;border-radius:50%;background:#A78BFA"></i></span>
+        <span>Livestorm</span>
+      </div>
+      <p class="footer-legal">Prepared for <strong>{{first_name}} {{last_name}}</strong> at <strong>{{company}}</strong>. © Livestorm SAS · <a href="https://livestorm.co/privacy">Privacy</a></p>
+    </div>
+  </footer>
+
+  <script>window.PAGE_CONFIG = {{PAGE_CONFIG_JSON}};</script>
+  <script src="/templates/prospect-webinar/page.js"></script>
+</body>
+</html>

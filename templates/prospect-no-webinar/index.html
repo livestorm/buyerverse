@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{company}} — A note from Livestorm</title>
+  <meta name="description" content="A personalised brief on what a webinar program could look like for {{company}}.">
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/templates/prospect-no-webinar/styles.css">
+</head>
+<body>
+
+  <header class="site-header" id="top">
+    <div class="container header-inner">
+      <a class="brand" href="#top">
+        <span class="brand-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span>Livestorm</span>
+        <span class="brand-x">×</span>
+        <span class="brand-co">{{company}}</span>
+      </a>
+      <nav class="site-nav" aria-label="Page navigation">
+        <a href="#numbers">The numbers</a>
+        <a href="#usecases">How it works</a>
+        <a href="#getting-started">Getting started</a>
+        <a href="#contact">Let's talk</a>
+      </nav>
+      <a class="btn btn-primary btn-sm" href="#contact">Let's talk</a>
+    </div>
+  </header>
+
+  <main>
+
+    <!-- ===== HERO ===== -->
+    <section class="hero" id="hero">
+      <div class="container">
+        <div class="reveal">
+          <div class="hero-from">
+            <span class="hero-from-dot" id="hero-avatar" aria-hidden="true"></span>
+            <span>A note from <strong id="hero-am-name">{{am_name}}</strong> at Livestorm</span>
+          </div>
+
+          <h1 class="hero-title">Most {{industry}} teams I talk to are investing heavily in content. There's one format that consistently outperforms the rest — and <span class="grad">{{company}}</span> hasn't activated it yet.</h1>
+
+          <p class="hero-sub">I put this page together specifically for you. Not a product brochure — a genuine point of view on what a webinar program could do for {{company}}, based on what I've seen work in {{industry}}.</p>
+
+          <!-- Observation callout — hidden by JS if blank -->
+          <div class="observation" id="observation-block">
+            <span class="observation-icon" aria-hidden="true">→</span>
+            <p class="observation-text" id="observation-text">{{observation}}</p>
+          </div>
+
+          <!-- Pain points -->
+          <ul class="pain-list" id="pain-list" aria-label="Challenges this addresses">
+            <li class="pain-item" id="pain-item-1">
+              <span class="pain-bullet" aria-hidden="true">✗</span>
+              <span id="pain-text-1">{{pain_1}}</span>
+            </li>
+            <li class="pain-item" id="pain-item-2">
+              <span class="pain-bullet" aria-hidden="true">✗</span>
+              <span id="pain-text-2">{{pain_2}}</span>
+            </li>
+          </ul>
+
+          <div class="hero-actions">
+            <a class="btn btn-primary btn-lg" href="#contact" id="hero-cta">Talk to {{am_name}}</a>
+            <a class="btn btn-ghost btn-lg" href="#numbers">Show me the numbers ↓</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== STATS ===== -->
+    <section class="stats-band" id="numbers" aria-label="Webinar benchmarks">
+      <div class="container">
+        <div class="stats-grid">
+          <div class="stat-block reveal">
+            <div class="stat-number"><em>73%</em></div>
+            <p class="stat-desc">of B2B marketers say webinars generate their highest-quality leads — above paid, email, and gated assets</p>
+            <p class="stat-source">Demand Gen Report</p>
+          </div>
+          <div class="stat-block reveal reveal-d1">
+            <div class="stat-number"><em>~€65</em></div>
+            <p class="stat-desc">average cost per lead from webinars — versus ~€750 from in-person events and ~€85 from paid search</p>
+            <p class="stat-source">ON24 Benchmark Report (USD figures converted)</p>
+          </div>
+          <div class="stat-block reveal reveal-d2">
+            <div class="stat-number"><em>22%</em></div>
+            <p class="stat-desc">faster funnel velocity — leads from webinars move to opportunity stage faster than any other channel</p>
+            <p class="stat-source">ON24 / Demand Gen Report</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== USE CASES ===== -->
+    <section class="section usecases" id="usecases">
+      <div class="container">
+        <div class="section-header reveal" style="max-width:560px; margin-bottom:52px;">
+          <p class="eyebrow">What it unlocks</p>
+          <h2 class="section-title">Three things a webinar program does for {{industry}} teams</h2>
+          <p class="section-sub">These aren't generic webinar benefits — they're the specific outcomes I see teams in your space prioritise.</p>
+        </div>
+        <div class="usecase-grid">
+          <div class="uc-card reveal">
+            <div class="uc-icon" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="2"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            </div>
+            <h3 class="uc-title">Thought leadership at scale</h3>
+            <p class="uc-desc">A monthly webinar puts your team's expertise in front of a live, self-selected audience. Over time, you become the go-to voice in your space — not through ads, but through genuine value.</p>
+          </div>
+          <div class="uc-card reveal reveal-d1">
+            <div class="uc-icon" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <h3 class="uc-title">A demand channel you own</h3>
+            <p class="uc-desc">Unlike paid, webinar audiences register, show up, and engage by choice. Post-event, 20–40% of engaged attendees convert to sales conversations. The intent signal is already built in. <small style="display:block;margin-top:6px;color:var(--ink-3);font-size:.8rem;">Source: Demand Gen Report</small></p>
+          </div>
+          <div class="uc-card reveal reveal-d2">
+            <div class="uc-icon" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="7" height="7" rx="1.5" fill="currentColor" opacity=".7"/><rect x="14" y="3" width="7" height="7" rx="1.5" fill="currentColor" opacity=".5"/><rect x="3" y="14" width="7" height="7" rx="1.5" fill="currentColor" opacity=".5"/><rect x="14" y="14" width="7" height="7" rx="1.5" fill="currentColor" opacity=".7"/></svg>
+            </div>
+            <h3 class="uc-title">Content that compounds</h3>
+            <p class="uc-desc">One 60-minute session produces a replay, a blog post, video clips, a nurture email — 20+ reusable assets. Most teams just scratch the surface. Your content team gets more mileage from one event than a month of writing.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== SIMPLICITY ===== -->
+    <section class="section simplicity" id="getting-started">
+      <div class="container">
+        <div class="section-header reveal" style="max-width:560px; margin-bottom:52px;">
+          <p class="eyebrow">Getting started</p>
+          <h2 class="section-title">Simpler than most teams assume</h2>
+          <p class="section-sub">The most common reason teams don't start is they think it requires a big production setup. It doesn't. Here's what the first four weeks actually look like.</p>
+        </div>
+        <div class="steps reveal">
+          <div class="step">
+            <div class="step-num">W1</div>
+            <p class="step-title">Pick a topic and a speaker</p>
+            <p class="step-desc">One internal expert, one question your buyers are asking. That's your first webinar.</p>
+          </div>
+          <div class="step">
+            <div class="step-num">W2</div>
+            <p class="step-title">Set up registration and invites</p>
+            <p class="step-desc">Livestorm handles the landing page, automated reminder emails, and calendar invites — no dev work.</p>
+          </div>
+          <div class="step">
+            <div class="step-num">W3</div>
+            <p class="step-title">Go live — in any browser</p>
+            <p class="step-desc">No download required for you or your attendees. Polls, Q&amp;A, and chat are built in.</p>
+          </div>
+          <div class="step">
+            <div class="step-num">W4</div>
+            <p class="step-title">Review what worked</p>
+            <p class="step-desc">Attendance rates, engagement scores, and which registrants became sales conversations — all in one dashboard.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== CTA ===== -->
+    <section class="cta-section" id="contact">
+      <div class="container">
+        <div class="cta-inner">
+          <div class="reveal">
+            <p class="eyebrow cta-eyebrow">The conversation I want to have</p>
+            <h2 class="cta-title">30 minutes, <span id="cta-name-grad" style="color:#4ADE80">{{first_name}}</span>. No slide deck.</h2>
+            <p class="cta-body">I'm not here to pitch you a product. I put this page together because I think there's a real opportunity for {{company}} here — and I want to explain my thinking, hear where you are, and tell you honestly whether it makes sense to go further.</p>
+            <div class="am-card">
+              <div class="am-avatar" id="am-avatar" aria-hidden="true"></div>
+              <div>
+                <p class="am-name" id="am-name-el">{{am_name}}</p>
+                <p class="am-role" id="am-role-el">{{am_title}}</p>
+                <a class="am-email-link" href="mailto:{{am_email}}" id="am-email-el">{{am_email}}</a>
+              </div>
+            </div>
+          </div>
+          <div class="cta-box reveal reveal-d1">
+            <div class="cta-btn-wrap">
+              <a class="btn btn-primary btn-xl" id="main-cta" href="mailto:{{am_email}}">Book a call ↗</a>
+            </div>
+            <p class="cta-fine">No commitment · 30 minutes · cancel any time</p>
+            <div class="no-pitch">
+              "If after 30 minutes I don't think webinars are the right move for {{company}} right now, I'll tell you that too."
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <div class="footer-brand">
+        <span class="brand-dots" aria-hidden="true" style="display:flex;gap:3px;"><i style="display:block;width:6px;height:6px;border-radius:50%;background:#5B34D4"></i><i style="display:block;width:6px;height:6px;border-radius:50%;background:#16A34A"></i><i style="display:block;width:6px;height:6px;border-radius:50%;background:#A78BFA"></i></span>
+        <span>Livestorm</span>
+      </div>
+      <p class="footer-legal">Prepared for <strong>{{first_name}} {{last_name}}</strong> at <strong>{{company}}</strong>. © Livestorm SAS · <a href="https://livestorm.co/privacy">Privacy</a></p>
+    </div>
+  </footer>
+
+  <script>window.PAGE_CONFIG = {{PAGE_CONFIG_JSON}};</script>
+  <script src="/templates/prospect-no-webinar/page.js"></script>
+</body>
+</html>
