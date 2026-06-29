@@ -3,6 +3,16 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script>
+    /* Apply saved (or system) theme before paint to avoid a flash. */
+    (function () {
+      try {
+        var t = localStorage.getItem('buyerverse-theme');
+        if (!t) t = (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+        if (t === 'dark') document.documentElement.classList.add('dark');
+      } catch (e) { /* private mode */ }
+    })();
+  </script>
   <title>{{webinar_title}} — Webinar Livestorm × {{prospect}}</title>
   <meta name="description" content="Inscrivez-vous au webinar Livestorm × {{prospect}} : {{webinar_title}}. {{session_date}}, {{session_time}}.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -32,6 +42,7 @@
           <button type="button" class="lang-btn is-active" data-lang="fr">FR</button>
           <button type="button" class="lang-btn" data-lang="en">EN</button>
         </div>
+        <button type="button" class="theme-toggle" id="themeToggle" aria-label="Basculer le thème clair / sombre" aria-pressed="false"><span class="theme-ico" aria-hidden="true">☾</span></button>
         <a class="btn btn-primary btn-sm" href="#register" data-i18n="nav.cta">Réserver ma place</a>
       </div>
     </div>

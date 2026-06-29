@@ -266,6 +266,24 @@
 
   renderCounts(true);
 
+  /* ---------- Theme toggle ---------- */
+  var themeBtn = document.getElementById('themeToggle');
+  function applyThemeIcon() {
+    if (!themeBtn) return;
+    var dark = document.documentElement.classList.contains('dark');
+    var ico = themeBtn.querySelector('.theme-ico');
+    if (ico) ico.textContent = dark ? '\u2600' : '\u263e';
+    themeBtn.setAttribute('aria-pressed', dark ? 'true' : 'false');
+  }
+  if (themeBtn) {
+    themeBtn.addEventListener('click', function () {
+      var dark = document.documentElement.classList.toggle('dark');
+      try { localStorage.setItem('buyerverse-theme', dark ? 'dark' : 'light'); } catch (e) { /* private mode */ }
+      applyThemeIcon();
+    });
+    applyThemeIcon();
+  }
+
   /* ---------- Header state ---------- */
   var header = document.querySelector('.site-header');
   function onScroll() { header.classList.toggle('is-stuck', window.scrollY > 8); }
