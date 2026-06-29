@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{webinar_title}} — Webinar Livestorm × {{prospect}}</title>
+  <meta name="description" content="Inscrivez-vous au webinar Livestorm × {{prospect}} : {{webinar_title}}. {{session_date}}, {{session_time}}.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/templates/webinar/styles.css">
+</head>
+<body>
+
+  <!-- ============ HEADER ============ -->
+  <header class="site-header" id="top">
+    <div class="container header-inner">
+      <a class="brand" href="#top" aria-label="Livestorm × {{prospect}}">
+        <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span class="brand-name">Livestorm</span>
+        <span class="brand-x">×</span>
+        <span class="brand-partner">{{prospect}}</span>
+      </a>
+      <nav class="site-nav" aria-label="Navigation principale">
+        <a href="#agenda" data-i18n="nav.agenda">Au programme</a>
+        <a href="#speakers" data-i18n="nav.speakers">Intervenants</a>
+        <a href="#why" data-i18n="nav.why">Pourquoi y assister</a>
+        <a href="#audience" data-i18n="nav.audience">Pour qui</a>
+      </nav>
+      <div class="header-actions">
+        <div class="lang-toggle" role="group" aria-label="Langue">
+          <button type="button" class="lang-btn is-active" data-lang="fr">FR</button>
+          <button type="button" class="lang-btn" data-lang="en">EN</button>
+        </div>
+        <a class="btn btn-primary btn-sm" href="#register" data-i18n="nav.cta">Réserver ma place</a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+
+    <!-- ============ HERO ============ -->
+    <section class="hero" id="hero">
+      <div class="hero-bg" aria-hidden="true">
+        <div class="hero-glow hero-glow-1"></div>
+        <div class="hero-glow hero-glow-2"></div>
+        <div class="hero-grid-light"></div>
+      </div>
+      <div class="container hero-inner">
+        <div class="hero-copy">
+          <span class="onair reveal" style="--d:.05s"><span class="onair-dot"></span> <span data-i18n="hero.live">Live</span></span>
+          <p class="eyebrow reveal" style="--d:.12s" data-i18n="hero.eyebrow">{{prospect}} × Livestorm · Webinar en direct</p>
+          <h1 class="reveal" style="--d:.2s">{{webinar_title}}</h1>
+          <p class="hero-sub reveal" style="--d:.3s">{{webinar_tagline}}</p>
+          <div class="hero-ctas reveal" style="--d:.4s">
+            <a class="btn btn-primary btn-lg" href="#register" data-i18n="hero.cta1">Réserver ma place</a>
+            <a class="btn btn-ghost btn-lg" href="#agenda" data-i18n="hero.cta2">Voir le programme</a>
+          </div>
+          <ul class="hero-chips reveal" style="--d:.5s">
+            <li><span class="chip-ico" aria-hidden="true">📅</span> {{session_date}}</li>
+            <li><span class="chip-ico" aria-hidden="true">⏱</span> {{session_time}}</li>
+            <li><span class="chip-ico" aria-hidden="true">⌛</span> <span data-i18n="hero.chipDuration"><strong>{{duration_min}}</strong> min</span></li>
+          </ul>
+        </div>
+
+        <aside class="ticket reveal" style="--d:.35s" aria-label="Détails du webinar">
+          <div class="ticket-top">
+            <span class="ticket-tag" data-i18n="ticket.tag">Webinar en direct</span>
+            <span class="ticket-free" data-i18n="ticket.free">Gratuit</span>
+          </div>
+          <p class="ticket-title">{{webinar_title}}</p>
+          <ul class="ticket-meta">
+            <li><span data-i18n="ticket.date">Date</span><strong>{{session_date}}</strong></li>
+            <li><span data-i18n="ticket.time">Heure</span><strong>{{session_time}}</strong></li>
+            <li><span data-i18n="ticket.duration">Durée</span><strong data-i18n="ticket.durationVal">{{duration_min}} min</strong></li>
+            <li><span data-i18n="ticket.lang">Langue</span><strong>{{language}}</strong></li>
+          </ul>
+          <div class="ticket-speakers">
+            <span class="ticket-avatars" aria-hidden="true">
+              <span class="avatar avatar-sm" data-sp1-initials></span>
+              <span class="avatar avatar-sm avatar-2" data-sp2-initials></span>
+            </span>
+            <span class="ticket-speaker-note" data-i18n="ticket.with">Avec {{speaker1_name}} &amp; {{speaker2_name}}</span>
+          </div>
+          <a class="btn btn-primary btn-block" href="#register" data-i18n="ticket.cta">Réserver ma place</a>
+          <p class="ticket-seats" data-i18n="details.seatsNote">Plus que <strong>{{seats}}</strong> places en direct — replay envoyé à tous les inscrits.</p>
+        </aside>
+      </div>
+    </section>
+
+    <!-- ============ DETAIL BAR ============ -->
+    <section class="detailbar">
+      <div class="container">
+        <ul class="detail-items reveal">
+          <li><span class="detail-ico" aria-hidden="true">🌐</span> <span data-i18n="detail.browser">100&nbsp;% dans le navigateur — aucun téléchargement</span></li>
+          <li><span class="detail-ico" aria-hidden="true">💬</span> <span data-i18n="detail.interactive">Chat, sondages &amp; Q&amp;A en direct</span></li>
+          <li><span class="detail-ico" aria-hidden="true">🎬</span> <span data-i18n="detail.replay">Replay disponible pour tous les inscrits</span></li>
+          <li><span class="stars" aria-hidden="true">★★★★<span class="star-half">★</span></span> <span data-i18n="detail.rating"><strong>{{stat_rating}}/5</strong> sur G2</span></li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============ AGENDA ============ -->
+    <section class="section" id="agenda">
+      <div class="container">
+        <div class="section-head reveal">
+          <p class="kicker" data-i18n="agenda.kicker">Au programme</p>
+          <h2 data-i18n="agenda.title">Ce que vous allez <span class="hl">repartir avec</span></h2>
+          <p class="section-lede" data-i18n="agenda.lede">45 minutes concrètes, pensées pour les équipes {{prospect}} — des tactiques applicables dès votre prochain événement.</p>
+        </div>
+
+        <div class="agenda-grid">
+          <ol class="timeline reveal">
+            <li>
+              <span class="tl-time">00:00</span>
+              <div class="tl-body">
+                <h3 data-i18n="agenda.a1t">Cadrer l’objectif business</h3>
+                <p data-i18n="agenda.a1d">Définir le bon format — démo, formation, événement — et la métrique de succès qui compte vraiment.</p>
+              </div>
+            </li>
+            <li>
+              <span class="tl-time">00:08</span>
+              <div class="tl-body">
+                <h3 data-i18n="agenda.a2t">Remplir la salle</h3>
+                <p data-i18n="agenda.a2d">Pages d’inscription qui convertissent, rappels automatiques et promotion multicanale.</p>
+              </div>
+            </li>
+            <li>
+              <span class="tl-time">00:20</span>
+              <div class="tl-body">
+                <h3 data-i18n="agenda.a3t">Animer pour engager</h3>
+                <p data-i18n="agenda.a3d">Chat, sondages, Q&amp;A et CTAs en direct pour transformer l’audience en conversation.</p>
+              </div>
+            </li>
+            <li>
+              <span class="tl-time">00:34</span>
+              <div class="tl-body">
+                <h3 data-i18n="agenda.a4t">Recycler &amp; mesurer</h3>
+                <p data-i18n="agenda.a4d">Replay instantané, contenus générés par l’IA et données par participant envoyées à votre CRM.</p>
+              </div>
+            </li>
+            <li class="tl-qa">
+              <span class="tl-time">00:42</span>
+              <div class="tl-body">
+                <h3 data-i18n="agenda.a5t">Questions / Réponses en direct</h3>
+                <p data-i18n="agenda.a5d">Posez vos questions à nos experts — réponses en direct.</p>
+              </div>
+            </li>
+          </ol>
+
+          <aside class="learn-card card reveal" style="--d:.1s">
+            <p class="kicker" data-i18n="agenda.learnKicker">Vous repartirez avec</p>
+            <ul class="check-list">
+              <li data-i18n="agenda.l1">Un cadre clair pour planifier un webinar à fort impact</li>
+              <li data-i18n="agenda.l2">Des modèles de pages d’inscription qui convertissent</li>
+              <li data-i18n="agenda.l3">Une checklist d’engagement en direct prête à l’emploi</li>
+              <li data-i18n="agenda.l4">Une méthode pour recycler chaque session en contenus</li>
+            </ul>
+          </aside>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ INTERLUDE ============ -->
+    <div class="interlude" aria-hidden="true">
+      <div class="interlude-shapes">
+        <span class="shp shp-square"><i></i><i></i></span>
+        <span class="shp shp-ball"></span>
+        <span class="shp shp-bars"><i></i><i></i><i></i></span>
+        <span class="shp shp-star">✦</span>
+      </div>
+      <div class="container"><p class="interlude-text" data-i18n="speakers.interlude">Vos intervenants</p></div>
+    </div>
+
+    <!-- ============ SPEAKERS ============ -->
+    <section class="section" id="speakers">
+      <div class="container">
+        <div class="section-head reveal">
+          <p class="kicker" data-i18n="speakers.kicker">Les intervenants</p>
+          <h2 data-i18n="speakers.title">Animé par des experts du webinar</h2>
+        </div>
+        <div class="speakers-grid">
+          <article class="speaker-card card reveal">
+            <span class="avatar avatar-lg" aria-hidden="true" data-sp1-initials></span>
+            <div class="speaker-info">
+              <p class="speaker-name">{{speaker1_name}}</p>
+              <p class="speaker-role">{{speaker1_role}}</p>
+            </div>
+          </article>
+          <article class="speaker-card card reveal" style="--d:.1s">
+            <span class="avatar avatar-lg avatar-2" aria-hidden="true" data-sp2-initials></span>
+            <div class="speaker-info">
+              <p class="speaker-name">{{speaker2_name}}</p>
+              <p class="speaker-role">{{speaker2_role}}</p>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ WHY ATTEND ============ -->
+    <section class="section section-blue" id="why">
+      <div class="container">
+        <div class="section-head reveal">
+          <p class="kicker" data-i18n="why.kicker">Pourquoi y assister</p>
+          <h2 data-i18n="why.title">45 minutes qui rentabilisent leur place dans votre agenda</h2>
+        </div>
+        <div class="why-grid">
+          <article class="why-card card reveal" style="--d:.02s">
+            <span class="why-ico" aria-hidden="true">🎯</span>
+            <h3 data-i18n="why.w1t">Tactiques applicables</h3>
+            <p data-i18n="why.w1d">Pas de théorie&nbsp;: des leviers concrets à mettre en place dès votre prochain événement.</p>
+          </article>
+          <article class="why-card card reveal" style="--d:.09s">
+            <span class="why-ico" aria-hidden="true">🔴</span>
+            <h3 data-i18n="why.w2t">Démos en direct</h3>
+            <p data-i18n="why.w2d">Voyez la plateforme en action — inscription, live, engagement et analytics.</p>
+          </article>
+          <article class="why-card card reveal" style="--d:.16s">
+            <span class="why-ico" aria-hidden="true">💬</span>
+            <h3 data-i18n="why.w3t">Vos questions, en direct</h3>
+            <p data-i18n="why.w3d">Un temps de Q&amp;A dédié pour échanger directement avec nos experts.</p>
+          </article>
+          <article class="why-card card reveal" style="--d:.23s">
+            <span class="why-ico" aria-hidden="true">🎬</span>
+            <h3 data-i18n="why.w4t">Replay garanti</h3>
+            <p data-i18n="why.w4d">Empêché&nbsp;? Le replay arrive dans votre boîte mail — inscrivez-vous quand même.</p>
+          </article>
+        </div>
+
+        <ul class="stats-strip reveal">
+          <li><strong data-count="{{stat_companies}}" data-suffix-fr="" data-suffix-en="">{{stat_companies}}</strong> <span data-i18n="why.s1">entreprises clientes</span></li>
+          <li><strong data-count="{{stat_attendees}}">{{stat_attendees}}</strong> <span data-i18n="why.s2">participants en direct par session</span></li>
+          <li><strong data-count="{{stat_rating}}" data-decimals="1">{{stat_rating}}</strong> <span data-i18n="why.s3">note moyenne sur G2</span></li>
+          <li><strong>+70</strong> <span data-i18n="why.s4">pays</span></li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============ AUDIENCE ============ -->
+    <section class="section" id="audience">
+      <div class="container">
+        <div class="audience-grid">
+          <div class="audience-copy reveal">
+            <p class="kicker" data-i18n="aud.kicker">Pour qui</p>
+            <h2 data-i18n="aud.title">Pensé pour les équipes qui font des webinars un canal de croissance</h2>
+            <p class="section-lede" data-i18n="aud.lede">Que vous lanciez votre premier webinar ou que vous cherchiez à passer à l’échelle, cette session est faite pour vous.</p>
+          </div>
+          <ul class="audience-list reveal" style="--d:.1s">
+            <li data-i18n="aud.a1"><span class="aud-ico" aria-hidden="true">📣</span> Équipes <strong>Marketing &amp; Demand Gen</strong></li>
+            <li data-i18n="aud.a2"><span class="aud-ico" aria-hidden="true">🤝</span> Équipes <strong>Sales &amp; Customer Success</strong></li>
+            <li data-i18n="aud.a3"><span class="aud-ico" aria-hidden="true">🎓</span> Équipes <strong>Formation &amp; Enablement</strong></li>
+            <li data-i18n="aud.a4"><span class="aud-ico" aria-hidden="true">📡</span> Responsables <strong>Événementiel &amp; Communication</strong></li>
+          </ul>
+        </div>
+
+        <figure class="quote-card card reveal">
+          <blockquote class="quote" data-i18n="aud.quote">«&nbsp;Avec Livestorm, les participants à nos webinars sont très engagés et bien plus susceptibles de convertir grâce au format interactif. La plateforme est intuitive et complète — même après un an, aucun problème technique.&nbsp;»</blockquote>
+          <figcaption>
+            <span class="avatar avatar-sm" aria-hidden="true">MT</span>
+            <span><strong>Marketing team</strong> · <span data-i18n="aud.quoteRole">Client en entreprise</span></span>
+          </figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <!-- ============ REGISTER (FINAL CTA) ============ -->
+    <section class="section cta-section" id="register">
+      <div class="cta-motif" aria-hidden="true"><i></i><i></i><i></i></div>
+      <div class="container">
+        <div class="section-head section-head-center reveal">
+          <p class="kicker" data-i18n="reg.kicker">Réservez votre place</p>
+          <h2 data-i18n="reg.title">Rejoignez-nous en direct le <span class="hl">{{session_date}}</span></h2>
+          <p class="section-lede" data-i18n="reg.lede">Inscription en quelques secondes. Vous recevrez votre lien d’accès et un rappel avant le début.</p>
+        </div>
+        <div class="reg-card card reveal" style="--d:.1s">
+          <div class="reg-when">
+            <span class="reg-day">{{session_date}}</span>
+            <span class="reg-hour">{{session_time}} · <span data-i18n="reg.durationVal">{{duration_min}} min</span></span>
+            <span class="reg-host">
+              <span class="avatar avatar-sm" aria-hidden="true" data-host-initials></span>
+              <span><span class="reg-host-label" data-i18n="reg.hostLabel">Votre contact</span><br><strong>{{host_name}}</strong></span>
+            </span>
+          </div>
+          <a class="btn btn-primary btn-lg" href="mailto:{{host_email}}?subject=Inscription%20webinar%20Livestorm" data-i18n="reg.btn">Réserver ma place</a>
+          <a class="reg-email" href="mailto:{{host_email}}">{{host_email}}</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ============ FOOTER ============ -->
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <a class="brand brand-light" href="#top" aria-label="Livestorm">
+        <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span class="brand-name">Livestorm</span>
+      </a>
+      <p data-i18n="footer.note">Invitation préparée pour {{prospect}} — webinar en direct le {{session_date}}</p>
+    </div>
+  </footer>
+
+  <script>window.PAGE_CONFIG = {{PAGE_CONFIG_JSON}};</script>
+  <script src="/templates/webinar/page.js"></script>
+</body>
+</html>

@@ -1,0 +1,33 @@
+{
+  "name": "Webinar invitation",
+  "description": "Bilingual FR/EN live-webinar invitation & registration microsite",
+  "nameField": "webinar_title",
+  "touchFields": [
+    { "key": "hero.eyebrow", "label": "Hero eyebrow" },
+    { "key": "hero.cta1", "label": "Primary CTA" },
+    { "key": "details.seatsNote", "label": "Seats note" }
+  ],
+  "fields": [
+    { "id": "webinar_title", "label": "Webinar title", "type": "text", "required": true, "max": 120, "group": "Webinar", "default": "Webinars that actually convert" },
+    { "id": "webinar_tagline", "label": "Tagline", "type": "text", "max": 200, "group": "Webinar", "default": "A 45-minute live session on turning registrations into pipeline — from branded landing page to AI-powered replay." },
+    { "id": "session_date", "label": "Date", "type": "text", "max": 60, "group": "Webinar", "default": "Tuesday, May 6, 2026" },
+    { "id": "session_time", "label": "Time", "type": "text", "max": 40, "group": "Webinar", "default": "11:00 AM CET" },
+    { "id": "duration_min", "label": "Duration (min)", "type": "number", "int": true, "min": 5, "max": 240, "group": "Webinar", "default": 45 },
+    { "id": "seats", "label": "Seats", "type": "number", "int": true, "min": 1, "group": "Webinar", "default": 500 },
+    { "id": "language", "label": "Language", "type": "text", "max": 40, "group": "Webinar", "default": "English" },
+
+    { "id": "prospect", "label": "Prospect / company", "type": "text", "required": true, "max": 80, "group": "Prospect", "default": "Acme" },
+
+    { "id": "speaker1_name", "label": "Speaker 1 — name", "type": "text", "required": true, "max": 80, "group": "Speakers", "default": "Jordan Lee" },
+    { "id": "speaker1_role", "label": "Speaker 1 — role", "type": "text", "max": 100, "group": "Speakers", "default": "Head of Webinars, Livestorm" },
+    { "id": "speaker2_name", "label": "Speaker 2 — name", "type": "text", "max": 80, "group": "Speakers", "default": "Sam Rivera" },
+    { "id": "speaker2_role", "label": "Speaker 2 — role", "type": "text", "max": 100, "group": "Speakers", "default": "Customer Success Lead, Livestorm" },
+
+    { "id": "stat_attendees", "label": "Max live attendees", "type": "number", "int": true, "min": 0, "group": "Proof", "default": 3000 },
+    { "id": "stat_rating", "label": "G2 rating (0–5)", "type": "number", "min": 0, "max": 5, "step": 0.1, "group": "Proof", "default": 4.4 },
+    { "id": "stat_companies", "label": "Customer companies", "type": "number", "int": true, "min": 0, "group": "Proof", "default": 5000 },
+
+    { "id": "host_name", "label": "Name", "type": "text", "required": true, "max": 80, "group": "Host", "default": "Alex Martin" },
+    { "id": "host_email", "label": "Email", "type": "email", "required": true, "group": "Host", "default": "alex.martin@livestorm.co" }
+  ]
+}
