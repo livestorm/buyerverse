@@ -1,0 +1,1805 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="_ds/livestorm-design-system-9eac9f99-0a1e-4e04-8a5e-7f5a24e927da/colors_and_type.css">
+  <script src="_ds/livestorm-design-system-9eac9f99-0a1e-4e04-8a5e-7f5a24e927da/_ds_bundle.js"></script>
+  <script src="image-slot.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    body { margin: 0; }
+    a { text-decoration: none; }
+    .icon::before { content: attr(data-unicode); font-family: var(--font-icon); font-style: normal; display: block; }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .research-panel { animation: fadeUp 0.25s var(--ease-out); }
+  </style>
+</helmet>
+
+<!-- ── RESEARCH PANEL ── -->
+<sc-if value="{{ showResearch }}" hint-placeholder-val="{{ false }}">
+  <div style="position: fixed; inset: 0; background: rgba(18,38,43,0.6); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 24px;" onClick="{{ closeResearch }}">
+    <div class="research-panel" style="background: #fff; border-radius: var(--radius-4xl); padding: 40px; max-width: 580px; width: 100%; box-shadow: var(--shadow-dark-3); max-height: 82vh; overflow-y: auto;" onClick="{{ stopProp }}">
+      <div style="display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 28px;">
+        <div>
+          <div style="font-size: var(--fs-xxs); font-weight: var(--fw-bold); text-transform: uppercase; letter-spacing: 0.09em; color: var(--livestorm-blue-700); margin-bottom: 8px;">AI Research</div>
+          <h3 style="font-size: var(--fs-2xl); font-weight: var(--fw-medium); margin: 0; color: var(--fg-default); letter-spacing: -0.01em;">Research <strong>{{ company }}</strong></h3>
+        </div>
+        <button onClick="{{ closeResearch }}" style="width: 36px; height: 36px; border-radius: var(--radius-full); border: 1px solid var(--border-default); background: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--fg-muted); font-size: 18px; flex-shrink: 0; margin-left: 16px;">×</button>
+      </div>
+
+      <sc-if value="{{ researchDone }}" hint-placeholder-val="{{ false }}">
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+
+          <!-- Template badge — prominent -->
+          <div style="background: var(--livestorm-blue-700); border-radius: var(--radius-2xl); padding: 18px 20px; display: flex; align-items: flex-start; gap: 14px;">
+            <div style="flex: 1;">
+              <div style="font-size: var(--fs-xxs); font-weight: var(--fw-bold); text-transform: uppercase; letter-spacing: 0.09em; color: rgba(255,255,255,0.45); margin-bottom: 4px;">Template selected</div>
+              <div style="font-size: var(--fs-lg); font-weight: var(--fw-medium); color: #fff; text-transform: capitalize; margin-bottom: 8px;">{{ researchScenarioLabel }}</div>
+              <div style="font-size: var(--fs-xs); color: rgba(255,255,255,0.65); line-height: 1.6;">{{ researchMaturityReason }}</div>
+            </div>
+          </div>
+
+          <!-- Central narrative / business tension -->
+          <div style="background: var(--winter-green-900); border-radius: var(--radius-default); padding: 16px 18px;">
+            <div style="font-size: var(--fs-xxs); font-weight: var(--fw-bold); text-transform: uppercase; letter-spacing: 0.09em; color: rgba(255,255,255,0.35); margin-bottom: 6px;">Central narrative</div>
+            <div style="font-size: var(--fs-sm); color: rgba(255,255,255,0.9); line-height: 1.65; font-style: italic;">{{ businessTension }}</div>
+          </div>
+
+          <!-- 2-col summary row -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+            <div style="background: var(--grey-blue-100); border-radius: var(--radius-default); padding: 14px 16px;">
+              <div style="font-size: var(--fs-xxs); font-weight: var(--fw-bold); text-transform: uppercase; letter-spacing: 0.09em; color: var(--fg-subtle); margin-bottom: 5px;">Industry</div>
+              <div style="font-size: var(--fs-sm); font-weight: var(--fw-medium); color: var(--fg-default); line-height: 1.4;">{{ researchIndustry }}</div>
+            </div>
+            <div style="background: var(--grey-blue-100); border-radius: var(--radius-default); padding: 14px 16px;">
+              <div style="font-size: var(--fs-xxs); font-weight: var(--fw-bold); text-transform: uppercase; letter-spacing: 0.09em; color: var(--fg-subtle); margin-bottom: 5px;">Use case</div>
+              <div style="font-size: var(--fs-sm); font-weight: var(--fw-medium); color: var(--fg-default); line-height: 1.4;">{{ researchUseCase }}</div>
+            </div>
+          </div>
+
+          <!-- Maturity scale -->
+          <div style="background: var(--grey-blue-100); border-radius: var(--radius-default); padding: 14px 16px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+              <div style="font-size: var(--fs-xxs); font-weight: var(--fw-bold); text-transform: uppercase; letter-spacing: 0.09em; color: var(--fg-subtle);">Webinar maturity</div>
+              <div style="font-size: var(--fs-xxs); font-weight: var(--fw-bold); color: var(--livestorm-blue-700);">{{ maturityLevelLabel }}</div>
+            </div>
+            <div style="display: flex; gap: 4px; margin-bottom: 10px;">
+              <sc-for list="{{ maturityDots }}" as="dot" hint-placeholder-count="5">
+                <div style="flex: 1; height: 5px; border-radius: 3px; background: {{ dot.color }};"></div>
+              </sc-for>
+            </div>
+            <sc-if value="{{ hasMaturityDetail }}" hint-placeholder-val="{{ false }}">
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding-top: 4px;">
+                <div>
+                  <div style="font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--spring-green-600); margin-bottom: 5px;">Strengths</div>
+                  <sc-for list="{{ maturityStrengths }}" as="s" hint-placeholder-count="2">
+                    <div style="font-size: 11px; color: var(--fg-muted); line-height: 1.55; margin-bottom: 3px;">· {{ s }}</div>
+                  </sc-for>
+                </div>
+                <div>
+                  <div style="font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--sirocco-600); margin-bottom: 5px;">Gaps</div>
+                  <sc-for list="{{ maturityGaps }}" as="g" hint-placeholder-count="2">
+                    <div style="font-size: 11px; color: var(--fg-muted); line-height: 1.55; margin-bottom: 3px;">· {{ g }}</div>
+                  </sc-for>
+                </div>
+              </div>
+            </sc-if>
+          </div>
+
+          <!-- ── PAGE ANGLES PREVIEW ── -->
+          <div style="border: 1px solid var(--grey-blue-200); border-radius: var(--radius-2xl); overflow: hidden;">
+            <div style="background: var(--grey-blue-100); padding: 10px 16px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--grey-blue-200);">
+              <span style="font-size: var(--fs-xxs); font-weight: var(--fw-bold); text-transform: uppercase; letter-spacing: 0.09em; color: var(--fg-subtle);">Page angles — validate before applying</span>
+            </div>
+            <div style="padding: 16px; display: flex; flex-direction: column; gap: 12px;">
+
+              <!-- Hero -->
+              <div>
+                <div style="font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--livestorm-blue-600); margin-bottom: 5px;">Hero headline</div>
+                <div style="font-size: var(--fs-sm); font-weight: var(--fw-medium); color: var(--winter-green-900); line-height: 1.4;">{{ researchPageHeroHeadline }}</div>
+              </div>
+              <div>
+                <div style="font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--fg-subtle); margin-bottom: 5px;">Hero sub</div>
+                <div style="font-size: var(--fs-xs); color: var(--fg-muted); line-height: 1.6;">{{ researchPageHeroSub }}</div>
+              </div>
+
+              <div style="height: 1px; background: var(--grey-blue-200);"></div>
+
+              <!-- Diagnosis -->
+              <div>
+                <div style="font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--livestorm-blue-600); margin-bottom: 5px;">Diagnosis headline</div>
+                <div style="font-size: var(--fs-sm); font-weight: var(--fw-medium); color: var(--winter-green-900);">{{ researchPageDiagH1 }} <span style="color: var(--livestorm-blue-700);">{{ researchPageDiagH2 }}</span></div>
+              </div>
+              <div>
+                <div style="font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--fg-subtle); margin-bottom: 5px;">Diagnosis body</div>
+                <div style="font-size: var(--fs-xs); color: var(--fg-muted); line-height: 1.6;">{{ researchPageDiagBody }}</div>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 6px;">
+                <div style="font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--fg-subtle); margin-bottom: 2px;">3 diagnosis points</div>
+                <sc-for list="{{ researchPageDiagPoints }}" as="pt" hint-placeholder-count="3">
+                  <div style="display: flex; flex-direction: column; gap: 2px;">
+                    <span style="font-size: var(--fs-xs); font-weight: var(--fw-medium); color: var(--fg-default); line-height: 1.5;">{{ pt.title }}</span>
+                    <span style="font-size: 11px; color: var(--fg-muted); line-height: 1.55;">{{ pt.body }}</span>
+                  </div>
+                </sc-for>
+              </div>
+
+              <div style="height: 1px; background: var(--grey-blue-200);"></div>
+
+              <!-- Why -->
+              <div>
+                <div style="font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--livestorm-blue-600); margin-bottom: 5px;">Closing argument</div>
+                <div style="font-size: var(--fs-sm); font-weight: var(--fw-medium); color: var(--winter-green-900); margin-bottom: 4px;">{{ researchPageWhyHeadline }}</div>
+                <div style="font-size: var(--fs-xs); color: var(--fg-muted); line-height: 1.6;">{{ researchPageWhySub }}</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recent news -->
+          <sc-if value="{{ hasResearchNews }}" hint-placeholder-val="{{ false }}">
+            <div style="background: var(--livestorm-blue-100); border: 1px solid var(--livestorm-blue-200); border-radius: var(--radius-default); padding: 14px 16px; display: flex; gap: 10px; align-items: flex-start;">
+              <i class="icon" data-unicode="&#xE958;" style="font-size: 14px; color: var(--livestorm-blue-600); flex-shrink: 0; margin-top: 1px;"></i>
+              <div>
+                <div style="font-size: var(--fs-xxs); font-weight: var(--fw-bold); text-transform: uppercase; letter-spacing: 0.09em; color: var(--livestorm-blue-600); margin-bottom: 4px;">Latest signal</div>
+                <div style="font-size: var(--fs-sm); color: var(--fg-default); line-height: 1.6;">{{ researchNews }}</div>
+              </div>
+            </div>
+          </sc-if>
+
+
+
+          <!-- Talking points -->
+          <div style="background: var(--winter-green-900); border-radius: var(--radius-default); padding: 20px 22px;">
+            <div style="font-size: var(--fs-xxs); font-weight: var(--fw-bold); text-transform: uppercase; letter-spacing: 0.09em; color: rgba(255,255,255,0.3); margin-bottom: 14px;">Talking points for {{ prospectName }}</div>
+            <div style="font-size: var(--fs-sm); color: rgba(255,255,255,0.82); line-height: 1.8; white-space: pre-line;">{{ researchPoints }}</div>
+          </div>
+
+          <!-- Sources toggle -->
+          <div style="border-top: 1px solid var(--grey-blue-200); padding-top: 10px;">
+            <button onClick="{{ toggleSources }}" style="background: none; border: none; cursor: pointer; font-family: inherit; font-size: var(--fs-xs); color: var(--fg-muted); display: flex; align-items: center; gap: 6px; padding: 0;">
+              <i class="icon" data-unicode="{{ sourcesChevron }}" style="font-size: 11px; color: var(--fg-subtle);"></i>
+              {{ sourcesToggleLabel }}
+            </button>
+            <sc-if value="{{ showSources }}" hint-placeholder-val="{{ false }}">
+              <div style="margin-top: 10px; display: flex; flex-direction: column; gap: 8px; max-height: 300px; overflow-y: auto;">
+                <sc-for list="{{ researchSources }}" as="src" hint-placeholder-count="3">
+                  <div style="background: var(--grey-blue-100); border-radius: var(--radius-default); padding: 10px 12px;">
+                    <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 5px;">
+                      <i class="icon" data-unicode="{{ src.typeIcon }}" style="font-size: 11px; color: var(--fg-subtle); flex-shrink: 0;"></i>
+                      <span style="font-size: 11px; font-weight: 600; color: var(--fg-muted); word-break: break-all;">{{ src.label }}</span>
+                    </div>
+                    <div style="font-size: 11px; color: var(--fg-subtle); line-height: 1.55; white-space: pre-wrap; word-break: break-word;">{{ src.snippet }}</div>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-if>
+          </div>
+
+          <button onClick="{{ applyResearch }}" style="background: var(--livestorm-blue-700); border: none; border-radius: var(--radius-default); padding: 14px 24px; font-size: var(--fs-sm); font-weight: var(--fw-medium); color: #fff; cursor: pointer; font-family: inherit; width: 100%;">Apply to page — {{ researchScenario }} · {{ researchIndustry }}</button>
+
+          <!-- Re-run panel — always visible after research -->
+          <div style="background: var(--grey-blue-100); border: 1px solid var(--border-default); border-radius: var(--radius-2xl); padding: 16px 18px; display: flex; flex-direction: column; gap: 10px;">
+            <div style="font-size: var(--fs-xxs); font-weight: var(--fw-bold); text-transform: uppercase; letter-spacing: 0.09em; color: var(--fg-subtle);">Add context or correct the angle</div>
+            <textarea onInput="{{ setRerunNotes }}" placeholder="e.g. They run webinars at /resources/webinars — confirmed. Focus on repurposing gap. Ignore no-webinar angle." style="width: 100%; min-height: 72px; padding: 10px 12px; font-size: var(--fs-sm); font-family: inherit; color: var(--fg-default); background: #fff; border: 1px solid var(--border-default); border-radius: var(--radius-default); resize: vertical; outline: none; line-height: 1.6; box-sizing: border-box;"></textarea>
+            <button onClick="{{ doResearch }}" style="background: var(--livestorm-blue-700); border: none; border-radius: var(--radius-default); padding: 11px 18px; font-size: var(--fs-sm); font-weight: var(--fw-medium); color: #fff; cursor: pointer; font-family: inherit; width: 100%;">↺ Re-run analysis</button>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ researchLoading }}" hint-placeholder-val="{{ false }}">
+        <div style="padding: 32px 0 8px;">
+          <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px;">
+            <div style="width: 22px; height: 22px; border: 2px solid var(--grey-blue-200); border-top-color: var(--livestorm-blue-700); border-radius: 50%; animation: spin 0.7s linear infinite; flex-shrink: 0;"></div>
+            <div style="font-size: var(--fs-sm); font-weight: var(--fw-medium); color: var(--fg-default);">Researching {{ company }} on the web…</div>
+          </div>
+          <div style="background: var(--grey-blue-100); border-radius: var(--radius-default); padding: 14px 16px; display: flex; flex-direction: column; gap: 5px; min-height: 72px; max-height: 180px; overflow-y: auto;">
+            <sc-for list="{{ researchLog }}" as="entry" hint-placeholder-count="2">
+              <div style="font-size: 12px; color: var(--fg-muted); line-height: 1.5; font-family: monospace;">{{ entry }}</div>
+            </sc-for>
+          </div>
+          <div style="font-size: var(--fs-xs); color: var(--fg-subtle); margin-top: 10px; text-align: center;">~30–60 s — HackerNews + direct page fetches + Claude analysis</div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ researchIdle }}" hint-placeholder-val="{{ true }}">
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+          <div style="background: var(--grey-blue-100); border-radius: var(--radius-default); padding: 16px 20px; display: flex; gap: 10px; align-items: flex-start;">
+            <i class="icon" data-unicode="&#xE923;" style="font-size: 14px; color: var(--fg-subtle); flex-shrink: 0; margin-top: 1px;"></i>
+            <div style="font-size: var(--fs-sm); color: var(--fg-muted); line-height: 1.65;">Analysis is based on Claude's knowledge of <strong style="color: var(--fg-default);">{{ company }}</strong> — strategy, positioning, psychology. If anything is off, correct it before applying.</div>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 6px;">
+            <label style="font-size: var(--fs-xxs); font-weight: var(--fw-bold); text-transform: uppercase; letter-spacing: 0.09em; color: var(--fg-subtle);">Your notes (optional)</label>
+            <textarea onInput="{{ setAeContext }}" placeholder="e.g. They run webinars via Contrast at /resources/webinars — no repurposing visible. Paul is obsessed with pipeline attribution." style="width: 100%; min-height: 80px; padding: 12px 14px; font-size: var(--fs-sm); font-family: inherit; color: var(--fg-default); background: var(--grey-blue-100); border: 1px solid var(--border-default); border-radius: var(--radius-default); resize: vertical; outline: none; line-height: 1.6; box-sizing: border-box;"></textarea>
+          </div>
+          <a href="{{ prospectWebsite }}" target="_blank" style="font-size: var(--fs-sm); color: var(--livestorm-blue-700);">Open {{ prospectWebsite }} ↗</a>
+          <sc-if value="{{ hasResearchError }}" hint-placeholder-val="{{ false }}">
+            <div style="background: var(--live-red-100,#fff0f0); border: 1px solid var(--live-red-300,#ffaaaa); border-radius: var(--radius-default); padding: 12px 14px; font-size: var(--fs-xs); color: var(--live-red-700,#c0392b); line-height: 1.6;">⚠ {{ researchError }}</div>
+          </sc-if>
+          <button onClick="{{ doResearch }}" style="background: var(--livestorm-blue-700); border: none; border-radius: var(--radius-default); padding: 14px 24px; font-size: var(--fs-sm); font-weight: var(--fw-medium); color: #fff; cursor: pointer; font-family: inherit;">Analyse {{ company }}</button>
+        </div>
+      </sc-if>
+    </div>
+  </div>
+</sc-if>
+
+<!-- ── AE RESEARCH LAUNCHER (not visible to prospect) ── -->
+<sc-if value="{{ showResearchBtn }}" hint-placeholder-val="{{ false }}">
+  <div style="position: fixed; bottom: 28px; right: 28px; z-index: 200; display: flex; flex-direction: column; align-items: flex-end; gap: 8px;">
+    <sc-if value="{{ applied }}" hint-placeholder-val="{{ false }}">
+      <div style="display: flex; align-items: center; gap: 6px; background: var(--winter-green-900); border-radius: var(--radius-full); padding: 6px 14px 6px 10px; box-shadow: var(--shadow-dark-3);">
+        <span style="width: 7px; height: 7px; border-radius: 50%; background: {{ appliedDotColor }}; flex-shrink: 0;"></span>
+        <span style="font-size: var(--fs-xs); font-weight: var(--fw-medium); color: rgba(255,255,255,0.75); white-space: nowrap;">{{ appliedScenario }} · {{ appliedIndustry }} · {{ appliedPersonalisationLabel }}</span>
+        <button onClick="{{ openResearch }}" style="background: none; border: none; cursor: pointer; color: rgba(255,255,255,0.5); font-size: 11px; font-weight: 600; padding: 0 0 0 6px; line-height: 1; font-family: inherit; letter-spacing: 0.04em;">EDIT</button>
+        <button onClick="{{ clearApplied }}" style="background: none; border: none; cursor: pointer; color: rgba(255,255,255,0.4); font-size: 15px; padding: 0 0 0 2px; line-height: 1; font-family: inherit;" style-hover="color: rgba(255,255,255,0.9);">×</button>
+      </div>
+    </sc-if>
+    <button onClick="{{ openResearch }}" style="background: var(--winter-green-900); color: #fff; border: none; border-radius: var(--radius-full); padding: 12px 20px; font-size: var(--fs-sm); font-weight: var(--fw-medium); cursor: pointer; font-family: inherit; box-shadow: var(--shadow-dark-3); display: flex; align-items: center; gap: 8px; white-space: nowrap;">
+      <span style="font-size: 13px;">✦</span> AE Research
+    </button>
+  </div>
+</sc-if>
+
+<!-- ── NAV ── -->
+<nav style="position: sticky; top: 0; z-index: 100; background: rgba(255,255,255,0.95); backdrop-filter: blur(12px); border-bottom: 1px solid var(--grey-blue-200);">
+  <div style="max-width: 1328px; margin: 0 auto; padding: 0 40px; height: 68px; display: flex; align-items: center; justify-content: space-between; gap: 24px;">
+
+    <img src="_ds/livestorm-design-system-9eac9f99-0a1e-4e04-8a5e-7f5a24e927da/assets/logo-black.svg" alt="Livestorm" style="height: 24px; flex-shrink: 0;">
+
+    <div style="flex: 1;"></div>
+
+    <div style="display: flex; align-items: center; gap: 12px; flex-shrink: 0;">
+      <a href="{{ ctaHref }}" style="background: var(--livestorm-blue-700); color: #fff; font-size: var(--fs-sm); font-weight: var(--fw-medium); padding: 10px 20px; border-radius: var(--radius-default); white-space: nowrap; display: inline-block; transition: background var(--dur-base) var(--ease-out);" style-hover="background: var(--livestorm-blue-800);">Book a call</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ── HERO ── -->
+<section style="background: var(--livestorm-blue-100); padding: 80px 40px 72px;">
+  <div style="max-width: 1100px; margin: 0 auto; display: flex; align-items: center; gap: 72px;">
+    <!-- Left: copy -->
+    <div style="flex: 1; min-width: 0;">
+      <div style="display: inline-flex; align-items: center; background: rgba(11,66,195,0.08); border: 1px solid rgba(11,66,195,0.15); border-radius: var(--radius-full); padding: 5px 16px; margin-bottom: 32px; white-space: nowrap;">
+        <span style="font-size: var(--fs-xxs); font-weight: var(--fw-bold); color: var(--livestorm-blue-700); text-transform: uppercase; letter-spacing: 0.09em;">{{ heroLabel }}</span>
+      </div>
+      <sc-if value="{{ hasProspectName }}" hint-placeholder-val="{{ false }}">
+        <p style="font-size: var(--fs-xl); color: var(--fg-muted); margin: 0 0 12px; font-weight: var(--fw-regular);">Hi {{ prospectName }},</p>
+      </sc-if>
+      <h1 style="font-size: 48px; line-height: 1.08; font-weight: var(--fw-regular); color: var(--winter-green-900); margin: 0 0 20px; text-wrap: balance; letter-spacing: -0.025em;">{{ heroHeadline }}</h1>
+      <p style="font-size: var(--fs-lg); line-height: 1.65; color: var(--fg-muted); max-width: 480px; margin: 0 0 40px;">{{ heroSub }}</p>
+      <div style="display: flex; gap: 12px; flex-wrap: nowrap; margin-top: 40px;">
+        <a href="{{ ctaHref }}" style="background: var(--livestorm-blue-700); color: #fff; font-size: var(--fs-base); font-weight: var(--fw-medium); padding: 14px 32px; border-radius: var(--radius-default); display: inline-block; white-space: nowrap;">{{ heroCta }}</a>
+        <a href="#why" style="background: rgba(11,66,195,0.08); border: 1px solid rgba(11,66,195,0.15); color: var(--livestorm-blue-700); font-size: var(--fs-base); font-weight: var(--fw-medium); padding: 14px 28px; border-radius: var(--radius-default); display: inline-block; white-space: nowrap;">See the detail</a>
+      </div>
+    </div>
+    <!-- Right: visual card -->
+    <div style="flex-shrink: 0; width: 360px;">
+      <div style="background: #fff; border: 1px solid var(--grey-blue-200); border-radius: var(--radius-4xl); padding: 24px; box-shadow: var(--shadow-blue-4);">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <div style="width: 8px; height: 8px; border-radius: 50%; background: #E84040;"></div>
+            <span style="font-size: 11px; font-weight: 700; color: var(--fg-muted); text-transform: uppercase; letter-spacing: 0.08em;">Live · Now</span>
+          </div>
+          <span style="font-size: 11px; color: var(--fg-subtle);">248 registered</span>
+        </div>
+        <div style="font-size: var(--fs-base); font-weight: var(--fw-medium); color: var(--winter-green-900); margin-bottom: 20px; line-height: 1.4;">How B2B teams build pipeline with webinars</div>
+        <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px;">
+          <div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+              <span style="font-size: 11px; color: var(--fg-subtle);">Attendance rate</span>
+              <span style="font-size: 11px; font-weight: 500; color: var(--fg-muted);">47.7%</span>
+            </div>
+            <div style="height: 3px; background: var(--grey-blue-200); border-radius: 2px;"><div style="width: 48%; height: 100%; background: var(--spring-green-500); border-radius: 2px;"></div></div>
+          </div>
+          <div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+              <span style="font-size: 11px; color: var(--fg-subtle);">Avg. watch time</span>
+              <span style="font-size: 11px; font-weight: 500; color: var(--fg-muted);">38 min</span>
+            </div>
+            <div style="height: 3px; background: var(--grey-blue-200); border-radius: 2px;"><div style="width: 63%; height: 100%; background: var(--livestorm-blue-400); border-radius: 2px;"></div></div>
+          </div>
+        </div>
+        <div style="background: var(--grey-blue-100); border-radius: var(--radius-default); padding: 14px 16px;">
+          <div style="font-size: 11px; font-weight: 700; color: var(--fg-subtle); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 10px;">Live poll</div>
+          <div style="font-size: var(--fs-sm); color: var(--fg-default); margin-bottom: 12px;">What's your #1 webinar challenge?</div>
+          <div style="display: flex; flex-direction: column; gap: 7px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <div style="flex: 1; height: 24px; background: var(--livestorm-blue-100); border-radius: 4px; overflow: hidden; position: relative;">
+                <div style="position: absolute; left: 0; top: 0; height: 100%; width: 54%; background: var(--livestorm-blue-200); border-radius: 4px;"></div>
+                <span style="position: absolute; left: 8px; top: 50%; transform: translateY(-50%); font-size: 11px; color: var(--livestorm-blue-700);">Low attendance</span>
+              </div>
+              <span style="font-size: 11px; font-weight: 700; color: var(--fg-muted); flex-shrink: 0; width: 28px; text-align: right;">54%</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <div style="flex: 1; height: 24px; background: var(--grey-blue-100); border-radius: 4px; overflow: hidden; position: relative;">
+                <div style="position: absolute; left: 0; top: 0; height: 100%; width: 46%; background: var(--grey-blue-200); border-radius: 4px;"></div>
+                <span style="position: absolute; left: 8px; top: 50%; transform: translateY(-50%); font-size: 11px; color: var(--fg-muted);">No repurposing</span>
+              </div>
+              <span style="font-size: 11px; font-weight: 700; color: var(--fg-muted); flex-shrink: 0; width: 28px; text-align: right;">46%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+</section>
+
+<!-- ── RESEARCH INSIGHTS (shown only when research applied) ── -->
+<!-- ── STATS BAND ── -->
+<section style="background: #fff; padding: 64px 40px; border-top: 1px solid var(--grey-blue-200);">
+  <div style="max-width: 1100px; margin: 0 auto;">
+    <div style="font-size: var(--fs-xxs); font-weight: var(--fw-bold); text-transform: uppercase; letter-spacing: 0.09em; color: var(--fg-subtle); text-align: center; margin-bottom: 48px;">The Pipeline Truth · 853 go-to-market leaders surveyed · 33,786 sessions analysed · Livestorm 2026 Benchmark</div>
+    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; text-align: center;">
+      <div style="padding: 0 32px; border-right: 1px solid var(--grey-blue-200);">
+        <div style="font-size: 56px; font-weight: var(--fw-bold); color: var(--livestorm-blue-700); letter-spacing: -0.03em; line-height: 1;">17×</div>
+        <div style="font-size: var(--fs-sm); color: var(--fg-muted); margin-top: 10px; line-height: 1.5;">more reach with<br>content engine</div>
+      </div>
+      <div style="padding: 0 32px; border-right: 1px solid var(--grey-blue-200);">
+        <div style="font-size: 56px; font-weight: var(--fw-bold); color: var(--livestorm-blue-700); letter-spacing: -0.03em; line-height: 1;">47.7%</div>
+        <div style="font-size: var(--fs-sm); color: var(--fg-muted); margin-top: 10px; line-height: 1.5;">avg show-up rate<br>across 33,786 sessions</div>
+      </div>
+      <div style="padding: 0 32px; border-right: 1px solid var(--grey-blue-200);">
+        <div style="font-size: 56px; font-weight: var(--fw-bold); color: var(--livestorm-blue-700); letter-spacing: -0.03em; line-height: 1;">92%</div>
+        <div style="font-size: var(--fs-sm); color: var(--fg-muted); margin-top: 10px; line-height: 1.5;">can't prove webinar<br>ROI to their CFO</div>
+      </div>
+      <div style="padding: 0 32px;">
+        <div style="font-size: 56px; font-weight: var(--fw-bold); color: var(--livestorm-blue-700); letter-spacing: -0.03em; line-height: 1;">6h</div>
+        <div style="font-size: var(--fs-sm); color: var(--fg-muted); margin-top: 10px; line-height: 1.5;">saved per session<br>with AI repurposing</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── SOCIAL PROOF ── -->
+<section style="background: var(--grey-blue-100); padding: 64px 40px; border-top: 1px solid var(--grey-blue-200);">
+  <div style="max-width: 1100px; margin: 0 auto;">
+    <div style="font-size: var(--fs-xxs); font-weight: var(--fw-bold); text-transform: uppercase; letter-spacing: 0.09em; color: var(--fg-subtle); text-align: center; margin-bottom: 36px;">What customers say</div>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: stretch;">
+      <div style="background: #fff; border-radius: var(--radius-2xl); padding: 28px 24px; box-shadow: var(--shadow-blue-2); display: flex; flex-direction: column; justify-content: space-between;">
+        <p style="font-size: var(--fs-sm); color: var(--fg-default); line-height: 1.7; margin: 0 0 20px; font-style: italic;">&ldquo;{{ quote1Text }}&rdquo;</p>
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <div style="width: 32px; height: 32px; border-radius: 50%; background: var(--livestorm-blue-700); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: var(--fw-bold); color: #fff; flex-shrink: 0;">{{ quote1Init }}</div>
+          <div>
+            <div style="font-size: var(--fs-sm); font-weight: var(--fw-medium); color: var(--fg-default);">{{ quote1Name }}</div>
+            <div style="font-size: var(--fs-xs); color: var(--fg-muted);">{{ quote1Role }}</div>
+          </div>
+        </div>
+      </div>
+      <div style="background: var(--livestorm-blue-800); border-radius: var(--radius-2xl); padding: 28px 24px; display: flex; flex-direction: column; justify-content: space-between;">
+        <p style="font-size: var(--fs-sm); color: rgba(255,255,255,0.7); line-height: 1.7; margin: 0 0 20px; font-style: italic;">&ldquo;{{ quote2Text }}&rdquo;</p>
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <div style="width: 32px; height: 32px; border-radius: 50%; background: var(--livestorm-blue-700); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: var(--fw-bold); color: #fff; flex-shrink: 0;">{{ quote2Init }}</div>
+          <div>
+            <div style="font-size: var(--fs-sm); font-weight: var(--fw-medium); color: #fff;">{{ quote2Name }}</div>
+            <div style="font-size: var(--fs-xs); color: rgba(255,255,255,0.4);">{{ quote2Role }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+
+<!-- ── GAP / DIAGNOSIS ── -->
+<section style="background: #fff; padding: 88px 40px; border-top: 1px solid var(--grey-blue-200);">
+  <div style="max-width: 1100px; margin: 0 auto;">
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center;">
+      <div>
+        <div style="font-size: var(--fs-xxs); font-weight: var(--fw-bold); text-transform: uppercase; letter-spacing: 0.09em; color: var(--livestorm-blue-600); margin-bottom: 20px;">{{ diagEyebrow }}</div>
+        <h2 style="font-size: var(--fs-5xl); line-height: 1.08; font-weight: var(--fw-regular); letter-spacing: -0.02em; margin: 0 0 24px; text-wrap: balance;">{{ diagH1 }} <strong style="color: var(--livestorm-blue-700);">{{ diagH2 }}</strong></h2>
+        <p style="font-size: var(--fs-origin); color: var(--fg-muted); line-height: 1.75; margin: 0;">{{ diagBody }}</p>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 20px;">
+        <sc-for list="{{ diagPoints }}" as="dp" hint-placeholder-count="3">
+          <div style="display: flex; gap: 16px; align-items: flex-start;">
+            <div style="width: 36px; height: 36px; border-radius: var(--radius-default); background: var(--livestorm-blue-100); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+              <i class="icon" data-unicode="{{ dp.icon }}" style="font-size: 16px; color: var(--livestorm-blue-700);"></i>
+            </div>
+            <div>
+              <div style="font-size: var(--fs-sm); font-weight: var(--fw-medium); color: var(--fg-default); margin-bottom: 4px; line-height: 1.4;">{{ dp.title }}</div>
+              <div style="font-size: var(--fs-xs); color: var(--fg-muted); line-height: 1.65;">{{ dp.body }}</div>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── COMPARISON ── -->
+<section style="background: #fff; padding: 88px 40px; border-top: 1px solid var(--grey-blue-200);">
+  <div style="max-width: 1100px; margin: 0 auto;">
+
+    <div style="text-align: center; margin-bottom: 56px;">
+      <div style="font-size: var(--fs-xxs); font-weight: var(--fw-bold); text-transform: uppercase; letter-spacing: 0.09em; color: var(--fg-subtle); margin-bottom: 16px;">{{ compEyebrow }}</div>
+      <h2 style="font-size: var(--fs-5xl); line-height: var(--lh-16); font-weight: var(--fw-regular); text-wrap: balance; max-width: 640px; margin: 0 auto 16px; letter-spacing: -0.015em;">{{ compH1 }} <strong>{{ compH2 }}</strong></h2>
+      <p style="font-size: var(--fs-origin); color: var(--fg-muted); max-width: 500px; margin: 0 auto; line-height: 1.7;">{{ compSub }}</p>
+
+      <sc-if value="{{ showRepurposingStats }}" hint-placeholder-val="{{ false }}">
+        <div style="display: flex; gap: 32px; justify-content: center; margin: 32px 0 -8px;">
+          <div style="text-align: center;">
+            <div style="font-size: 36px; font-weight: var(--fw-bold); color: var(--fg-default); letter-spacing: -0.02em;">368%</div>
+            <div style="font-size: var(--fs-xs); color: var(--fg-muted); margin-top: 4px;">more on-demand views, public vs gated replay</div>
+          </div>
+          <div style="width: 1px; background: var(--grey-blue-200);"></div>
+          <div style="text-align: center;">
+            <div style="font-size: 36px; font-weight: var(--fw-bold); color: var(--fg-default); letter-spacing: -0.02em;">62%</div>
+            <div style="font-size: var(--fs-xs); color: var(--fg-muted); margin-top: 4px;">of teams gate replays — limiting their own reach</div>
+          </div>
+          <div style="width: 1px; background: var(--grey-blue-200);"></div>
+          <div style="text-align: center;">
+            <div style="font-size: 36px; font-weight: var(--fw-bold); color: var(--fg-default); letter-spacing: -0.02em;">49.6%</div>
+            <div style="font-size: var(--fs-xs); color: var(--fg-muted); margin-top: 4px;">of registrations happen in the final 7 days</div>
+          </div>
+        </div>
+      </sc-if>
+    </div>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; border-radius: var(--radius-4xl); overflow: hidden; box-shadow: var(--shadow-light-4); max-width: 960px; margin: 0 auto; border: 1px solid var(--grey-blue-200);">
+      <div style="background: var(--grey-blue-100); padding: 40px 44px;">
+        <div style="font-size: var(--fs-xxs); font-weight: var(--fw-bold); text-transform: uppercase; letter-spacing: 0.09em; color: var(--fg-subtle); margin-bottom: 28px;">{{ compLeftHeader }}</div>
+        <div style="display: flex; flex-direction: column; gap: 20px;">
+          <sc-for list="{{ compLeftPoints }}" as="point" hint-placeholder-count="4">
+            <div style="display: flex; gap: 12px; align-items: flex-start;">
+              <i class="icon" data-unicode="&#xE930;" style="font-size: 14px; color: var(--grey-blue-400); flex-shrink: 0; margin-top: 3px; font-weight: 600;"></i>
+              <span style="font-size: var(--fs-sm); color: var(--fg-muted); line-height: 1.65;">{{ point }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      <div style="background: var(--livestorm-blue-700); padding: 40px 44px;">
+        <div style="font-size: var(--fs-xxs); font-weight: var(--fw-bold); text-transform: uppercase; letter-spacing: 0.09em; color: rgba(255,255,255,0.3); margin-bottom: 28px;">{{ compRightHeader }}</div>
+        <div style="display: flex; flex-direction: column; gap: 20px;">
+          <sc-for list="{{ compRightPoints }}" as="point" hint-placeholder-count="4">
+            <div style="display: flex; gap: 12px; align-items: flex-start;">
+              <i class="icon" data-unicode="&#xE907;" style="font-size: 14px; color: var(--spring-green-400); flex-shrink: 0; margin-top: 3px; font-weight: 600;"></i>
+              <span style="font-size: var(--fs-sm); color: rgba(255,255,255,0.85); line-height: 1.65; font-weight: var(--fw-medium);">{{ point }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── FLYWHEEL ── -->
+<section style="background: var(--livestorm-blue-100); padding: 100px 40px;">
+  <div style="max-width: 1100px; margin: 0 auto;">
+    <div style="text-align: center; margin-bottom: 80px;">
+      <div style="font-size: var(--fs-xxs); font-weight: var(--fw-bold); text-transform: uppercase; letter-spacing: 0.09em; color: var(--livestorm-blue-600); margin-bottom: 16px;">How we work</div>
+      <h2 style="font-size: var(--fs-5xl); line-height: var(--lh-16); font-weight: var(--fw-regular); letter-spacing: -0.015em; text-wrap: balance; margin: 0 auto; max-width: 540px;">Every session feeds the next. <strong>That's the flywheel.</strong></h2>
+    </div>
+
+    <!-- Radial layout: left labels | SVG | right labels -->
+    <div style="display: grid; grid-template-columns: 1fr 420px 1fr; gap: 0; align-items: center; max-width: 960px; margin: 0 auto;">
+
+      <!-- Left column: ANALYZE (top) + RUN (bottom) -->
+      <div style="display: flex; flex-direction: column; justify-content: space-between; height: 420px; padding-right: 48px; align-items: flex-end;">
+        <div style="text-align: right;">
+          <div style="font-size: var(--fs-xxs); font-weight: var(--fw-bold); text-transform: uppercase; letter-spacing: 0.1em; color: var(--livestorm-blue-600); margin-bottom: 8px;">04 — Analyze</div>
+          <div style="font-size: var(--fs-sm); color: var(--fg-muted); line-height: 1.65; max-width: 200px;">Per-attendee scores, replay depth, CRM sync — every session makes the next one smarter.</div>
+        </div>
+        <div style="text-align: right;">
+          <div style="font-size: var(--fs-xxs); font-weight: var(--fw-bold); text-transform: uppercase; letter-spacing: 0.1em; color: var(--livestorm-blue-600); margin-bottom: 8px;">03 — Run</div>
+          <div style="font-size: var(--fs-sm); color: var(--fg-muted); line-height: 1.65; max-width: 200px;">Polls, Q&amp;A, reactions, CTAs — tools that turn passive viewers into engaged leads.</div>
+        </div>
+      </div>
+
+      <!-- Center: SVG flywheel -->
+      <div>
+        <svg viewBox="0 0 400 400" style="width: 420px; height: 420px;" xmlns="http://www.w3.org/2000/svg">
+          <!-- PLAN segment: right side, 318°→42° -->
+          <path d="M 319,93 A 160,160 0 0 1 319,307 L 267,260 A 90,90 0 0 0 267,140 Z" fill="#0B42C3"/>
+          <!-- PROMOTE segment: bottom, 48°→132° -->
+          <path d="M 307,319 A 160,160 0 0 1 93,319 L 140,267 A 90,90 0 0 0 260,267 Z" fill="#1750C8"/>
+          <!-- RUN segment: left, 138°→222° -->
+          <path d="M 81,307 A 160,160 0 0 1 81,93 L 133,140 A 90,90 0 0 0 133,260 Z" fill="#2860D4"/>
+          <!-- ANALYZE segment: top, 228°→312° -->
+          <path d="M 93,81 A 160,160 0 0 1 307,81 L 260,133 A 90,90 0 0 0 140,133 Z" fill="#3A70DF"/>
+
+          <!-- Clockwise arrows in the gaps (at 45°, 135°, 225°, 315° on ring midpoint r=125) -->
+          <!-- Gap at 45° → tangent 135° -->
+          <polygon points="-9,-6 7,0 -9,6" fill="var(--livestorm-blue-200)" transform="translate(288,288) rotate(135)"/>
+          <!-- Gap at 135° → tangent 225° -->
+          <polygon points="-9,-6 7,0 -9,6" fill="var(--livestorm-blue-200)" transform="translate(112,288) rotate(225)"/>
+          <!-- Gap at 225° → tangent 315° -->
+          <polygon points="-9,-6 7,0 -9,6" fill="var(--livestorm-blue-200)" transform="translate(112,112) rotate(315)"/>
+          <!-- Gap at 315° → tangent 45° -->
+          <polygon points="-9,-6 7,0 -9,6" fill="var(--livestorm-blue-200)" transform="translate(288,112) rotate(45)"/>
+
+          <!-- White center circle -->
+          <circle cx="200" cy="200" r="88" fill="white"/>
+
+          <!-- Center label -->
+          <text x="200" y="191" text-anchor="middle" font-size="12" font-weight="700" fill="#12262B" letter-spacing="0.04em" font-family="sans-serif">AUDIENCE GROWTH</text>
+          <text x="200" y="208" text-anchor="middle" font-size="11" fill="#477580" font-family="sans-serif">→ Lead generation</text>
+
+          <!-- Step name labels inside each arc segment (at midpoint radius ~125) -->
+          <!-- PLAN at 0° (right): (325, 200) -->
+          <text x="325" y="196" text-anchor="middle" font-size="12" font-weight="700" fill="white" letter-spacing="0.06em" font-family="sans-serif">PLAN</text>
+          <text x="325" y="211" text-anchor="middle" font-size="10" fill="rgba(255,255,255,0.6)" font-family="sans-serif">01</text>
+
+          <!-- PROMOTE at 90° (bottom): (200, 325) -->
+          <text x="200" y="321" text-anchor="middle" font-size="12" font-weight="700" fill="white" letter-spacing="0.06em" font-family="sans-serif">PROMOTE</text>
+          <text x="200" y="336" text-anchor="middle" font-size="10" fill="rgba(255,255,255,0.6)" font-family="sans-serif">02</text>
+
+          <!-- RUN at 180° (left): (75, 200) -->
+          <text x="75" y="196" text-anchor="middle" font-size="12" font-weight="700" fill="white" letter-spacing="0.06em" font-family="sans-serif">RUN</text>
+          <text x="75" y="211" text-anchor="middle" font-size="10" fill="rgba(255,255,255,0.6)" font-family="sans-serif">03</text>
+
+          <!-- ANALYZE at 270° (top): (200, 75) -->
+          <text x="200" y="70" text-anchor="middle" font-size="12" font-weight="700" fill="white" letter-spacing="0.06em" font-family="sans-serif">ANALYZE</text>
+          <text x="200" y="85" text-anchor="middle" font-size="10" fill="rgba(255,255,255,0.6)" font-family="sans-serif">04</text>
+        </svg>
+      </div>
+
+      <!-- Right column: PLAN (top) + PROMOTE (bottom) -->
+      <div style="display: flex; flex-direction: column; justify-content: space-between; height: 420px; padding-left: 48px; align-items: flex-start;">
+        <div>
+          <div style="font-size: var(--fs-xxs); font-weight: var(--fw-bold); text-transform: uppercase; letter-spacing: 0.1em; color: var(--livestorm-blue-600); margin-bottom: 8px;">01 — Plan</div>
+          <div style="font-size: var(--fs-sm); color: var(--fg-muted); line-height: 1.65; max-width: 200px;">Coaching, content strategy, and preparation — so every session is worth showing up for.</div>
+        </div>
+        <div>
+          <div style="font-size: var(--fs-xxs); font-weight: var(--fw-bold); text-transform: uppercase; letter-spacing: 0.1em; color: var(--livestorm-blue-600); margin-bottom: 8px;">02 — Promote</div>
+          <div style="font-size: var(--fs-sm); color: var(--fg-muted); line-height: 1.65; max-width: 200px;">Branded registration pages, automated reminders, and integrations to maximize reach.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── PLATFORM ── -->
+<section id="platform" style="background: #fff; padding: 88px 40px; border-top: 1px solid var(--grey-blue-200);">
+  <div style="max-width: 1100px; margin: 0 auto;">
+    <div style="text-align: center; margin-bottom: 64px;">
+      <div style="font-size: var(--fs-xxs); font-weight: var(--fw-bold); text-transform: uppercase; letter-spacing: 0.09em; color: var(--livestorm-blue-700); margin-bottom: 16px;">The platform</div>
+      <h2 style="font-size: var(--fs-5xl); line-height: var(--lh-16); font-weight: var(--fw-regular); text-wrap: balance; max-width: 560px; margin: 0 auto 16px; letter-spacing: -0.015em;">{{ platformH1 }} <strong>{{ platformH2 }}</strong></h2>
+      <p style="font-size: var(--fs-origin); color: var(--fg-muted); max-width: 500px; margin: 0 auto; line-height: 1.7;">{{ platformSub }}</p>
+    </div>
+
+    <!-- Steps -->
+    <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 0; max-width: 960px; margin: 0 auto;">
+      <sc-for list="{{ platformSteps }}" as="step" hint-placeholder-count="5">
+        <div style="text-align: center; padding: 0 20px;">
+          <div style="width: 48px; height: 48px; border-radius: 50%; background: var(--livestorm-blue-100); border: 2px solid var(--livestorm-blue-200); color: var(--livestorm-blue-700); font-size: var(--fs-xxs); font-weight: var(--fw-bold); display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; letter-spacing: 0.04em;">{{ step.num }}</div>
+          <div style="font-size: var(--fs-sm); font-weight: var(--fw-medium); color: var(--fg-default); margin-bottom: 6px;">{{ step.title }}</div>
+          <div style="font-size: var(--fs-xs); color: var(--fg-muted); line-height: 1.6;">{{ step.desc }}</div>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+</section>
+
+<!-- ── WHAT YOU GET ── -->
+<section style="background: var(--livestorm-blue-100); padding: 88px 40px; border-top: 1px solid var(--livestorm-blue-200);">
+  <div style="max-width: 1100px; margin: 0 auto;">
+    <div style="text-align: center; margin-bottom: 56px;">
+      <div style="font-size: var(--fs-xxs); font-weight: var(--fw-bold); text-transform: uppercase; letter-spacing: 0.09em; color: var(--livestorm-blue-600); margin-bottom: 16px;">{{ cardEyebrow }}</div>
+      <h2 style="font-size: var(--fs-5xl); line-height: var(--lh-16); font-weight: var(--fw-regular); text-wrap: balance; max-width: 520px; margin: 0 auto 16px; letter-spacing: -0.015em; color: var(--winter-green-900);">{{ cardH1 }} <strong style="color: var(--livestorm-blue-700);">{{ cardH2 }}</strong></h2>
+      <p style="font-size: var(--fs-origin); color: var(--fg-muted); max-width: 460px; margin: 0 auto; line-height: 1.7;">{{ cardSub }}</p>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
+      <sc-for list="{{ scenarioCards }}" as="card" hint-placeholder-count="6">
+        <div style="background: #fff; border: 1px solid var(--livestorm-blue-200); border-radius: var(--radius-2xl); padding: 24px 22px; display: flex; flex-direction: column; gap: 12px;">
+          <i class="icon" data-unicode="{{ card.icon }}" style="font-size: 22px; color: var(--livestorm-blue-700);"></i>
+          <div style="font-size: var(--fs-sm); font-weight: var(--fw-medium); color: var(--winter-green-900); line-height: 1.4;">{{ card.title }}</div>
+          <div style="font-size: var(--fs-xs); color: var(--fg-muted); line-height: 1.7;">{{ card.desc }}</div>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+</section>
+
+<!-- ── CTA ── -->
+<section style="background: var(--grey-blue-100); padding: 96px 40px; border-top: 1px solid var(--grey-blue-200);">
+  <div style="max-width: 680px; margin: 0 auto; text-align: center;">
+    <h2 style="color: var(--winter-green-900); font-weight: var(--fw-regular); font-size: var(--fs-5xl); line-height: var(--lh-16); letter-spacing: -0.015em; text-wrap: balance; margin: 0 0 16px;">{{ ctaTitle }}</h2>
+    <p style="color: var(--fg-muted); font-size: var(--fs-lg); line-height: 1.7; margin: 0 auto 48px; max-width: 480px;">{{ ctaSub }}</p>
+
+    <div style="background: #fff; border: 1px solid var(--grey-blue-200); border-radius: var(--radius-4xl); padding: 26px 32px; display: inline-flex; align-items: center; gap: 18px; text-align: left; margin-bottom: 40px; min-width: 340px; box-shadow: var(--shadow-blue-2);">
+      <image-slot id="am-photo" style="width: 48px; height: 48px; flex-shrink: 0;" shape="circle" placeholder="Drop photo"></image-slot>
+      <div>
+        <div style="font-size: var(--fs-base); font-weight: var(--fw-medium); color: var(--winter-green-900); margin-bottom: 3px;">{{ amName }}</div>
+        <div style="font-size: var(--fs-sm); color: var(--fg-muted); margin-bottom: 8px;">{{ amTitle }}</div>
+        <a href="{{ mailtoHref }}" style="font-size: var(--fs-sm); color: var(--livestorm-blue-700);">{{ amEmail }}</a>
+      </div>
+    </div>
+
+    <div>
+      <a href="{{ ctaHref }}" style="background: var(--livestorm-blue-700); color: #fff; font-size: var(--fs-base); font-weight: var(--fw-medium); padding: 15px 40px; border-radius: var(--radius-default); display: inline-block; margin-bottom: 14px;">{{ heroCta }}</a>
+    </div>
+  </div>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{
+  &quot;$preview&quot;: { &quot;width&quot;: 1440 },
+  &quot;scenario&quot;: {
+    &quot;editor&quot;: &quot;enum&quot;,
+    &quot;options&quot;: [&quot;webinar&quot;, &quot;no-webinar&quot;, &quot;advanced&quot;],
+    &quot;default&quot;: &quot;webinar&quot;,
+    &quot;section&quot;: &quot;Scenario&quot;,
+    &quot;tsType&quot;: &quot;string&quot;
+  },
+  &quot;company&quot;: {
+    &quot;editor&quot;: &quot;text&quot;,
+    &quot;default&quot;: &quot;Acme Corp&quot;,
+    &quot;section&quot;: &quot;Prospect&quot;,
+    &quot;tsType&quot;: &quot;string&quot;
+  },
+  &quot;industry&quot;: {
+    &quot;editor&quot;: &quot;text&quot;,
+    &quot;default&quot;: &quot;&quot;,
+    &quot;section&quot;: &quot;Prospect&quot;,
+    &quot;tsType&quot;: &quot;string&quot;
+  },
+  &quot;prospectName&quot;: {
+    &quot;editor&quot;: &quot;text&quot;,
+    &quot;default&quot;: &quot;&quot;,
+    &quot;section&quot;: &quot;Prospect&quot;,
+    &quot;tsType&quot;: &quot;string&quot;
+  },
+  &quot;prospectRole&quot;: {
+    &quot;editor&quot;: &quot;text&quot;,
+    &quot;default&quot;: &quot;&quot;,
+    &quot;section&quot;: &quot;Prospect&quot;,
+    &quot;tsType&quot;: &quot;string&quot;
+  },
+  &quot;prospectWebsite&quot;: {
+    &quot;editor&quot;: &quot;text&quot;,
+    &quot;default&quot;: &quot;&quot;,
+    &quot;section&quot;: &quot;Prospect&quot;,
+    &quot;tsType&quot;: &quot;string&quot;
+  },
+  &quot;amName&quot;: {
+    &quot;editor&quot;: &quot;text&quot;,
+    &quot;default&quot;: &quot;Sarah Chen&quot;,
+    &quot;section&quot;: &quot;You&quot;,
+    &quot;tsType&quot;: &quot;string&quot;
+  },
+  &quot;amTitle&quot;: {
+    &quot;editor&quot;: &quot;text&quot;,
+    &quot;default&quot;: &quot;Account Executive, Livestorm&quot;,
+    &quot;section&quot;: &quot;You&quot;,
+    &quot;tsType&quot;: &quot;string&quot;
+  },
+  &quot;amEmail&quot;: {
+    &quot;editor&quot;: &quot;text&quot;,
+    &quot;default&quot;: &quot;sarah.chen@livestorm.co&quot;,
+    &quot;section&quot;: &quot;You&quot;,
+    &quot;tsType&quot;: &quot;string&quot;
+  },
+  &quot;calLink&quot;: {
+    &quot;editor&quot;: &quot;text&quot;,
+    &quot;default&quot;: &quot;&quot;,
+    &quot;section&quot;: &quot;You&quot;,
+    &quot;tsType&quot;: &quot;string&quot;
+  },
+  &quot;researchMode&quot;: {
+    &quot;editor&quot;: &quot;boolean&quot;,
+    &quot;default&quot;: false,
+    &quot;section&quot;: &quot;Builder&quot;,
+    &quot;tsType&quot;: &quot;boolean&quot;
+  }
+}">
+class Component extends DCLogic {
+  state = {
+    showResearch: false,
+    researchState: 'idle',
+    aeContext: '',
+    researchIndustry: '',
+    researchUseCase: '',
+    researchScenario: '',
+    researchMaturityReason: '',
+    researchCompetitor: '',
+    researchCompetitorObs: '',
+    researchPoints: '',
+    researchPage: null,
+    researchNews: '',
+    researchLog: [],
+    researchSources: [],
+    researchError: '',
+    businessTension: '',
+    maturityLevel: 0,
+    maturityStrengths: [],
+    maturityGaps: [],
+    showSources: false,
+    showRerunBox: false,
+    rerunNotes: '',
+    // applied overrides
+    appliedIndustry: '',
+    appliedScenario: '',
+    appliedUseCase: '',
+    appliedPoints: '',
+    appliedPage: null,
+    applied: false,
+  };
+
+  openResearch()  {
+    console.log('[DC] openResearch called');
+    this.setState({ showResearch: true, researchError: '' });
+  }
+  closeResearch() { this.setState({ showResearch: false }); }
+  stopProp(e)     { e.stopPropagation(); }
+
+  applyResearch() {
+    const { researchIndustry, researchUseCase, researchScenario, researchPoints, researchPage } = this.state;
+    this.setState({
+      appliedIndustry: researchIndustry,
+      appliedScenario: researchScenario || 'webinar',
+      appliedUseCase: researchUseCase,
+      appliedPoints: researchPoints,
+      appliedPage: researchPage,
+      applied: true,
+      showResearch: false,
+    });
+  }
+
+  clearApplied() {
+    this.setState({ applied: false, appliedIndustry: '', appliedScenario: '', appliedPoints: '', appliedPage: null });
+  }
+
+  async doResearch() {
+    const up = new URLSearchParams(window.location.search);
+    const website = this.props.prospectWebsite || up.get('website') || '';
+    const company = this.props.company         || up.get('company') || 'this company';
+    const role    = this.props.prospectRole    || up.get('role')    || '';
+    const context = this.state.aeContext       || '';
+
+    const log = (msg) => this.setState(s => ({ researchLog: [...s.researchLog, msg] }));
+    this.setState({ researchState: 'loading', researchLog: [], researchError: '' });
+
+    if (!window.claude || typeof window.claude.complete !== 'function') {
+      this.setState({ researchState: 'idle', researchError: 'Claude API not available. Make sure you\'re viewing this page inside the Ottermind preview — not a downloaded/exported file.' });
+      return;
+    }
+    try {
+      const sources = [];
+
+            // ── WEB RESEARCH ENGINE ──────────────────────────────────────
+      // HackerNews Algolia API has CORS support — use it as primary search
+      // Direct fetch works for some sites; fails gracefully for others
+
+      const hnSearch = async (query, label) => {
+        log('HN: ' + query);
+        try {
+          const url  = 'https://hn.algolia.com/api/v1/search?query=' + encodeURIComponent(query) + '&tags=story&hitsPerPage=8';
+          const res  = await fetch(url, { signal: AbortSignal.timeout(8000) });
+          const data = await res.json();
+          if (!data.hits || !data.hits.length) return '';
+          const lines = data.hits
+            .filter(h => h.title)
+            .map(h => '• ' + h.title + (h.created_at ? ' (' + h.created_at.slice(0,7) + ')' : '') + (h.story_text ? '\n  ' + h.story_text.replace(/<[^>]+>/g,'').slice(0,120) : ''));
+          const result = lines.join('\n');
+          sources.push({ type: 'search', label: 'HN: ' + label, snippet: result.slice(0, 400) });
+          return result;
+        } catch(e) { return ''; }
+      };
+
+      const scrapeText = (raw) => raw
+        .replace(/<script[\s\S]*?<\/script>/gi, '')
+        .replace(/<style[\s\S]*?<\/style>/gi, '')
+        .replace(/<[^>]+>/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim()
+        .slice(0, 3000);
+
+      const tryFetch = async (url, label) => {
+        log('Fetch: ' + url);
+        const attempts = [
+          () => fetch(url, { signal: AbortSignal.timeout(8000), mode: 'cors' }),
+          () => fetch('https://api.allorigins.win/raw?url=' + encodeURIComponent(url), { signal: AbortSignal.timeout(12000) }),
+        ];
+        for (const attempt of attempts) {
+          try {
+            const res = await attempt();
+            if (!res.ok) continue;
+            const raw   = await res.text();
+            const clean = scrapeText(raw);
+            if (clean.length > 150) {
+              sources.push({ type: 'page', label: label || url, snippet: clean.slice(0, 400) });
+              return clean;
+            }
+          } catch(e) { /* try next */ }
+        }
+        return '';
+      };
+
+      // ── DEEP RESEARCH ────────────────────────────────────────────
+      const gathered = [];
+      const add = (label, text) => { if (text && text.trim().length > 50) gathered.push('### ' + label + '\n' + text.trim()); };
+
+      const slug     = company.toLowerCase().replace(/[^a-z0-9]/g, '');
+      const slugDash = company.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+
+      log('Starting research on ' + company + '…');
+
+      // 1 — Company news & discussions (HN is real, CORS-friendly)
+      const [hnCompany, hnFunding, hnEvents, hnProduct] = await Promise.all([
+        hnSearch('"' + company + '"', company + ' mentions'),
+        hnSearch('"' + company + '" funding raised series', company + ' funding'),
+        hnSearch('"' + company + '" webinar event launch', company + ' events'),
+        hnSearch('"' + company + '" product launch release', company + ' product'),
+      ]);
+      add('HackerNews: ' + company + ' discussions', hnCompany);
+      add('HackerNews: Funding & investment signals', hnFunding);
+      add('HackerNews: Events & launches', hnEvents);
+      add('HackerNews: Product news', hnProduct);
+
+      // 2 — Direct website fetch (homepage only direct; sub-pages via proxy)
+      if (website) {
+        const base = website.replace(/\/$/, '');
+        // Homepage first — most reliable signal
+        const home = await tryFetch(base, 'Homepage');
+        add('Homepage', home);
+        // Only fetch sub-pages if homepage worked (site is accessible)
+        if (home) {
+          const [about, blog] = await Promise.all([
+            tryFetch(base + '/about', 'About page'),
+            tryFetch(base + '/blog', 'Blog'),
+          ]);
+          add('About page', about);
+          add('Blog', blog);
+          // Look for webinar/event pages only if common paths are found in homepage HTML
+          const homeLower = home.toLowerCase();
+          if (homeLower.includes('webinar') || homeLower.includes('event') || homeLower.includes('resource')) {
+            const candidates = ['/webinars', '/events', '/resources', '/learn'].filter(p =>
+              homeLower.includes(p.slice(1))
+            );
+            for (const path of candidates.slice(0, 2)) {
+              const text = await tryFetch(base + path, path.slice(1));
+              add(path.slice(1) + ' page', text);
+            }
+          }
+        }
+      }
+
+      // 3 — Known webinar platform URL checks (Contrast only — Livestorm removed as non-clients won't have a page)
+      const platformChecks = [
+        { url: 'https://watch.getcontrast.io/' + slug,    tool: 'Contrast' },
+        { url: 'https://watch.getcontrast.io/' + slugDash, tool: 'Contrast' },
+      ];
+      for (const { url, tool } of platformChecks) {
+        const text = await tryFetch(url, 'Webinar platform: ' + url);
+        if (text) {
+          add('CONFIRMED WEBINAR PLATFORM',
+            'CONFIRMED — ' + company + ' runs webinars via ' + tool + ' at ' + url + '.\n'
+            + 'SET: competitorTool="' + tool + '", scenario="webinar" or "advanced".\n' + text.slice(0, 800));
+        }
+      }
+
+      // 4 — AE notes — ground truth, always wins
+      const allNotes = [context, this.state.rerunNotes].filter(Boolean).join('\n');
+      if (allNotes) add('AE NOTES — GROUND TRUTH (these override everything else)', allNotes);
+
+      const researchContext = gathered.join('\n\n');
+      const dataQuality = gathered.length;
+      log('Research gathered: ' + dataQuality + ' sections, ' + researchContext.length + ' chars');
+      if (dataQuality === 0) {
+        log('⚠ No web data gathered — analysis will use Claude training knowledge only. Add notes above to ground the output in confirmed facts.');
+      }
+
+      // ── COMPETITOR INTEL ──────────────────────────────────────────
+      const competitorIntel = [
+        'Contrast: Modern webinar platform with clean branded UI. HubSpot-native (4.9 stars, HubSpot Leading Partner, 900+ installs). 20+ engagement metrics synced to HubSpot per attendee. AI repurposing: clips with subtitles, blog posts, social content. Pre-recorded webinars that feel live. On-demand replays with chapters. Webinar channel for content library. No download required. Up to 8 speakers. Pricing is per registrant/month (not per attendee). Broad connectivity via Zapier/Make/API/webhooks. Key limit: no native Salesforce integration (Salesforce requires Zapier or API). No hybrid event formats. Cross-programme analytics are limited — sessions are somewhat siloed. Best fit: HubSpot-native teams running recurring thought-leadership or demand-gen webinars.',
+        'ON24: Enterprise platform, acquired by Cvent Q4 2025. $10,000+/year. Strong analytics and AI content repurposing. Known for outdated UI, steep learning curve, poor support at scale. Best for large enterprise with dedicated events team.',
+        'Zoom Webinars: Video-conferencing DNA. 2024 ToS update allows Zoom to use session data to train their AI — no opt-out for existing accounts. No on-demand library. No content repurposing. Best for internal all-hands, not demand gen.',
+        'Teams/Meet: Internal collaboration tools. No branded registration pages, no CRM lead scoring, no attendee intent data, no on-demand library.',
+        'Demio: Simple and affordable. Browser-based. Basic analytics — attendance only. No AI repurposing. Annual billing only. No engagement depth.',
+        'GoToWebinar: Legacy platform. Dated UI, high drop-off rates. No AI repurposing, limited CRM depth.',
+        'Goldcast: Strong branded experience. Live-event focused. No per-attendee engagement score for SDR routing. Salesforce sync is surface-level.',
+        'BigMarker: Feature-rich but complex UI. No per-attendee engagement scoring. No real-time CRM sync of behavioural signals.',
+        'Vimeo Events / StreamYard / Riverside / Restream: Video/broadcast tools — no registration pages, no lead data, no pipeline attribution possible.',
+        'Livestorm: Browser-based (no attendee download required). Live + on-demand + automated + hybrid from one platform. Per-attendee composite engagement score (watch time + Q&A + polls + CTAs). AI repurposing (clips, transcript, summary, email draft). Livestorm MCP for natural-language event data queries. Salesforce + HubSpot deep sync. Up to 3,000 attendees. GDPR-compliant EU hosting. 5,000+ clients.',
+      ].join('\n');
+
+      const systemPrompt = [
+        'You are a senior B2B marketing consultant, webinar strategist, and conversion copywriter working for Livestorm.',
+        'Your goal is NOT to create a generic sales page. Your goal: build a briefing that makes someone think "these people clearly understand my company and webinar strategy better than most vendors."',
+        '',
+        'STEP 1 — RESEARCH & EXTRACT CONFIRMED FACTS ONLY.',
+        'From the research data, identify only what appears explicitly:',
+        '  Company: what they do, ICP, product, business model, industry, positioning, recent news (fundraising, acquisitions, launches, leadership changes, hiring trends).',
+        '  Marketing maturity: do they run webinars? have an events page? host virtual events? run on-demand? publish recordings? repurpose webinar content (clips, blog posts, social)? gate content? stream events? use a Webinar Hub-like experience?',
+        '  Technology: webinar platform, event platform, marketing automation, CRM, video platform — ONLY if publicly detectable. Never guess.',
+        '  Target person signals: role, likely KPIs, any public posts, interviews, or company quotes.',
+        'Provide evidence for every finding. If something cannot be confirmed: it does not exist for the purposes of this analysis.',
+        '',
+        'STEP 2 — IDENTIFY THE SINGLE MOST IMPORTANT BUSINESS TENSION.',
+        'Before writing a single word of copy: identify the ONE central tension facing this company based on confirmed evidence.',
+        'Examples: rapid growth requiring scalable demand gen | enterprise expansion needing credibility content | product adoption gap | community building | customer education at scale | reducing CAC | scaling content production | maximizing event ROI | category authority gap.',
+        'If no clear tension can be supported by evidence, set businessTension to: "Not enough public evidence to identify a central tension." — do NOT manufacture one.',
+        'CRITICAL: every section — hero, diagnosis, talking points — must revolve around this ONE tension. If the tension is "scaling content production," everything reinforces that story.',
+        '',
+        'STEP 3 — ASSESS WEBINAR MATURITY.',
+        'Choose maturityLevel 1–5:',
+        '  1 = No webinars — zero confirmed activity.',
+        '  2 = Occasional webinars — 1–4/yr, no consistent system or repurposing.',
+        '  3 = Strong webinar program — regular cadence, basic distribution, no content engine.',
+        '  4 = Advanced webinar strategy — multi-format, analytics visible, some attribution.',
+        '  5 = Advanced webinars + content engine — full repurposing, CRM depth, AI-assisted distribution.',
+        'maturityStrengths: what they already do well (max 2, confirmed only). maturityGaps: biggest missed opportunities (max 2, traceable to confirmed signals).',
+        'Every observation must be supported by evidence. If no evidence: say so explicitly.',
+        '',
+        'STEP 4 — BUILD ONE COHERENT STORY.',
+        'Do NOT create disconnected sections. The page tells ONE story — every section leads naturally to the next.',
+        'Structure: Hero → Diagnosis → Evidence → Industry insight → Opportunity → Livestorm → CTA.',
+        'Every claim must answer: "So what? Why does this matter for THIS company specifically?"',
+        'The reader should learn something new about their own webinar strategy.',
+        '',
+        'TONE: Sound like McKinsey or Bain paired with a senior webinar strategist.',
+        'Confident. Evidence-based. Specific. Insightful. Make observations. Connect dots. Teach something.',
+        'AVOID: generic buzzwords, empty claims, "prove ROI", "engagement depth", "companies at your stage", "most teams struggle with", "show-up rate".',
+        '',
+        '⛔ HARD RULES — violating any of these invalidates the entire output:',
+        '1. NEVER name any CRM (Salesforce, HubSpot, Marketo, Pardot, etc.) unless that exact tool appears word-for-word in the research data. If _confirmed.crm is null, zero CRM names appear anywhere in the JSON — not in heroSub, not in diagBody, not in talkingPoints, not anywhere.',
+        '2. NEVER name any webinar/event tool unless it is in _confirmed.webinarPlatform. If _confirmed.webinarPlatform is null, zero tool names appear anywhere.',
+        '3. NEVER write "your AEs", "your CFO", "your board", "your CEO", "your sales team", "your marketing team" — you have no visibility into their org structure.',
+        '4. NEVER project benchmark statistics onto this company as if they apply to them specifically.',
+        '5. NEVER invent internal processes, team structures, or workflows.',
+        '6. NEVER mix multiple unconfirmed angles — one tension, one story, all the way through.',
+        '7. NEVER use: "prove ROI", "engagement depth", "companies at your stage", "most teams struggle with", "show-up rate", "your stack".',
+        '',
+        'SELF-CHECK before outputting: scan every string value in your JSON. If any value names a CRM or tool not in _confirmed — rewrite it. No exceptions.',
+        '',
+        'WHAT GOOD LOOKS LIKE (one coherent thread):',
+        'Confirmed: Modjo runs webinars via Contrast. Confirmed: they have a Salesforce integration in their own product.',
+        'BAD: "Sessions are live but conversion infrastructure is unclear. Whether attendee scores reach Salesforce or HubSpot in real time..." — mixes unconfirmed tools, vague.',
+        'GOOD hero: "Modjo records every sales call. Their webinars are a blind spot."',
+        'GOOD diag: "Contrast captures the live session. What happens to that signal after the room closes — who watched what, for how long — is not visible in the platform they know best (Salesforce)."',
+        'GOOD talking point: "Their product is built on conversation intelligence. Their webinars don\'t feed that intelligence layer at all."',
+        '',
+        'COPY RULES:',
+        '- Business consequences only: revenue, pipeline, competitive position, category authority.',
+        '- talkingPoints: 4 points that make the prospect think "how did they know that?" Same narrative thread as the hero.',
+        '- competitorObs: 1 sentence on what their confirmed tool choice reveals about strategic posture. Name only confirmed tools.',
+        '',
+        competitorIntel.split('\n').map(l => l ? 'COMPETITOR INTEL: ' + l : '').filter(Boolean).join('\n'),
+        '',
+        'LIVESTORM 2026 BENCHMARK DATA — for AE context only. NEVER project these onto the prospect as if confirmed. Use only to frame a question or contrast, not as a claim about them:',
+        '· 47.7% avg show-up rate industry-wide. Best days: Mon-Wed, 11am or 2pm ET.',
+        '· 17x more reach with content engine. 368% more on-demand views: public replay vs gated.',
+        '· 92% of webinar teams cannot prove ROI to their CFO — this is a benchmark, not a fact about this company.',
+        '· 54.2% of teams struggle to convert registrants to attendees.',
+        '· 38.2% cite post-event follow-up as top-3 challenge.',
+        '· 6h saved per session with AI repurposing. €11,900/year in outsourcing costs avoided.',
+        '· 49.6% of registrations happen in the final week.',
+        '· 62% of teams gate their replays — industry average, not this company.',
+        '· 51% of marketing teams call webinars essential to hitting numbers.',
+        '',
+        'CRITICAL: do not write "your CFO", "your board", "your AEs" or any variant. Do not say "you can\'t prove ROI" unless research explicitly confirms attribution is broken at this company. Benchmarks are not facts about the prospect.',
+        '',
+        'SCENARIO RULES:',
+        '- advanced: evidence of consistent multi-session publishing + attribution',
+        '- webinar: ANY confirmed webinar activity or platform URL found',
+        '- no-webinar: ONLY if zero evidence of sessions — default to webinar if uncertain',
+        'If competitorTool is set, scenario must be webinar or advanced.',
+        '',
+        'Output ONLY valid JSON, no markdown. Start with _confirmed — your source of truth. Every specific claim in any other field must trace to _confirmed. If it is not in _confirmed, it cannot appear anywhere else.',
+        '{',
+        '  "_confirmed": {',
+        '    "webinarPlatform": "confirmed webinar tool name if a URL was found — otherwise null",',
+        '    "crm": "confirmed CRM name only if explicitly mentioned in research — otherwise null",',
+        '    "recentNews": "one real news item found — otherwise null",',
+        '    "publicSignals": ["only facts explicitly found: homepage copy, job listings, pricing model, product category, ICP, funding — no inventions"]',
+        '  },',
+        '  "businessTension": "The single most important tension facing this company. One crisp sentence grounded in _confirmed. If no evidence: Not enough public evidence to identify a central tension.",',
+        '  "industry": "Technology / SaaS | Healthcare & Life Sciences | Financial Services | Education | Retail & eCommerce | Public Sector | Professional Services | Media & Events",',
+        '  "useCase": "pipeline generation | thought leadership | customer education | product demos | partner enablement | training & onboarding",',
+        '  "scenario": "no-webinar | webinar | advanced",',
+        '  "maturityLevel": 3,',
+        '  "maturityStrengths": ["confirmed strength — or empty array if none confirmed"],',
+        '  "maturityGaps": ["biggest confirmed gap — or empty array if none confirmed"],',
+        '  "webinarMaturityReason": "one sentence citing specific evidence from _confirmed, or honest admission if data sparse",',
+        '  "competitorTool": "_confirmed.webinarPlatform value or empty string — nothing else",',
+        '  "competitorObservation": "1 sentence on what their confirmed tool reveals. Empty string if webinarPlatform is null.",',
+        '  "recentNews": "_confirmed.recentNews or empty string",',
+        '  "page": {',
+        '    "diagEyebrow": "2-4 words: neutral e.g. What we found",',
+        '    "heroHeadline": "max 12 words — references businessTension or a signal from _confirmed. ZERO tool or CRM names unless confirmed. Sound like a consultant who did their homework, not SaaS marketing.",',
+        '    "heroSub": "1-2 sentences from _confirmed only. Reinforces businessTension. ZERO CRM names unless _confirmed.crm is set. ZERO tool names unless in _confirmed. No org assumptions.",',
+        '    "diagH1": "3-5 words naming the core tension from businessTension — no tool or CRM names",',
+        '    "diagH2": "4-8 words completing the thought — the consequence or opportunity, no tool names",',
+        '    "diagBody": "2 sentences. Reinforces businessTension. If _confirmed.crm is null: write zero CRM names here. If _confirmed.webinarPlatform is null: write zero tool names here. No exceptions.",',
+        '    "diagPoints": [{"title": "signal from _confirmed — close paraphrase of what you actually found", "body": "what it reveals commercially about THIS company — no tool/CRM names unless confirmed"}, {"title": "second distinct signal from _confirmed", "body": "commercial consequence for THIS company"}, {"title": "what changes if the gap closes", "body": "concrete business outcome — not a product feature, no tool names"}],',
+        '    "whyHeadline": "4-8 words: business outcome tied to businessTension — no tool names",',
+        '    "whySub": "1 sentence — closes the narrative loop from heroHeadline. ZERO CRM or tool names unless confirmed."',
+        '  },',
+        '  "talkingPoints": "4 talking points, newline-separated. Each must trace to _confirmed AND reinforce the businessTension. Make the prospect think: how did they know that? No CRM or tool names unless confirmed. If data sparse, write honest category observations clearly framed as such — do not invent specifics."',
+        '}',
+      ].join('\n');
+
+            const userPrompt = [
+        'Company: ' + company,
+        'Website: ' + (website || 'not provided'),
+        'Contact role: ' + (role || 'unknown — assume marketing or demand gen leader'),
+        'AE notes (ground truth): ' + (allNotes || 'none provided'),
+        '',
+        'RESEARCH DATA (' + dataQuality + ' sections gathered, ' + researchContext.length + ' chars):',
+        researchContext || '(no web data could be gathered — use training knowledge with appropriate hedging)',
+        '',
+        'Based on the above, produce the JSON analysis.',
+      ].join('\n');
+
+            log('Sending to Claude for analysis…');
+
+      const raw = await window.claude.complete({
+        model: 'claude-sonnet-4-5',
+        max_tokens: 4000,
+        system: systemPrompt,
+        messages: [{ role: 'user', content: userPrompt }]
+      });
+
+      log('Analysis complete');
+
+      let parsed;
+      try {
+        const cleaned = raw.trim().replace(/^```json\s*/i, '').replace(/\s*```$/i, '').replace(/^```\s*/i, '').replace(/\s*```$/i, '');
+        parsed = JSON.parse(cleaned);
+      } catch {
+        const match = raw.match(/\{[\s\S]*\}/);
+        try { parsed = match ? JSON.parse(match[0]) : null; } catch { parsed = null; }
+        if (!parsed) parsed = { industry: 'Technology / SaaS', useCase: 'pipeline generation', scenario: 'webinar', webinarMaturityReason: 'JSON parse failed — check raw output below.', competitorTool: '', competitorObservation: '', recentNews: raw.slice(0, 200), talkingPoints: '', page: null };
+      }
+
+      this.setState({
+        researchState: 'done',
+        researchSources: sources,
+        researchIndustry: parsed.industry || '',
+        researchUseCase: parsed.useCase || '',
+        researchScenario: parsed.scenario || 'webinar',
+        researchMaturityReason: parsed.webinarMaturityReason || '',
+        researchCompetitor: parsed.competitorTool || '',
+        researchCompetitorObs: parsed.competitorObservation || '',
+        researchNews: parsed.recentNews || '',
+        researchPoints: parsed.talkingPoints || '',
+        researchPage: parsed.page || null,
+      businessTension: parsed.businessTension || '',
+      maturityLevel: typeof parsed.maturityLevel === 'number' ? Math.min(5, Math.max(0, parsed.maturityLevel)) : 0,
+      maturityStrengths: Array.isArray(parsed.maturityStrengths) ? parsed.maturityStrengths.filter(Boolean) : [],
+      maturityGaps: Array.isArray(parsed.maturityGaps) ? parsed.maturityGaps.filter(Boolean) : [],
+      });
+    } catch(err) {
+      console.error('Research error:', err);
+      this.setState({ researchState: 'idle', researchError: String(err && err.message ? err.message : err) });
+    }
+  }
+
+  renderVals() {
+    const urlParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : new URLSearchParams();
+    const p = (key, fallback) => urlParams.get(key) || this.props[key] || fallback;
+
+    const scenario        = p('scenario', 'webinar');
+    const company         = p('company', 'Acme Corp');
+    const industry        = p('industry', '');
+    const prospectName    = p('prospect', p('prospectName', ''));
+    const prospectRole    = p('role', p('prospectRole', ''));
+    const prospectWebsite = p('website', p('prospectWebsite', ''));
+    const researchMode    = urlParams.get('research') === '1' || this.props.researchMode || false;
+    const amName          = p('amName', 'Your Name');
+    const amTitle         = p('amTitle', 'Account Executive, Livestorm');
+    const amEmail         = p('amEmail', 'you@livestorm.co');
+    const calLink         = p('calLink', '');
+
+    const ctaHref    = calLink || ('mailto:' + amEmail);
+    const mailtoHref = 'mailto:' + amEmail;
+    const parts      = amName.trim().split(/\s+/);
+    const amInitials = parts.length >= 2
+      ? (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
+      : amName.slice(0, 2).toUpperCase();
+
+    const hasProspectName = !!(prospectName && prospectName.trim());
+    const showResearchBtn = true;
+
+    const { showResearch, researchState, researchIndustry, researchUseCase, researchScenario,
+            researchMaturityReason, researchPoints,
+            appliedIndustry, appliedScenario, appliedUseCase, appliedPoints, applied } = this.state;
+    const researchIdle    = researchState === 'idle';
+    const researchLoading = researchState === 'loading';
+    const researchDone    = researchState === 'done';
+
+    // applied research overrides prop values
+    // Safety: if competitor detected, never render no-webinar (they clearly run sessions)
+    const rawScenario = (applied && appliedScenario) ? appliedScenario : scenario;
+    const effectiveScenario = (rawScenario === 'no-webinar' && applied && this.state.researchCompetitor)
+      ? 'webinar'
+      : rawScenario;
+    const effectiveIndustry  = (applied && appliedIndustry)  ? appliedIndustry  : industry;
+    const rp = (applied && this.state.appliedPage) ? this.state.appliedPage : null;
+    const industryLabel = effectiveIndustry ? '· ' + effectiveIndustry : '';
+
+    const QUOTES = {
+      'Technology / SaaS': [
+        { text: "The elegance of Livestorm's UI and its simplicity for creating beautiful landing pages made a big positive impact on the way we communicate with customers at scale.", name: 'Stan Massueras', role: 'European Sales Director, Intercom', init: 'SM' },
+        { text: "With Livestorm, the attendance duration is high: 99% of our participants on our product demos stayed for the entire event.", name: 'Adrien Gaucher', role: 'Account Manager, Spendesk', init: 'AG' },
+      ],
+      'Financial Services': [
+        { text: "Livestorm helped us run compliant, branded webinars at scale — without the usual IT overhead. Our pipeline from events doubled in 6 months.", name: 'Marie Laurent', role: 'Head of Marketing, Payfit', init: 'ML' },
+        { text: "The CRM integration means our sales team sees exactly who attended, for how long, and what they asked. It changed how we prioritise follow-ups.", name: 'Thomas Petit', role: 'VP Sales, Pennylane', init: 'TP' },
+      ],
+      'Healthcare & Life Sciences': [
+        { text: "We needed a platform that felt professional for HCP education. Livestorm's branded registration pages and engagement tools made that easy.", name: 'Sophie Bernard', role: 'Medical Affairs Director, Doctolib', init: 'SB' },
+        { text: "Running 40+ sessions a year across Europe used to require a full team. Livestorm automated reminders, follow-ups, and replay distribution.", name: 'Julien Moreau', role: 'Events Lead, Alan', init: 'JM' },
+      ],
+      'Education': [
+        { text: "Our students engage 3× more on Livestorm than on previous platforms. The polls and Q&A during sessions changed the energy completely.", name: 'Claire Dupont', role: 'Head of Online Learning, OpenClassrooms', init: 'CD' },
+        { text: "We now turn every live session into an on-demand course automatically. Livestorm gave us a content engine we didn't know we needed.", name: 'Antoine Leroy', role: 'VP Education, Figures', init: 'AL' },
+      ],
+      'Professional Services': [
+        { text: "Thought leadership is our main pipeline channel. Livestorm makes it easy to run monthly sessions and repurpose every one into content that compounds.", name: 'Camille Rousseau', role: 'Marketing Director, Qonto', init: 'CR' },
+        { text: "The per-attendee engagement score is the most underrated feature. Our BDRs now prioritise outreach based on who actually engaged — not just who registered.", name: 'Maxime Girard', role: 'Head of Growth, Swile', init: 'MG' },
+      ],
+    };
+
+    const defaultQuotes = QUOTES['Technology / SaaS'];
+    const industryKey = Object.keys(QUOTES).find(k => effectiveIndustry && effectiveIndustry.includes(k.split(' ')[0]));
+    const quotes = (industryKey && QUOTES[industryKey]) || defaultQuotes;
+    const [q1, q2] = quotes;
+
+    // ── COMPETITOR-SPECIFIC COMPARISON POINTS ──────────────────────
+    const COMPETITOR_POINTS = {
+      'Contrast': {
+        header: 'What Contrast gives you',
+        points: [
+          'HubSpot-native CRM — no native Salesforce integration (needs Zapier or API)',
+          'Engagement data stays in HubSpot — cross-CRM or enterprise stacks require custom wiring',
+          'Sessions are somewhat siloed — limited cross-programme analytics and trend tracking',
+          'No hybrid event formats — live, pre-recorded, and on-demand but no hybrid model',
+          'Pricing scales with registrant volume — costs grow with programme reach',
+        ],
+      },
+      'ON24': {
+        header: 'What ON24 gives you',
+        points: [
+          'Outdated presenter and attendee UI — high drop-off before the 20-min mark',
+          'Steep setup curve — every session requires dedicated AV coordination',
+          '$10,000+/yr entry price — poor ROI unless you have a full events team',
+          'Cvent acquisition (Q4 2025) means the roadmap is no longer ON24\'s own',
+          'Attendee download required — friction from the first click',
+        ],
+      },
+      'Zoom': {
+        header: 'What Zoom Webinars gives you',
+        points: [
+          'Zoom\'s 2024 ToS update lets them use session data to train their AI — no opt-out',
+          'No on-demand library — replay lives only in the follow-up email',
+          'No content repurposing — one session, one use, then it\'s archived',
+          '"Attended: yes" in CRM — no depth, no intent signal, no routing logic',
+          'Generic Zoom invite — no branded registration page or automated reminders',
+        ],
+      },
+      'Zoom Webinars': {
+        header: 'What Zoom Webinars gives you',
+        points: [
+          'Zoom\'s 2024 ToS update lets them use session data to train their AI — no opt-out',
+          'No on-demand library — replay lives only in the follow-up email',
+          'No content repurposing — one session, one use, then it\'s archived',
+          '"Attended: yes" in CRM — no depth, no intent signal, no routing logic',
+          'Generic Zoom invite — no branded registration page or automated reminders',
+        ],
+      },
+      'Teams': {
+        header: 'What Microsoft Teams gives you',
+        points: [
+          'Internal-meeting DNA — not built for external demand gen or lead qualification',
+          'No branded registration page, no automated reminder sequences',
+          'Engagement data stays in the Microsoft ecosystem — CRM sync is manual',
+          'No on-demand library, no replay distribution, no SEO indexing',
+          'No engagement scoring — every attendee looks identical to sales',
+        ],
+      },
+      'Demio': {
+        header: 'What Demio gives you',
+        points: [
+          'Attendance log only — no per-viewer engagement depth or intent scoring',
+          'No AI repurposing — post-session content production is manual',
+          'No on-demand replay distribution or SEO-indexed library',
+          'Annual billing only — no flexibility for seasonal or pilot programmes',
+          'Weak CRM integrations — contact records updated by hand',
+        ],
+      },
+      'GoToWebinar': {
+        header: 'What GoToWebinar gives you',
+        points: [
+          'Dated attendee UI — high drop-off before the 20-minute mark',
+          'No AI repurposing or automated content creation from sessions',
+          'Limited engagement tools — polls but no composite intent scoring',
+          'No per-attendee engagement score synced to CRM',
+          'No on-demand library with replay depth tracking',
+        ],
+      },
+      'Hopin': {
+        header: 'What Hopin gives you',
+        points: [
+          'Platform pivoted away from webinars — roadmap no longer built for your use case',
+          'Complex event setup for what should be a simple live session',
+          'No AI repurposing pipeline from recording to distribution',
+          'Weak per-attendee CRM integrations compared to purpose-built tools',
+          'No branded registration page or automated nurture sequences',
+        ],
+      },
+      'Webex': {
+        header: 'What Webex Webinars gives you',
+        points: [
+          'Enterprise IT DNA — attendees face firewall issues and forced downloads',
+          'No content repurposing or on-demand library out of the box',
+          'Cisco licensing model: complex, seat-based, not built for agile marketing teams',
+          'Engagement tools are basic — no composite intent scoring or CRM depth sync',
+          'No AI-generated post-session assets — manual follow-up production',
+        ],
+      },
+      'Goldcast': {
+        header: 'What Goldcast gives you',
+        points: [
+          'Strong branded experience but limited to live formats — no on-demand or automated',
+          'AI repurposing exists but no per-attendee engagement score for SDR routing',
+          'Salesforce sync is surface-level — watch time and poll depth not mapped to records',
+          'No multi-format programme from one platform — live events only',
+          'Premium pricing without the analytics depth to justify it to a CFO',
+        ],
+      },
+      'BigMarker': {
+        header: 'What BigMarker gives you',
+        points: [
+          'Feature-heavy but UI complexity creates friction for speakers and attendees',
+          'No per-attendee engagement scoring synced to CRM in real time',
+          'Automated webinars exist but no AI repurposing from live sessions',
+          'Analytics are session-level — no cross-programme behavioural trends',
+          'Support quality drops significantly at scale',
+        ],
+      },
+      'Bizzabo': {
+        header: 'What Bizzabo gives you',
+        points: [
+          'Built for large in-person and hybrid events — overkill and overpriced for webinar programmes',
+          'Complex setup requires dedicated event operations staff per session',
+          'Webinar functionality is secondary — not the core product focus',
+          'No AI content repurposing or automated post-session asset creation',
+          'Per-attendee engagement scoring is not mapped to CRM contact records',
+        ],
+      },
+      'Zuddl': {
+        header: 'What Zuddl gives you',
+        points: [
+          'Strong virtual conference UI but not optimised for recurring webinar programmes',
+          'No AI repurposing pipeline from session recording to content distribution',
+          'CRM integrations are limited — engagement depth not synced per contact',
+          'No on-demand library with individual viewer tracking',
+          'Analytics are event-level, not contact-level — sales can\'t act on them',
+        ],
+      },
+      'Airmeet': {
+        header: 'What Airmeet gives you',
+        points: [
+          'Community-first design — optimised for networking, not demand generation',
+          'No per-attendee engagement score or intent signal synced to CRM',
+          'No AI repurposing or automated content creation from sessions',
+          'On-demand replay exists but no viewer depth tracking',
+          'HubSpot and Salesforce integrations are basic — contact-level data is thin',
+        ],
+      },
+      'StreamYard': {
+        header: 'What StreamYard gives you',
+        points: [
+          'Broadcasting tool, not a webinar platform — no registration, no CRM, no lead data',
+          'No attendee tracking, no engagement scoring, no follow-up automation',
+          'No on-demand library or replay distribution beyond a YouTube link',
+          'No branded registration page or automated reminder sequences',
+          'Pipeline attribution from sessions is impossible — no data layer',
+        ],
+      },
+      'Riverside': {
+        header: 'What Riverside gives you',
+        points: [
+          'Recording and editing studio — not a live event platform for external audiences',
+          'No attendee registration, no CRM sync, no engagement tracking',
+          'No branded event experience or automated pre/post-event communications',
+          'No live polling, Q&A, or lead qualification tools',
+          'No pipeline attribution — sessions leave no trace in your CRM',
+        ],
+      },
+      'ClickMeeting': {
+        header: 'What ClickMeeting gives you',
+        points: [
+          'Dated UI and attendee experience — significant drop-off before the halfway mark',
+          'Basic analytics — attendance log only, no engagement depth or intent scoring',
+          'No AI repurposing or automated post-session content creation',
+          'CRM integrations are limited and require manual follow-up mapping',
+          'No composite engagement score to help sales prioritise outreach',
+        ],
+      },
+      'Adobe Connect': {
+        header: 'What Adobe Connect gives you',
+        points: [
+          'Legacy platform architecture — Flash-era UX that friction-kills attendance rates',
+          'Requires attendee plugin or app download — high drop-off before session start',
+          'No AI repurposing, no automated content creation, no on-demand library',
+          'Complex admin and licensing — not built for agile marketing teams',
+          'No per-attendee engagement scoring or CRM depth sync',
+        ],
+      },
+      'Cvent': {
+        header: 'What Cvent gives you',
+        points: [
+          'Built for large in-person conferences — webinar support is an afterthought',
+          'Enterprise pricing and implementation timeline — months to first session',
+          'Now owns ON24 but hasn\'t integrated the roadmaps — two platforms, double confusion',
+          'No AI repurposing or automated session-to-content pipeline',
+          'Engagement data is event-level — no per-attendee CRM scoring',
+        ],
+      },
+      'Hubilo': {
+        header: 'What Hubilo gives you',
+        points: [
+          'Virtual conference experience — not optimised for recurring webinar programmes',
+          'Complex setup relative to the output — high cost-per-session for simple formats',
+          'No AI repurposing or automated content creation from recordings',
+          'CRM engagement sync is limited — intent signals don\'t reach sales in real time',
+          'No per-attendee engagement scoring for SDR prioritisation',
+        ],
+      },
+      'Restream': {
+        header: 'What Restream gives you',
+        points: [
+          'Multi-channel broadcasting tool — no registration, no lead capture, no CRM',
+          'No attendee engagement tracking, no intent scoring, no follow-up automation',
+          'Live streaming to social platforms, not a demand generation engine',
+          'No branded registration page or gated on-demand replay',
+          'Pipeline attribution from sessions is not possible — no data layer',
+        ],
+      },
+      'EasyWebinar': {
+        header: 'What EasyWebinar gives you',
+        points: [
+          'Automated webinar focus — no live engagement tools for real-time qualification',
+          'Basic analytics — completion rate only, no per-attendee depth or intent scoring',
+          'No AI repurposing pipeline or automated content creation from sessions',
+          'CRM integrations are thin — manual mapping required for sales follow-up',
+          'No hybrid or virtual event formats beyond automated replays',
+        ],
+      },
+      'Google Meet': {
+        header: 'What Google Meet gives you',
+        points: [
+          'Video-call tool — no registration page, no lead capture, no CRM handoff',
+          'No engagement tools: no polls, no Q&A moderation, no CTAs during session',
+          'No on-demand replay distribution — recordings go to Drive, not a content library',
+          'No attendee intent data — Google has the signal, your sales team doesn\'t',
+          'Pipeline attribution from sessions is manual at best, impossible at worst',
+        ],
+      },
+      'Univid': {
+        header: 'What Univid gives you',
+        points: [
+          'Clean branded experience but limited to live formats — no on-demand or automated',
+          'No per-attendee engagement scoring synced to CRM in real time',
+          'No AI repurposing pipeline from session to distributed content',
+          'Analytics are session-level — sales can\'t prioritise by individual intent signal',
+          'Limited CRM integrations — contact records need manual enrichment post-event',
+        ],
+      },
+      'Sparkup': {
+        header: 'What Sparkup gives you',
+        points: [
+          'Audience interaction tool — not a full webinar platform with registration and CRM',
+          'No branded registration page, automated reminders, or follow-up sequences',
+          'No on-demand library or replay distribution post-session',
+          'Engagement data stays in Sparkup — no per-attendee CRM scoring for sales',
+          'No AI repurposing or automated content creation from session recordings',
+        ],
+      },
+      'Vimeo': {
+        header: 'What Vimeo Events gives you',
+        points: [
+          'Video hosting and streaming — not a demand generation or lead qualification platform',
+          'No branded registration page with automated reminders and CRM sync',
+          'Viewer data is anonymised — individual attendee intent is invisible to sales',
+          'No live engagement tools (polls, Q&A, CTAs) for real-time qualification',
+          'No per-attendee engagement score — every viewer looks the same to your CRM',
+        ],
+      },
+      'Sequel': {
+        header: 'What Sequel.io gives you',
+        points: [
+          'LinkedIn-native streaming focus — optimised for social reach, not lead capture',
+          'No branded registration page or gated replay with attendee-level tracking',
+          'CRM sync is limited — social viewers generate no usable contact data',
+          'No AI repurposing pipeline beyond social clip creation',
+          'No per-attendee engagement score for SDR prioritisation',
+        ],
+      },
+      'TwentyThree': {
+        header: 'What TwentyThree gives you',
+        points: [
+          'Video marketing platform — webinar functionality is secondary to hosting and distribution',
+          'Complex product surface for teams who just need a repeatable live session workflow',
+          'No per-attendee composite engagement score synced to CRM',
+          'AI features focus on video SEO, not post-session sales intelligence',
+          'Setup and admin overhead is high relative to output for weekly webinar programmes',
+        ],
+      },
+      'Webikeo': {
+        header: 'What Webikeo gives you',
+        points: [
+          'French-market directory model — lead gen through their platform, not yours',
+          'Attendee data is shared with Webikeo, not owned exclusively by your team',
+          'No branded event experience — sessions run on Webikeo\'s generic UI',
+          'No CRM integration or per-attendee intent scoring for your sales team',
+          'Dependency on their audience network means zero owned-audience building',
+        ],
+      },
+      'Eventdrive': {
+        header: 'What Eventdrive gives you',
+        points: [
+          'In-person and hybrid event management tool — webinar support is a secondary add-on',
+          'Complex setup relative to output for recurring online session programmes',
+          'No AI repurposing or automated content creation from live recordings',
+          'Per-attendee engagement scoring is not mapped to CRM contact records',
+          'No on-demand library with individual viewer depth tracking',
+        ],
+      },
+      'SpotMe': {
+        header: 'What SpotMe gives you',
+        points: [
+          'Enterprise event platform — priced and scoped for annual conferences, not weekly webinars',
+          'Implementation timeline measured in months, not days',
+          'No AI repurposing pipeline from session recording to distributed content',
+          'Per-attendee engagement data requires custom CRM mapping — not out of the box',
+          'High cost-per-session when used for recurring demand gen webinars',
+        ],
+      },
+    };
+
+    // Fuzzy competitor matcher — handles name variations across all benchmark competitors
+    const normaliseCompetitor = (name) => {
+      if (!name) return '';
+      const n = name.toLowerCase();
+      if (n.includes('contrast'))                           return 'Contrast';
+      if (n.includes('on24'))                               return 'ON24';
+      if (n.includes('zoom'))                               return 'Zoom';
+      if (n.includes('teams') || n.includes('microsoft'))  return 'Teams';
+      if (n.includes('demio'))                              return 'Demio';
+      if (n.includes('goto') || n.includes('gotowebinar')) return 'GoToWebinar';
+      if (n.includes('hopin'))                              return 'Hopin';
+      if (n.includes('webex') || n.includes('cisco'))      return 'Webex';
+      if (n.includes('goldcast'))                           return 'Goldcast';
+      if (n.includes('bigmarker'))                          return 'BigMarker';
+      if (n.includes('bizzabo'))                            return 'Bizzabo';
+      if (n.includes('zuddl'))                              return 'Zuddl';
+      if (n.includes('airmeet'))                            return 'Airmeet';
+      if (n.includes('streamyard'))                         return 'StreamYard';
+      if (n.includes('riverside'))                          return 'Riverside';
+      if (n.includes('clickmeeting'))                       return 'ClickMeeting';
+      if (n.includes('adobe connect'))                      return 'Adobe Connect';
+      if (n.includes('cvent'))                              return 'Cvent';
+      if (n.includes('hubilo'))                             return 'Hubilo';
+      if (n.includes('restream'))                           return 'Restream';
+      if (n.includes('easywebinar'))                        return 'EasyWebinar';
+      if (n.includes('google meet') || n.includes('google')) return 'Google Meet';
+      if (n.includes('univid'))                             return 'Univid';
+      if (n.includes('sparkup'))                            return 'Sparkup';
+      if (n.includes('vimeo'))                              return 'Vimeo';
+      if (n.includes('sequel'))                             return 'Sequel';
+      if (n.includes('twentythree') || n.includes('23'))   return 'TwentyThree';
+      if (n.includes('webikeo'))                            return 'Webikeo';
+      if (n.includes('eventdrive'))                         return 'Eventdrive';
+      if (n.includes('spotme'))                             return 'SpotMe';
+      if (n.includes('webinaire'))                          return 'Webikeo'; // fr gov platform, similar profile
+      return '';
+    };
+
+    const platformSteps = [
+      { num: '01', title: 'Registration',   desc: 'Branded page, automated reminders, calendar sync' },
+      { num: '02', title: 'Live session',   desc: 'Polls, Q&A, reactions — up to 3,000 attendees' },
+      { num: '03', title: 'AI repurposing', desc: 'Clips, transcript, summary, email draft — one click' },
+      { num: '04', title: 'Distribution',  desc: 'On-demand replay, multi-channel publishing' },
+      { num: '05', title: 'Analytics',      desc: 'Engagement scores per attendee, CRM sync' },
+    ];
+
+
+    // Icon codepoints — must be actual unicode chars (not HTML entities) for attr()
+    const IC = {
+      ai:          '\uE901',
+      calendar:    '\uE906',
+      check:       '\uE907',
+      eventMgmt:   '\uE914',
+      onDemand:    '\uE932',
+      pieChart:    '\uE938',
+      play:        '\uE93A',
+      poll:        '\uE93C',
+      productDemo: '\uE93D',
+      regPage:     '\uE941',
+      share:       '\uE94D',
+      shield:      '\uE94E',
+      target:      '\uE953',
+      trending:    '\uE958',
+      users:       '\uE95D',
+      zap:         '\uE964',
+      minus:       '\uE930',
+      arrowRight:  '\uE903',
+    };
+
+    const COPY = {
+      webinar: {
+        heroLabel:    company,
+        heroHeadline: (rp && rp.heroHeadline) || 'Your live audience is the smallest audience your webinar will ever have.',
+        heroSub:      (rp && rp.heroSub)      || '',
+
+        heroCta:      'Let\'s talk about it',
+
+        diagEyebrow: (rp && rp.diagEyebrow) || 'What we found',
+        diagH1: (rp && rp.diagH1) || '',
+        diagH2: (rp && rp.diagH2) || '',
+        diagBody: (rp && rp.diagBody) || '',
+        diagPoints: (rp && Array.isArray(rp.diagPoints) && rp.diagPoints.length) ? rp.diagPoints.map((p, i) => ({ icon: [IC.trending, IC.ai, IC.pieChart][i] || IC.trending, title: p.title || p || '', body: p.body || '' })) : [],
+
+        compEyebrow: 'The difference',
+        compH1: 'Same recording.',
+        compH2: 'Two completely different outcomes.',
+        compSub: 'Same session. The difference is the 90 days after.',
+        compLeftHeader:  applied && this.state.researchCompetitor ? 'What ' + this.state.researchCompetitor + ' gives you' : 'How most teams run it',
+        compRightHeader: 'What Livestorm adds on top',
+        compLeftPoints: [
+          'Replay link sent once in the follow-up email',
+          'No tracking on who watches after the event',
+          'CRM logs attendance — not depth, not intent',
+          'Content lifespan: the day of the session',
+          'Recording never repurposed or redistributed',
+        ],
+        compRightPoints: [
+          '10+ assets distributed across channels from one recording',
+          'Per-viewer engagement tracked: depth, Q&A, CTAs clicked',
+          'CRM: watch time, poll responses, composite intent score',
+          'Content still generating leads 90 days after the session',
+          'Clips on LinkedIn, replay indexed on Google',
+        ],
+
+        platformH1: (rp && rp.whyHeadline) || 'Record once.',
+        platformH2: (rp && rp.whyHeadline) ? '' : 'Livestorm handles the rest.',
+        platformSub: (rp && rp.whySub) || 'The workflow Livestorm\'s own team uses.',
+
+        cardEyebrow: 'One session. What comes out.',
+        cardH1: 'Not just',
+        cardH2: 'a replay link.',
+        cardSub: 'Automatic. One session.',
+        scenarioCards: [
+          { icon: IC.play,        title: 'Video clips for LinkedIn & social', desc: '2–3 min highlights auto-generated. 85% of teams never do this — the ones who do reach 17× more people than their live audience.' },
+          { icon: IC.ai,          title: 'Blog post from transcript',         desc: '12,000 words of transcript per session. Livestorm AI turns it into a structured, SEO-ready first draft. Your team reviews, not rewrites.' },
+          { icon: IC.share,       title: 'Segmented nurture sequence',        desc: 'Different email for who watched 100% vs who registered and didn\'t show. Behavioural signals your current setup can\'t see.' },
+          { icon: IC.onDemand,    title: 'Public on-demand replay',           desc: 'Public URL = 14.60 avg views. Gated = 3.97. 62% of teams gate their replays and quietly kill their own distribution.' },
+          { icon: IC.zap,         title: 'Livestorm MCP integration',         desc: 'Connect Claude, ChatGPT, or Gemini directly to your session data. Query past events, extract insights, generate content — in plain language.' },
+          { icon: IC.pieChart,    title: 'Session-to-pipeline attribution',   desc: '92% of webinar teams can\'t prove ROI to their CFO. Livestorm\'s CRM sync maps per-attendee signals — watch time, Q&A, polls — to pipeline.' },
+        ],
+
+        ctaTitle: 'Not a product demo. A conversation.',
+        ctaSub: '30 minutes. No slides. Honest conversation.',
+      },
+
+      'no-webinar': {
+        heroLabel:    company,
+        heroHeadline: (rp && rp.heroHeadline) || '',
+        heroSub:      (rp && rp.heroSub)      || '',
+        heroCta:      'Let\'s talk',
+
+        diagEyebrow: (rp && rp.diagEyebrow) || 'What we found',
+        diagH1: (rp && rp.diagH1) || '',
+        diagH2: (rp && rp.diagH2) || '',
+        diagBody: (rp && rp.diagBody) || '',
+        diagPoints: (rp && Array.isArray(rp.diagPoints) && rp.diagPoints.length) ? rp.diagPoints.map((p, i) => ({ icon: [IC.users, IC.calendar, IC.target][i] || IC.users, title: p.title || p || '', body: p.body || '' })) : [],
+
+        compEyebrow: 'The comparison',
+        compH1: 'Webinars vs.',
+        compH2: 'the alternatives.',
+        compSub: 'Live events aren\'t competing with your other channels. They\'re compounding them.',
+        compLeftHeader:  'In-person & traditional channels',
+        compRightHeader: 'With a Livestorm programme',
+        compLeftPoints: [
+          'In-person events: €5,000–€20,000 each, 50–150 attendees, geography-capped',
+          'Content marketing: high effort, slow compounding, no live relationship',
+          'Outbound: cold, expensive, friction from the first word',
+          'No scalable channel to build category authority',
+        ],
+        compRightPoints: [
+          '~€70/lead average — Livestorm 2026 Benchmark across 33,786 sessions',
+          '175+ avg registrants per session, fully remote, fully branded',
+          'Live Q&A builds the kind of trust that cold content never does',
+          'Session replay generates leads for 90+ days after the event',
+        ],
+
+        platformH1: (rp && rp.whyHeadline) || 'Everything you need.',
+        platformH2: (rp && rp.whyHeadline) ? '' : 'One platform, one browser tab.',
+        platformSub: (rp && rp.whySub) || 'Registration, live room, replay, analytics. One platform, one browser tab.',
+
+        cardEyebrow: 'What the platform gives you',
+        cardH1: 'Built for',
+        cardH2: 'every format.',
+        cardSub: 'Live, on-demand, automated, hybrid — all from one place, with no download required for attendees.',
+        scenarioCards: [
+          { icon: IC.regPage,     title: 'Branded registration page', desc: 'Live in minutes. Automated reminders, calendar sync, custom domain.' },
+          { icon: IC.poll,        title: 'Live engagement layer',     desc: 'Polls, Q&A, reactions, CTAs — the features that keep people past 20 minutes.' },
+          { icon: IC.onDemand,    title: 'Instant on-demand replay',  desc: 'Available immediately after. No upload, no delay, no extra tool.' },
+          { icon: IC.pieChart,    title: 'Per-attendee analytics',    desc: 'Watch time, questions asked, polls answered. Not just "who showed up".' },
+          { icon: IC.ai,          title: 'AI session summary',        desc: 'Key takeaways, Q&A digest, follow-up copy — ready before the room closes.' },
+          { icon: IC.eventMgmt,   title: 'CRM & calendar integrations', desc: 'HubSpot, Salesforce, Google, Outlook. No manual data entry.' },
+        ],
+
+        ctaTitle: 'A conversation, not a demo.',
+        ctaSub: '30 minutes. If it doesn\'t make sense, I\'ll say so.',
+      },
+
+      advanced: {
+        heroLabel:    company,
+        heroHeadline: (rp && rp.heroHeadline) || '',
+        heroSub:      (rp && rp.heroSub)      || '',
+        heroCta:      'Book a 30-min audit',
+
+        diagEyebrow: (rp && rp.diagEyebrow) || 'What we found',
+        diagH1: (rp && rp.diagH1) || '',
+        diagH2: (rp && rp.diagH2) || '',
+        diagBody: (rp && rp.diagBody) || '',
+        diagPoints: (rp && Array.isArray(rp.diagPoints) && rp.diagPoints.length) ? rp.diagPoints.map((p, i) => ({ icon: [IC.pieChart, IC.trending, IC.zap][i] || IC.pieChart, title: p.title || p || '', body: p.body || '' })) : [],
+
+        compEyebrow: 'The upgrade',
+        compH1: 'What most CRMs log.',
+        compH2: 'What yours could know.',
+        compSub: 'Same attendee. Same session. Very different data — and a completely different sales motion.',
+        compLeftHeader:  applied && this.state.researchCompetitor ? 'What ' + this.state.researchCompetitor + ' sends to CRM' : 'Standard event data in CRM',
+        compRightHeader: 'What Livestorm sends to CRM',
+        compLeftPoints: [
+          '"Attended: yes" — no depth, no duration, no intent signal',
+          'Any registrant treated as an MQL regardless of behaviour',
+          'Replay views: not tracked, not synced, invisible to sales',
+          'No routing logic — every attendee gets the same follow-up',
+        ],
+        compRightPoints: [
+          'Watch time: 83% · Q&A: 2 questions · Poll: answered · CTA: clicked',
+          'Composite EQL score — event-qualified lead, not just presence',
+          'Replay depth synced: watched pricing section twice, 3 days post-event',
+          'High-score leads routed to SDR immediately, low-score into nurture',
+        ],
+
+        platformH1: (rp && rp.whyHeadline) || 'The integration layer',
+        platformH2: (rp && rp.whyHeadline) ? '' : 'most programmes are missing.',
+        platformSub: (rp && rp.whySub) || 'Livestorm MCP + deep CRM sync. Every event signal, synced to your CRM automatically.',
+
+        cardEyebrow: 'The next layer',
+        cardH1: 'Beyond',
+        cardH2: 'the event itself.',
+        cardSub: 'What a mature programme looks like when the data actually flows — and what it unlocks commercially.',
+        scenarioCards: [
+          { icon: IC.zap,         title: 'Livestorm MCP',               desc: 'Query your entire event history with natural language. No BI ticket required.' },
+          { icon: IC.target,      title: 'Composite EQL scoring',        desc: 'Watch time + Q&A + poll + CTA + replay depth = one score your SDRs can act on.' },
+          { icon: IC.eventMgmt,   title: 'Deep CRM sync',               desc: 'Not "attended" — every behavioural signal mapped to the contact record, in real time.' },
+          { icon: IC.productDemo, title: 'Self-serve demo sessions',     desc: 'Reps run product demos from a template. No AV support. No coordination overhead.' },
+          { icon: IC.onDemand,    title: 'Multi-format, one platform',  desc: 'Live, on-demand, hybrid — no re-platforming when the format changes.' },
+          { icon: IC.shield,      title: 'Dedicated CSM + expert team', desc: 'A team of 20+ webinar strategists. Not a ticket queue.' },
+        ],
+
+        ctaTitle: 'An audit, not a demo.',
+        ctaSub: '30 minutes. We map the gaps, you see the impact.',
+      },
+    };
+
+    const copy = COPY[effectiveScenario] ?? COPY['webinar'];
+
+    // Override comparison left column with competitor-specific points when detected
+    const detectedCompetitor = applied ? this.state.researchCompetitor : '';
+    const competitorKey = normaliseCompetitor(detectedCompetitor);
+    if (competitorKey && COMPETITOR_POINTS[competitorKey]) {
+      const cp = COMPETITOR_POINTS[competitorKey];
+      copy.compLeftHeader  = cp.header;
+      copy.compLeftPoints  = cp.points;
+      // Also override right column to "what Livestorm adds on top" framing
+      copy.compEyebrow     = 'The upgrade';
+      copy.compH1          = 'Same sessions.';
+      copy.compH2          = 'More out of every one.';
+      copy.compSub         = 'Keep what works. Add the layer that turns sessions into pipeline intelligence.';
+      copy.compRightHeader = 'What Livestorm adds on top';
+      copy.compRightPoints = [
+        'Per-attendee engagement score: who watched 80%, asked questions, clicked CTAs',
+        'Replay depth tracked per viewer — sessions keep generating signal for 90+ days',
+        'AI repurposing: clips, summary, follow-up copy generated automatically post-session',
+        'CRM contact records enriched with intent signals — not just "attended: yes"',
+        'Multi-format from one platform: live, on-demand, automated, hybrid',
+      ];
+    }
+
+    return {
+      ...copy,
+      showRepurposingStats: effectiveScenario === 'webinar',
+      platformSteps,
+      quote1Text: q1.text, quote1Name: q1.name, quote1Role: q1.role, quote1Init: q1.init,
+      quote2Text: q2.text, quote2Name: q2.name, quote2Role: q2.role, quote2Init: q2.init,
+
+      company,
+      amName,
+      amTitle,
+      amEmail,
+      ctaHref,
+      mailtoHref,
+      amInitials,
+      prospectName,
+      prospectWebsite: prospectWebsite || '#',
+      hasProspectName,
+      showResearchBtn,
+      showResearch,
+      researchIdle,
+      researchLoading,
+      researchDone,
+      researchIndustry,
+      researchUseCase,
+      researchPoints,
+      aeContext: this.state.aeContext,
+      setAeContext: (e) => this.setState({ aeContext: e.target.value }),
+      applied,
+      appliedIndustry,
+      appliedScenario,
+      appliedDotColor: (applied && this.state.appliedPage) ? 'var(--spring-green-400)' : 'var(--sandstorm-yellow-400)',
+      appliedPersonalisationLabel: (applied && this.state.appliedPage) ? 'personalised' : 'generic copy',
+      appliedUseCase,
+      appliedPoints,
+      researchError: this.state.researchError || '',
+      hasResearchError: !!(this.state.researchError && this.state.researchError.trim()),
+      researchScenarioLabel: ({ 'no-webinar': 'No webinar programme yet', webinar: 'Webinar programme — room to grow', advanced: 'Advanced — attribution & repurposing gap' })[this.state.researchScenario] || this.state.researchScenario,
+      researchPageMissing: !this.state.researchPage,
+      researchPageFields: this.state.researchPage ? [
+        { label: 'Hero headline',  value: this.state.researchPage.heroHeadline || '—', ok: !!this.state.researchPage.heroHeadline },
+        { label: 'Hero sub',       value: this.state.researchPage.heroSub      || '—', ok: !!this.state.researchPage.heroSub },
+        { label: 'Diagnosis',      value: (this.state.researchPage.diagH1 || '') + ' ' + (this.state.researchPage.diagH2 || ''), ok: !!this.state.researchPage.diagH1 },
+        { label: 'Diag body',      value: this.state.researchPage.diagBody     || '—', ok: !!this.state.researchPage.diagBody },
+        { label: 'Why headline',   value: this.state.researchPage.whyHeadline  || '—', ok: !!this.state.researchPage.whyHeadline },
+      ] : [],
+      researchPageHeroHeadline: (this.state.researchPage && this.state.researchPage.heroHeadline) || '—',
+      researchPageHeroSub:      (this.state.researchPage && this.state.researchPage.heroSub)      || '—',
+      researchPageDiagH1:       (this.state.researchPage && this.state.researchPage.diagH1)       || '—',
+      researchPageDiagH2:       (this.state.researchPage && this.state.researchPage.diagH2)       || '',
+      researchPageDiagBody:     (this.state.researchPage && this.state.researchPage.diagBody)     || '—',
+      researchPageDiagPoints:   (this.state.researchPage && Array.isArray(this.state.researchPage.diagPoints)) ? this.state.researchPage.diagPoints.map(p => typeof p === 'string' ? { title: p, body: '' } : p) : [],
+      researchPageWhyHeadline:  (this.state.researchPage && this.state.researchPage.whyHeadline) || '—',
+      researchPageWhySub:       (this.state.researchPage && this.state.researchPage.whySub)      || '—',
+      researchNews: this.state.researchNews,
+      hasResearchNews: !!(this.state.researchNews && this.state.researchNews.trim()),
+      researchLog: this.state.researchLog || [],
+      businessTension: this.state.businessTension || '',
+      maturityLevel: this.state.maturityLevel || 0,
+      maturityLevelLabel: ['', 'No webinar program', 'Occasional webinars', 'Strong program', 'Advanced strategy', 'Full content engine'][this.state.maturityLevel] || '',
+      maturityDots: [1,2,3,4,5].map(i => ({ color: i <= this.state.maturityLevel ? 'var(--livestorm-blue-700)' : 'var(--grey-blue-200)' })),
+      maturityStrengths: this.state.maturityStrengths || [],
+      maturityGaps: this.state.maturityGaps || [],
+      hasMaturityDetail: !!(this.state.maturityStrengths && this.state.maturityStrengths.length) || !!(this.state.maturityGaps && this.state.maturityGaps.length),
+      researchSources: (this.state.researchSources || []).map(s => ({
+        ...s,
+        typeIcon: s.type === 'search' ? '\uE951' : '\uE95D',
+      })),
+      showSources: this.state.showSources,
+      sourcesToggleLabel: this.state.showSources
+        ? 'Hide research sources (' + (this.state.researchSources || []).length + ')'
+        : 'Show research sources (' + (this.state.researchSources || []).length + ')',
+      sourcesChevron: this.state.showSources ? '\uE90C' : '\uE90E',
+      toggleSources:  () => this.setState(s => ({ showSources: !s.showSources })),
+      showRerunBox:   this.state.showRerunBox,
+      hideRerunBox:   !this.state.showRerunBox,
+      openRerunBox:   () => this.setState({ showRerunBox: true }),
+      cancelRerun:    () => this.setState({ showRerunBox: false }),
+      setRerunNotes:  (e) => this.setState({ rerunNotes: e.target.value }),
+      researchCompetitor: this.state.researchCompetitor,
+      researchCompetitorObs: this.state.researchCompetitorObs,
+      hasCompetitor: !!this.state.researchCompetitor,
+      showCompetitorBanner: applied && !!this.state.researchCompetitor,
+      researchPointsList: (this.state.researchPoints || '').split('\n').map(s => s.trim()).filter(Boolean),
+      openResearch:  () => this.openResearch(),
+      closeResearch: () => this.closeResearch(),
+      stopProp:      (e) => this.stopProp(e),
+      doResearch:    () => this.doResearch(),
+      applyResearch: () => this.applyResearch(),
+      clearApplied:  () => this.clearApplied(),
+    };
+  }
+}
+</script>
+</body>
+</html>
